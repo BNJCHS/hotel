@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hotel La Toscana{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+    <!-- Header / Navbar opcional -->
+    <header class="hero">
+        <div class="container">
+            <h1>Hotel La Toscana</h1>
+            <p>Tu refugio ideal en Parques del Sur</p>
+        </div>
+    </header>
+
+    <!-- Bloque de contenido principal -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div>
+            <h2>Reserva tu lugar</h2>
+            <p><strong>Teléfono:</strong> (56) 1234 5678</p>
+            <p><strong>Email:</strong> hola@sitioincreible.com</p>
+            <div class="social-icons">
+                <a href="#"><img src="{% static 'img/icon-facebook.png' %}" alt="Facebook"></a>
+                <a href="#"><img src="{% static 'img/icon-instagram.png' %}" alt="Instagram"></a>
+            </div>
+        </div>
+        <img src="{% static 'img/lobby.jpg' %}" alt="Lobby del hotel">
+    </footer>
+
+</body>
+</html>

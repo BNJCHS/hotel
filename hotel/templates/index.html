@@ -1,0 +1,116 @@
+
+{% extends "base.html" %}
+{% load static %}}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container hero-inner">
+        <div class="hero-text">
+            <p class="subheading">TE INVITAMOS A</p>
+            <h1>LA TOSCANA</h1>
+            <p>Tu nuevo alojamiento favorito en Parques del Sur</p>
+            <a href="#" class="btn">Más información</a>
+        </div>
+        <img src="{% static 'img/logo-hotel.png' %}" alt="Logotipo del hotel" class="hero-logo">
+    </div>
+</section>
+
+<!-- BIENVENIDA -->
+<section class="bienvenida">
+    <div class="container">
+        <h2>TE DAMOS LA BIENVENIDA A TU SEGUNDO HOGAR</h2>
+        <p class="intro">
+            Convence a tus clientes potenciales de elegirte a ti y tus servicios al destacar las cualidades que te distinguen de la competencia.
+        </p>
+        <div class="premios">
+            <div class="premio">
+                <img src="{% static 'img/premio1.png' %}" alt="">
+                <p>“La mejor posada del año” 2030</p>
+            </div>
+            <div class="premio">
+                <img src="{% static 'img/premio2.png' %}" alt="">
+                <p>“Uno de los cinco mejores destinos del sur” 2030</p>
+            </div>
+            <div class="premio">
+                <img src="{% static 'img/premio3.png' %}" alt="">
+                <p>“El mejor hotel pequeño” 2030</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HABITACIONES -->
+<section class="habitaciones">
+    <div class="container">
+        <h2>LAS HABITACIONES</h2>
+        <div class="habitaciones-grid">
+            <div class="habitacion">
+                <img src="{% static 'img/habitacion1.png' %}" alt="Suite Queen">
+                <h4><strong>Suite Queen de lujo</strong></h4>
+                <p>Desde $3.600 por noche</p>
+            </div>
+            <div class="habitacion">
+                <img src="{% static 'img/habitacion2.png' %}" alt="Suite King">
+                <h4><strong>Suite King de lujo</strong></h4>
+                <p>Desde $5.400 por noche</p>
+            </div>
+            <div class="habitacion">
+                <img src="{% static 'img/habitacion3.png' %}" alt="Suite King + Balcón">
+                <h4><strong>Suite King + Balcón</strong></h4>
+                <p>Desde $6.800 por noche</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PAQUETES -->
+<section class="paquetes">
+    <div class="container">
+        <h2>PAQUETES Y DESCUENTOS</h2>
+        <div class="paquetes-grid">
+            <div class="paquete">
+                <img src="{% static 'img/paquete1.png' %}" alt="">
+                <h4>Paquetes Especiales</h4>
+                <p>Ofertas y promociones de temporada para que disfrutes más por menos.</p>
+            </div>
+            <div class="paquete">
+                <img src="{% static 'img/paquete2.png' %}" alt="">
+                <h4>Quédate Más y Ahorra</h4>
+                <p>Descuentos en estancias largas para que puedas relajarte de verdad.</p>
+            </div>
+            <div class="paquete">
+                <img src="{% static 'img/paquete3.png' %}" alt="">
+                <h4>50% en la 3ra Noche</h4>
+                <p>Promoción limitada: tercera noche al 50% para estadías de 3 o más días.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- RESEÑAS -->
+<section class="resenas">
+    <div class="container">
+        <h2>RESEÑAS DE LOS HUÉSPEDES</h2>
+        <div class="resenas-grid">
+            <div class="resena">
+                <img src="{% static 'img/karla.png' %}" alt="Karla">
+                <p><strong>Karla</strong></p>
+                <p>"La experiencia fue increíble. El lugar es hermoso y la atención excelente."</p>
+            </div>
+            <div class="resena">
+                <img src="{% static 'img/carolina.png' %}" alt="Carolina">
+                <p><strong>Carolina</strong></p>
+                <p>"La habitación impecable, muy cómoda. ¡Recomiendo totalmente La Toscana!"</p>
+            </div>
+            <div class="resena">
+                <img src="{% static 'img/esteban.png' %}" alt="Esteban">
+                <p><strong>Esteban</strong></p>
+                <p>"Un lugar tranquilo, hermoso y con detalles cuidados. Volveré sin dudas."</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

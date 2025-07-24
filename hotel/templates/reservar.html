@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reservar Habitación {{ habitacion.numero }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <h1>Reservar Habitación {{ habitacion.numero }}</h1>
+
+    <form method="POST" class="mt-4">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <input type="text" name="nombre" value="{{ form.nombre.value }}" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Apellido</label>
+        <input type="text" name="apellido" value="{{ form.apellido.value }}" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" value="{{ form.email.value }}" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Teléfono</label>
+        <input type="text" name="telefono" value="{{ form.telefono.value }}" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Fecha de Entrada</label>
+        <input type="date" name="fecha_entrada" value="{{ form.fecha_entrada.value }}" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Fecha de Salida</label>
+        <input type="date" name="fecha_salida" value="{{ form.fecha_salida.value }}" class="form-control" required>
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
+      <a href="{% url 'buscar_habitaciones' %}" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

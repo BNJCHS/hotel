@@ -1,0 +1,190 @@
+/* Colores base */
+:root {
+  --verde-oscuro: #2b3d38;
+  --beige: #f5f1e3;
+  --dorado: #bfa97a;
+  --blanco: #ffffff;
+  --gris: #888888;
+}
+
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--beige);
+  color: var(--verde-oscuro);
+  line-height: 1.6;
+}
+
+/* Contenedor */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 0;
+}
+
+/* Hero */
+.hero {
+  background-color: var(--verde-oscuro);
+  color: var(--blanco);
+  padding: 100px 0;
+  text-align: center;
+}
+
+.hero-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero h1 {
+  font-size: 3.5rem;
+  margin: 10px 0;
+}
+
+.hero p {
+  font-size: 1.2rem;
+}
+
+.hero .subheading {
+  text-transform: uppercase;
+  font-weight: bold;
+  color: var(--dorado);
+  letter-spacing: 2px;
+}
+
+.hero-logo {
+  margin-top: 30px;
+  max-width: 200px;
+}
+
+/* Botón */
+.btn {
+  background-color: var(--dorado);
+  color: var(--verde-oscuro);
+  padding: 12px 30px;
+  margin-top: 20px;
+  text-decoration: none;
+  border-radius: 30px;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btn:hover {
+  background-color: #a68e63;
+}
+
+/* Secciones generales */
+section {
+  padding: 60px 0;
+}
+
+section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  color: var(--verde-oscuro);
+}
+
+/* Bienvenida */
+.bienvenida .intro {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 40px;
+  font-size: 1.1rem;
+  color: var(--gris);
+}
+
+.premios {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  text-align: center;
+}
+
+.premio img {
+  width: 80px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+/* Habitaciones */
+.habitaciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  text-align: center;
+}
+
+.habitacion img {
+  width: 100%;
+  border-radius: 15px;
+}
+
+.habitacion h4 {
+  margin-top: 15px;
+  font-size: 1.2rem;
+  color: var(--verde-oscuro);
+}
+
+/* Paquetes */
+.paquetes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  text-align: center;
+}
+
+.paquete img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.paquete h4 {
+  margin-top: 15px;
+  font-size: 1.3rem;
+}
+
+/* Reseñas */
+.resenas-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+  text-align: center;
+}
+
+.resena {
+  background-color: var(--blanco);
+  padding: 25px;
+  border-radius: 15px;
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.resena img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-inner {
+    text-align: center;
+  }
+}
