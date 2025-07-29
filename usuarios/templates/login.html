@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h2>Iniciar Sesión</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Entrar</button>
+    </form>
+    {% if form.errors %}
+        <p style="color:red;">Usuario o contraseña incorrectos.</p>
+    {% endif %}
+</div>
+{% endblock %}
