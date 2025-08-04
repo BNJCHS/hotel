@@ -1,0 +1,20 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+<h1>Bienvenido al panel de administración</h1>
+<hr>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body">
+                <h5 class="card-title">Habitaciones</h5>
+                <p class="card-text">Gestioná las habitaciones del hotel.</p>
+                <a href="{% url 'lista_habitaciones_admin' %}" class="btn btn-success">Ver habitaciones</a>
+                <a href="{% url 'crear_habitacion' %}" class="btn btn-outline-success mt-2">Nueva habitación</a>
+            </div>
+        </div>
+    </div>
+    <!-- Acá podés agregar más tarjetas para empleados, reservas, etc. -->
+</div>
+{% endblock %}

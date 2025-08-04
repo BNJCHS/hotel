@@ -1,0 +1,15 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<h2>Gestión de habitaciones</h2>
+<table>
+  <tr><th>N°</th><th>Tipo</th><th>Precio</th><th>Acciones</th></tr>
+  {% for h in habitaciones %}
+  <tr>
+    <td>{{ h.numero }}</td>
+    <td>{{ h.tipo }}</td>
+    <td>${{ h.precio }}</td>
+    <td><a href="{% url 'detalle_habitacion_admin' h.id %}">Ver</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

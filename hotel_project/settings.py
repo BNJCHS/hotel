@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'administracion',
     'usuarios',
     'habitaciones',
+    'reservas',
 
 
 ]
@@ -58,9 +59,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-LOGIN_URL = '/login/'
+LOGIN_URL = '/usuarios/login/'
+LOGOUT_REDIRECT_URL = '/usuarios/login/'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/login/'
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 

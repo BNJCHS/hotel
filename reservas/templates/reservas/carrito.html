@@ -1,0 +1,11 @@
+<h2>Mi carrito</h2>
+
+{% for r in reservas %}
+  <div>
+    <p>Habitación: {{ r.habitacion }}</p>
+    <p>Servicio: {{ r.servicio|default:"No seleccionado" }}</p>
+    <a href="{% url 'seleccionar_servicio' r.id %}">Seleccionar servicio</a>
+  </div>
+{% empty %}
+  <p>No hay habitaciones en el carrito.</p>
+{% endfor %}

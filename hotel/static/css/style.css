@@ -1,190 +1,63 @@
-/* Colores base */
-:root {
-  --verde-oscuro: #2b3d38;
-  --beige: #f5f1e3;
-  --dorado: #bfa97a;
-  --blanco: #ffffff;
-  --gris: #888888;
-}
-
-/* Reset básico */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* static/css/estilo.css */
 body {
+  margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background-color: var(--beige);
-  color: var(--verde-oscuro);
-  line-height: 1.6;
+  background-color: #1f4030; /* Verde oscuro */
+  color: #fff;
 }
 
-/* Contenedor */
-.container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 60px 0;
-}
-
-/* Hero */
 .hero {
-  background-color: var(--verde-oscuro);
-  color: var(--blanco);
-  padding: 100px 0;
+  background: url('../img/fondo-hero.jpg') center/cover no-repeat;
   text-align: center;
-}
-
-.hero-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 120px 20px;
 }
 
 .hero h1 {
-  font-size: 3.5rem;
-  margin: 10px 0;
+  font-size: 48px;
+  margin-bottom: 10px;
 }
 
 .hero p {
-  font-size: 1.2rem;
-}
-
-.hero .subheading {
-  text-transform: uppercase;
-  font-weight: bold;
-  color: var(--dorado);
-  letter-spacing: 2px;
-}
-
-.hero-logo {
-  margin-top: 30px;
-  max-width: 200px;
-}
-
-/* Botón */
-.btn {
-  background-color: var(--dorado);
-  color: var(--verde-oscuro);
-  padding: 12px 30px;
-  margin-top: 20px;
-  text-decoration: none;
-  border-radius: 30px;
-  font-weight: bold;
-  transition: background 0.3s;
-}
-
-.btn:hover {
-  background-color: #a68e63;
-}
-
-/* Secciones generales */
-section {
-  padding: 60px 0;
-}
-
-section h2 {
-  text-align: center;
-  font-size: 2.5rem;
+  font-size: 20px;
   margin-bottom: 30px;
-  color: var(--verde-oscuro);
 }
 
-/* Bienvenida */
-.bienvenida .intro {
+.hero .btn {
+  background-color: #fff;
+  color: #1f4030;
+  padding: 12px 24px;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+.bienvenida {
+  background-color: #2d6a4f;
+  padding: 60px 20px;
   text-align: center;
-  max-width: 700px;
-  margin: 0 auto 40px;
-  font-size: 1.1rem;
-  color: var(--gris);
 }
 
 .premios {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 30px;
+  gap: 40px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.premio {
   text-align: center;
+  max-width: 200px;
 }
 
 .premio img {
-  width: 80px;
+  width: 150px;
   height: auto;
-  margin-bottom: 10px;
 }
 
-/* Habitaciones */
-.habitaciones-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  text-align: center;
+.premio p {
+  font-size: 16px;
+  margin-top: 10px;
 }
 
-.habitacion img {
-  width: 100%;
-  border-radius: 15px;
-}
-
-.habitacion h4 {
-  margin-top: 15px;
-  font-size: 1.2rem;
-  color: var(--verde-oscuro);
-}
-
-/* Paquetes */
-.paquetes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  text-align: center;
-}
-
-.paquete img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 10px;
-}
-
-.paquete h4 {
-  margin-top: 15px;
-  font-size: 1.3rem;
-}
-
-/* Reseñas */
-.resenas-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  justify-content: center;
-  text-align: center;
-}
-
-.resena {
-  background-color: var(--blanco);
-  padding: 25px;
-  border-radius: 15px;
-  max-width: 300px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.resena img {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  margin-bottom: 10px;
-}
-
-/* Responsivo */
-@media (max-width: 768px) {
-  .hero h1 {
-    font-size: 2.5rem;
-  }
-
-  .hero-inner {
-    text-align: center;
-  }
-}
+/* Agrega estilos similares para habitaciones, paquetes, etc. */

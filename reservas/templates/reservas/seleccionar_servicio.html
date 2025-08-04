@@ -1,0 +1,12 @@
+<h2>Seleccionar servicio para la habitación</h2>
+
+<form method="post">
+  {% csrf_token %}
+  <label for="servicio">Tipo de servicio:</label>
+  <select name="servicio" id="servicio" required>
+    <option value="medio">Medio</option>
+    <option value="completo">Completo</option>
+    <option value="personalizado">Personalizado</option>
+  </select>
+  <button type="submit">Guardar</button>
+</form>

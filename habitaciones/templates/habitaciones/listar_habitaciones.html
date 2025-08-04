@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Habitaciones disponibles</h2>
+<ul>
+  {% for h in habitaciones %}
+    <li>
+      <a href="{% url 'detalle_habitacion_publica' h.id %}">
+        Habitación {{ h.numero }} - {{ h.tipo }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

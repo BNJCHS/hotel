@@ -1,3 +1,4 @@
 Django>=5.0
 mysqlclient>=2.2
 python-dotenv
+Pillow

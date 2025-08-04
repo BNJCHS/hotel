@@ -1,0 +1,10 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<h2>{{ accion }} habitación</h2>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">{{ accion }}</button>
+  <a href="{% url 'lista_habitaciones_admin' %}">Cancelar</a>
+</form>
+{% endblock %}

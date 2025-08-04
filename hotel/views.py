@@ -6,6 +6,7 @@ from django.db.models import Q
 from datetime import datetime
 def index(request):
     return render(request, 'index.html')
+
 def buscar_habitaciones(request):
     habitaciones_disponibles = None
     fecha_entrada = request.GET.get('fecha_entrada')
