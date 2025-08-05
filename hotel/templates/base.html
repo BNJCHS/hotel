@@ -1,14 +1,37 @@
-
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Hotel Verde</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <meta charset="UTF-8">
+    <title>{% block title %}Hotel Verde{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-  {% block content %} {% endblock %}
+    <header class="navbar">
+        <div class="logo">
+            <a href="{% url 'index' %}">
+                <img src="{% static 'img/logo.png' %}" alt="Hotel Verde">
+            </a>
+        </div>
+        <nav class="nav-buttons">
+            {% if user.is_authenticated %}
+                <span class="user-name">Hola, {{ user.username }}</span>
+                <a href="{% url 'mis_reservas' %}" class="btn">Mis reservas</a>
+                <a href="{% url 'logout' %}" class="btn">Cerrar sesión</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn">Iniciar sesión</a>
+                <a href="{% url 'registro' %}" class="btn">Registrarse</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 Hotel Verde. Todos los derechos reservados.</p>
+    </footer>
 </body>
 </html>
-

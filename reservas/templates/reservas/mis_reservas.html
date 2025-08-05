@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Mis reservas</h2>
+
+{% if reservas %}
+  <ul>
+    {% for reserva in reservas %}
+  <li>
+    <strong>Habitación:</strong> {{ reserva.habitacion.numero }} - {{ reserva.habitacion.tipo }}<br>
+    <strong>Servicio:</strong> {{ reserva.get_servicio_display }}<br>
+    <strong>Fecha:</strong> {{ reserva.fecha_reserva|date:"d/m/Y H:i" }}<br>
+
+    <form action="{% url 'cancelar_reserva' reserva.id %}" method="post" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" onclick="return confirm('¿Seguro que querés cancelar esta reserva?');">Cancelar</button>
+    </form>
+  </li>
+{% endfor %}
+
+{% else %}
+  <p>No tenés reservas registradas.</p>
+{% endif %}
+
+<a href="{% url 'lista_habitaciones' %}">Volver a habitaciones</a>
+{% endblock %}

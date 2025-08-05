@@ -1,20 +1,133 @@
-{% extends 'base_admin.html' %}
+{% extends "base_admin.html" %}
+
+{% block title %}Panel de Administración - Hotel{% endblock %}
 
 {% block content %}
-<h1>Bienvenido al panel de administración</h1>
-<hr>
-
-<div class="row">
-    <div class="col-md-4">
-        <div class="card border-success">
-            <div class="card-body">
-                <h5 class="card-title">Habitaciones</h5>
-                <p class="card-text">Gestioná las habitaciones del hotel.</p>
-                <a href="{% url 'lista_habitaciones_admin' %}" class="btn btn-success">Ver habitaciones</a>
-                <a href="{% url 'crear_habitacion' %}" class="btn btn-outline-success mt-2">Nueva habitación</a>
+<div class="container">
+    <aside class="sidebar">
+        <h2>HotelAdmin</h2>
+        <nav>
+            <ul>
+                <li onclick="showSection('dashboard')">Dashboard</li>
+                <li onclick="showSection('reservas')">Reservas</li>
+                <li onclick="showSection('clientes')">Clientes</li>
+                <li onclick="showSection('habitaciones')">Habitaciones</li>
+                <li onclick="showSection('logout')">Cerrar sesión</li>
+            </ul>
+        </nav>
+    </aside>
+    
+    <main class="content">
+        {% comment "Dashboard Section" %}
+        <section id="dashboard" class="section active">
+            <h1>Dashboard</h1>
+            <div class="dashboard-cards">
+                <div class="card"><h3>Reservas</h3><p>128</p></div>
+                <div class="card"><h3>Clientes</h3><p>94</p></div>
+                <div class="card"><h3>Habitaciones</h3><p>50 / 60 ocupadas</p></div>
+                <div class="card"><h3>Ingresos</h3><p>$12,450</p></div>
             </div>
-        </div>
-    </div>
-    <!-- Acá podés agregar más tarjetas para empleados, reservas, etc. -->
-</div>
+            <div class="dashboard-graph">
+                <h3>Tasa de Ocupación Semanal</h3>
+                <div class="bar-graph">
+                    <div class="bar" style="height: 80%">Lun</div>
+                    <div class="bar" style="height: 65%">Mar</div>
+                    <div class="bar" style="height: 90%">Mié</div>
+                    <div class="bar" style="height: 70%">Jue</div>
+                    <div class="bar" style="height: 50%">Vie</div>
+                    <div class="bar" style="height: 60%">Sáb</div>
+                    <div class="bar" style="height: 75%">Dom</div>
+                </div>
+            </div>
+        </section>
+{% endcomment %}
+        {% comment "Reservas Section" %}
+        <section id="reservas" class="section">
+            <h1>Gestión de Reservas</h1>
+            <form class="reserva-form" onsubmit="agregarReserva(event)">
+                <h2>Agregar nueva reserva</h2>
+                <label>Nombre del Cliente: <input type="text" id="nombre" required /></label>
+                <label>Habitación: <input type="text" id="habitacion" required /></label>
+                <label>Fecha Entrada: <input type="date" id="entrada" required /></label>
+                <label>Fecha Salida: <input type="date" id="salida" required /></label>
+                <label>Estado:
+                    <select id="estado">
+                        <option>Confirmada</option>
+                        <option>Pendiente</option>
+                        <option>Cancelada</option>
+                    </select>
+                </label>
+                <button type="submit">Agregar</button>
+            </form>
+            <h2>Reservas existentes</h2>
+            <table class="tabla-reservas">
+                <thead>
+                    <tr><th>Cliente</th><th>Habitación</th><th>Entrada</th><th>Salida</th><th>Estado</th></tr>
+                </thead>
+                <tbody id="tabla-reservas">
+                    <!-- Se inserta con JS -->
+                </tbody>
+            </table>
+        </section>
+{% endcomment %}
+        {% comment "Clientes Section" %}
+        <section id="clientes" class="section">
+            <h1>Gestión de Clientes</h1>
+            <form class="cliente-form" onsubmit="agregarCliente(event)">
+                <h2>Agregar nuevo cliente</h2>
+                <label>Nombre completo: <input type="text" id="cliente-nombre" required /></label>
+                <label>Correo electrónico: <input type="email" id="cliente-email" required /></label>
+                <label>Teléfono: <input type="tel" id="cliente-telefono" required /></label>
+                <label>Documento de identidad: <input type="text" id="cliente-documento" required /></label>
+                <button type="submit">Agregar</button>
+            </form>
+            <h2>Clientes registrados</h2>
+            <table class="tabla-clientes">
+                <thead>
+                    <tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Documento</th></tr>
+                </thead>
+                <tbody id="tabla-clientes">
+                    <!-- Se inserta con JS -->
+                </tbody>
+            </table>
+        </section>
+{% endcomment %}
+        {% comment "Habitaciones Section" %}
+        <section id="habitaciones" class="section">
+            <h1>Gestión de Habitaciones</h1>
+            <form class="habitacion-form" onsubmit="agregarHabitacion(event)">
+                <h2>Agregar nueva habitación</h2>
+                <label>Número: <input type="number" id="habitacion-numero" required /></label>
+                <label>Tipo:
+                    <select id="habitacion-tipo" required>
+                        <option>Individual</option>
+                        <option>Doble</option>
+                        <option>Suite</option>
+                    </select>
+                </label>
+                <label>Precio por noche ($): <input type="number" id="habitacion-precio" required /></label>
+                <label>Estado:
+                    <select id="habitacion-estado" required>
+                        <option>Disponible</option>
+                        <option>Ocupada</option>
+                        <option>Mantenimiento</option>
+                    </select>
+                </label>
+                <button type="submit">Agregar</button>
+            </form>
+            <h2>Habitaciones registradas</h2>
+            <table class="tabla-habitaciones">
+                <thead>
+                    <tr><th>Número</th><th>Tipo</th><th>Precio</th><th>Estado</th></tr>
+                </thead>
+                <tbody id="tabla-habitaciones">
+                    <!-- Se inserta con JS -->
+                </tbody>
+            </table>
+        </section>
+{% endcomment %}
+        {% comment "Logout Section" %}
+        <section id
+{% endcomment %}
+
 {% endblock %}
