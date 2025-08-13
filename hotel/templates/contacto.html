@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contacto - Hotel Elegante{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero">
+    <div class="hero-background">
+        <img src="/placeholder.svg?height=400&width=1200" alt="Contacto Hotel Elegante" class="hero-image">
+        <div class="hero-overlay"></div>
+    </div>
+    <div class="container">
+        <div class="page-hero-content">
+            <h1>Contacto</h1>
+            <p>Estamos aquí para ayudarte. Ponte en contacto con nosotros</p>
+        </div>
+    </div>
+</section>
+
+<!-- Información de Contacto -->
+<section class="contact-info-section">
+    <div class="container">
+        <div class="contact-info-grid">
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <h3>Dirección</h3>
+                <p>Av. Principal 123<br>Centro de la Ciudad<br>CP 12345</p>
+            </div>
+            
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <h3>Teléfono</h3>
+                <p>+1 (555) 123-4567<br>+1 (555) 123-4568</p>
+            </div>
+            
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3>Email</h3>
+                <p>info@hotelelegante.com<br>reservas@hotelelegante.com</p>
+            </div>
+            
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3>Horarios</h3>
+                <p>Recepción: 24/7<br>Restaurante: 6:00 - 23:00<br>Spa: 8:00 - 22:00</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formulario de Contacto -->
+<section class="contact-form-section">
+    <div class="container">
+        <div class="contact-content">
+            <div class="contact-form-container">
+                <h2>Envíanos un Mensaje</h2>
+                <p>Completa el formulario y nos pondremos en contacto contigo lo antes posible</p>
+                
+                <form class="contact-form" method="post" action="{% url 'contact' %}" id="contact-form">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first-name">Nombre</label>
+                            <input type="text" id="first-name" name="first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="last-name">Apellido</label>
+                            <input type="text" id="last-name" name="last_name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Teléfono</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject">Asunto</label>
+                        <select id="subject" name="subject" required>
+                            <option value="">Seleccionar asunto</option>
+                            <option value="reserva">Consulta de Reserva</option>
+                            <option value="evento">Eventos y Celebraciones</option>
+                            <option value="servicios">Información de Servicios</option>
+                            <option value="quejas">Quejas y Sugerencias</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Mensaje</label>
+                        <textarea id="message" name="message" rows="6" required placeholder="Escribe tu mensaje aquí..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-large">Enviar Mensaje</button>
+                </form>
+            </div>
+            
+            <div class="contact-map">
+                <h3>Nuestra Ubicación</h3>
+                <div class="map-placeholder">
+                    <img src="/placeholder.svg?height=300&width=400" alt="Ubicación Hotel Elegante">
+                    <div class="map-overlay">
+                        <p><i class="fas fa-map-marker-alt"></i> Av. Principal 123, Centro de la Ciudad</p>
+                    </div>
+                </div>
+                
+                <div class="location-details">
+                    <h4>Cómo Llegar</h4>
+                    <ul>
+                        <li><strong>En Auto:</strong> Estacionamiento gratuito disponible</li>
+                        <li><strong>Transporte Público:</strong> Estación de metro a 2 cuadras</li>
+                        <li><strong>Aeropuerto:</strong> 30 minutos en taxi</li>
+                        <li><strong>Tren:</strong> Estación central a 10 minutos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

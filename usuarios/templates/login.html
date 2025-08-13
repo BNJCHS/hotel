@@ -1,23 +1,117 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Iniciar Sesión{% endblock %}
+{% block title %}Iniciar Sesión - Hotel Elegante{% endblock %}
 
 {% block content %}
-<div class="login-container">
-    <h2>Iniciar Sesión</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Entrar</button>
-    </form>
+<section class="login-hero">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-hotel"></i>
+                    <h2>Hotel Elegante</h2>
+                </div>
+                <h3>Iniciar Sesión</h3>
+                <p>Accede a tu cuenta para gestionar tus reservas</p>
+            </div>
+            
+            <form class="login-form" method="post">
+                {% csrf_token %}
+                
+                <!-- Usando campos del formulario Django -->
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">
+                            {% if field.name == 'username' %}
+                                <i class="fas fa-user"></i>
+                                Usuario o Email
+                            {% elif field.name == 'password' %}
+                                <i class="fas fa-lock"></i>
+                                Contraseña
+                            {% else %}
+                                {{ field.label }}
+                            {% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.name == 'password' %}
+                            <span class="password-toggle" onclick="togglePassword()">
+                                <i class="fas fa-eye" id="password-icon"></i>
+                            </span>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="field-errors">
+                                {% for error in field.errors %}
+                                    <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                
+                <!-- Agregando manejo de errores generales -->
+                {% if form.non_field_errors %}
+                    <div class="form-errors">
+                        {% for error in form.non_field_errors %}
+                            <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" name="remember_me">
+                        <span class="checkmark"></span>
+                        Recordarme
+                    </label>
+                    <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Iniciar Sesión
+                </button>
+                
+                <div class="login-divider">
+                    <span>o</span>
+                </div>
+                
+                <div class="social-login">
+                    <button type="button" class="social-btn google-btn">
+                        <i class="fab fa-google"></i>
+                        Continuar con Google
+                    </button>
+                    <button type="button" class="social-btn facebook-btn">
+                        <i class="fab fa-facebook-f"></i>
+                        Continuar con Facebook
+                    </button>
+                </div>
+                
+                <div class="login-footer">
+                    <!-- Enlace dinámico a registro -->
+                    <p>¿No tienes una cuenta? <a href="{% url 'register' %}" class="register-link">Regístrate aquí</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
 
-    {% if form.errors %}
-        <p style="color:red;">Usuario o contraseña incorrectos.</p>
-    {% endif %}
-
-    <p>¿No tenés cuenta?</p>
-    <a href="{% url 'register' %}">
-        <button type="button">Registrarse</button>
-    </a>
-</div>
+{% block extra_js %}
+<script>
+function togglePassword() {
+    const passwordInput = document.querySelector('input[name="password"]');
+    const passwordIcon = document.getElementById('password-icon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        passwordIcon.classList.remove('fa-eye');
+        passwordIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        passwordIcon.classList.remove('fa-eye-slash');
+        passwordIcon.classList.add('fa-eye');
+    }
+}
+</script>
 {% endblock %}

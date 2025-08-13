@@ -1,78 +1,175 @@
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
+from datetime import datetime, timedelta
 
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Habitacion, Reserva, Cliente
-from .forms import ReservaForm
-from django.db.models import Q
-from datetime import datetime
 def index(request):
     return render(request, 'index.html')
 
-def buscar_habitaciones(request):
-    habitaciones_disponibles = None
-    fecha_entrada = request.GET.get('fecha_entrada')
-    fecha_salida = request.GET.get('fecha_salida')
-
-    if fecha_entrada and fecha_salida:
-        try:
-            entrada = datetime.strptime(fecha_entrada, "%Y-%m-%d").date()
-            salida = datetime.strptime(fecha_salida, "%Y-%m-%d").date()
-            # Habitaciones reservadas en esas fechas
-            reservas = Reserva.objects.filter(
-                Q(fecha_entrada__lt=salida) & Q(fecha_salida__gt=entrada)
-            )
-            habitaciones_ocupadas_ids = reservas.values_list('habitacion_id', flat=True)
-            habitaciones_disponibles = Habitacion.objects.exclude(id__in=habitaciones_ocupadas_ids)
-        except ValueError:
-            habitaciones_disponibles = Habitacion.objects.none()
+def about(request):
+    """
+    Vista de la página Sobre Nosotros
+    """
     context = {
-        'habitaciones_disponibles': habitaciones_disponibles,
-        'fecha_entrada': fecha_entrada,
-        'fecha_salida': fecha_salida
+        'page_title': 'Sobre Nosotros - Hotel Elegante',
+        'meta_description': 'Conoce la historia, valores y equipo detrás de Hotel Elegante. Más de 35 años de experiencia en hospitalidad de lujo.',
     }
-    return render(request, 'hotel/index.html', context)
+    return render(request, 'about.html', context)
 
-
-def reservar(request, habitacion_id):
-    habitacion = get_object_or_404(Habitacion, id=habitacion_id)
-    fecha_entrada = request.GET.get('entrada')
-    fecha_salida = request.GET.get('salida')
-
+def contact(request):
+    """
+    Vista de la página de Contacto
+    """
     if request.method == 'POST':
-        form = ReservaForm(request.POST)
-        if form.is_valid():
-            # Validar que la habitación esté disponible
-            entrada = form.cleaned_data['fecha_entrada']
-            salida = form.cleaned_data['fecha_salida']
-            # Chequear que no se cruce con otras reservas
-            conflictivas = Reserva.objects.filter(
-                habitacion=habitacion,
-                fecha_entrada__lt=salida,
-                fecha_salida__gt=entrada
-            )
-            if conflictivas.exists():
-                form.add_error(None, "La habitación no está disponible en esas fechas.")
-            else:
-                # Crear o buscar cliente
-                cliente, created = Cliente.objects.get_or_create(
-                    email=form.cleaned_data['email'],
-                    defaults={
-                        'nombre': form.cleaned_data['nombre'],
-                        'apellido': form.cleaned_data['apellido'],
-                        'telefono': form.cleaned_data['telefono'],
-                    }
-                )
-                # Crear reserva
-                reserva = Reserva.objects.create(
-                    habitacion=habitacion,
-                    cliente=cliente,
-                    fecha_entrada=entrada,
-                    fecha_salida=salida
-                )
-                return render(request, 'hotel/confirmacion.html', {'reserva': reserva})
-    else:
-        initial = {}
-        if fecha_entrada and fecha_salida:
-            initial = {'fecha_entrada': fecha_entrada, 'fecha_salida': fecha_salida}
-        form = ReservaForm(initial=initial)
+        # Procesar formulario de contacto
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        subject = request.POST.get('subject', '').strip()
+        message = request.POST.get('message', '').strip()
+        
+        # Validaciones básicas
+        if not first_name or not last_name or not email or not subject or not message:
+            context = {
+                'error': 'Por favor, completa todos los campos requeridos',
+                'form_data': request.POST
+            }
+            return render(request, 'contacto.html', context)
+        
+        # Aquí normalmente guardarías en la base de datos y/o enviarías un email
+        # Por ahora solo simulamos el procesamiento
+        
+        context = {
+            'success': 'Mensaje enviado correctamente. Te contactaremos pronto.',
+            'page_title': 'Contacto - Hotel Elegante',
+            'meta_description': 'Ponte en contacto con Hotel Elegante. Estamos aquí para ayudarte con reservas, consultas y cualquier información que necesites.',
+        }
+        return render(request, 'contacto.html', context)
+    
+    context = {
+        'page_title': 'Contacto - Hotel Elegante',
+        'meta_description': 'Ponte en contacto con Hotel Elegante. Estamos aquí para ayudarte con reservas, consultas y cualquier información que necesites.',
+    }
+    return render(request, 'contacto.html', context)
 
-    return render(request, 'hotel/reservar.html', {'form': form, 'habitacion': habitacion})
+@require_http_methods(["POST"])
+def check_availability(request):
+    """
+    API endpoint para verificar disponibilidad de habitaciones
+    """
+    try:
+        data = json.loads(request.body)
+        checkin = data.get('checkin')
+        checkout = data.get('checkout')
+        guests = data.get('guests', 1)
+        
+        # Validar fechas
+        checkin_date = datetime.strptime(checkin, '%Y-%m-%d').date()
+        checkout_date = datetime.strptime(checkout, '%Y-%m-%d').date()
+        today = datetime.now().date()
+        
+        if checkin_date < today:
+            return JsonResponse({
+                'success': False,
+                'message': 'La fecha de entrada no puede ser anterior a hoy'
+            }, status=400)
+        
+        if checkout_date <= checkin_date:
+            return JsonResponse({
+                'success': False,
+                'message': 'La fecha de salida debe ser posterior a la fecha de entrada'
+            }, status=400)
+        
+        # Simular búsqueda de disponibilidad
+        # En una aplicación real, aquí consultarías la base de datos
+        available_rooms = [
+            {
+                'id': 1,
+                'name': 'Habitación Deluxe',
+                'price': 299,
+                'available': True,
+                'image': '/static/images/room-deluxe.jpg'
+            },
+            {
+                'id': 2,
+                'name': 'Suite Premium',
+                'price': 499,
+                'available': True,
+                'image': '/static/images/room-suite.jpg'
+            },
+            {
+                'id': 3,
+                'name': 'Suite Presidencial',
+                'price': 899,
+                'available': True,
+                'image': '/static/images/room-presidential.jpg'
+            }
+        ]
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Habitaciones disponibles encontradas',
+            'rooms': available_rooms,
+            'checkin': checkin,
+            'checkout': checkout,
+            'guests': guests,
+            'nights': (checkout_date - checkin_date).days
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Datos inválidos'
+        }, status=400)
+    except ValueError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Formato de fecha inválido'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'Error interno del servidor'
+        }, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def contact_form(request):
+    """
+    API endpoint para manejar el formulario de contacto
+    """
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        email = data.get('email', '').strip()
+        phone = data.get('phone', '').strip()
+        message = data.get('message', '').strip()
+        
+        # Validaciones básicas
+        if not name or not email or not message:
+            return JsonResponse({
+                'success': False,
+                'message': 'Por favor, completa todos los campos requeridos'
+            }, status=400)
+        
+        # Aquí normalmente guardarías en la base de datos y/o enviarías un email
+        # Por ahora solo simulamos el procesamiento
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Mensaje enviado correctamente. Te contactaremos pronto.'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Datos inválidos'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'Error interno del servidor'
+        }, status=500)

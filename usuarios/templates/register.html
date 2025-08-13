@@ -1,10 +1,34 @@
 {% extends 'base.html' %}
 
+{% block title %}Registrarse - Hotel Elegante{% endblock %}
+
 {% block content %}
-<h2>Registrarse</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Registrarse</button>
-</form>
+<div class="auth-page">
+    <div class="register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <div class="register-logo">
+                    <i class="fas fa-hotel"></i>
+                    <h2>Hotel Elegante</h2>
+                </div>
+                <h3>Registrarse</h3>
+                <!-- Eliminé el párrafo de descripción -->
+            </div>
+
+            <form method="post" class="register-form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                
+                <button type="submit" class="register-btn">
+                    <i class="fas fa-user-plus"></i>
+                    Registrarse
+                </button>
+            </form>
+
+            <div class="register-footer">
+                <p>¿Ya tienes cuenta? <a href="{% url 'login' %}" class="login-link">Iniciar Sesión</a></p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

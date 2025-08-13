@@ -1,37 +1,113 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Hotel Verde{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hotel Elegante - Experiencia Única{% endblock %}</title>
+    <meta name="description" content="{% block description %}Hotel Elegante ofrece una experiencia única con servicios de lujo y comodidades excepcionales{% endblock %}">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% load static %}{% static 'css/style.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <header class="navbar">
-        <div class="logo">
-            <a href="{% url 'index' %}">
-                <img src="{% static 'img/logo.png' %}" alt="Hotel Verde">
-            </a>
-        </div>
-        <nav class="nav-buttons">
-            {% if user.is_authenticated %}
-                <span class="user-name">Hola, {{ user.username }}</span>
-                <a href="{% url 'mis_reservas' %}" class="btn">Mis reservas</a>
-                <a href="{% url 'logout' %}" class="btn">Cerrar sesión</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="btn">Iniciar sesión</a>
-                <a href="{% url 'registro' %}" class="btn">Registrarse</a>
-            {% endif %}
+    <!-- Header -->
+    <header class="header" id="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <a href="{% url 'index' %}">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotel Elegante</span>
+                    </a>
+                </div>
+                
+                <ul class="nav-menu" id="nav-menu">
+                    <li class="nav-item">
+                        <a href="{% url 'index' %}" class="nav-link">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'about' %}" class="nav-link">Sobre Nosotros</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'contact' %}" class="nav-link">Contacto</a>
+                    </li>
+                    <!-- Agregando botón de login en la navegación -->
+                    <li class="nav-item">
+                        <a href="{% url 'login' %}" class="nav-link">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Iniciar Sesión
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'lista_habitaciones' %}" class="nav-link btn-reservar">Reservar</a>
+                    </li>
+                </ul>
+                
+                <div class="nav-toggle" id="nav-toggle">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
         </nav>
     </header>
 
+    <!-- Main Content -->
     <main>
-        {% block content %}{% endblock %}
+        {% block content %}
+        {% endblock %}
     </main>
 
+    <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2025 Hotel Verde. Todos los derechos reservados.</p>
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Hotel Elegante</h3>
+                    <p>Experimenta el lujo y la comodidad en nuestro hotel de clase mundial.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="{% url 'index' %}">Inicio</a></li>
+                        <li><a href="{% url 'about' %}">Sobre Nosotros</a></li>
+                        <li><a href="{% url 'contact' %}">Contacto</a></li>
+                        <li><a href="#">Política de Privacidad</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <div class="contact-info">
+                        <p><i class="fas fa-map-marker-alt"></i> Av. Principal 123, Ciudad</p>
+                        <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                        <p><i class="fas fa-envelope"></i> info@hotelelegante.com</p>
+                    </div>
+                </div>
+                
+                <!-- Eliminada sección de newsletter -->
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Hotel Elegante. Todos los derechos reservados.</p>
+            </div>
+        </div>
     </footer>
+
+    <!-- JavaScript -->
+    <script src="{% load static %}{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

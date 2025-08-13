@@ -1,29 +1,168 @@
-{{% extends "base.html" %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Habitaciones - Hotel Paradise{% endblock %}
 
 {% block content %}
-<h2 style="text-align:center; margin-bottom: 20px;">Habitaciones disponibles</h2>
-
-<div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-  {% for h in habitaciones %}
-    <div style="border: 1px solid #ccc; border-radius: 8px; padding: 20px; width: 250px; box-shadow: 2px 2px 8px rgba(0,0,0,0.1); text-align: center;">
-      
-      {% if h.imagen %}
-        <img src="{{ h.imagen.url }}" alt="Habitación {{ h.numero }}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 10px;">
-      {% else %}
-        <div style="width: 100%; height: 150px; background-color: #eee; border-radius: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
-          <span style="color: #888;">Sin imagen</span>
+<!-- Mejorado el header con mejor estructura y elementos visuales -->
+<section class="rooms-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <div class="container">
+            <div class="hero-text">
+                <span class="hero-subtitle">Experiencia de Lujo</span>
+                <h1>Nuestras Habitaciones</h1>
+                <p>Descubre el lujo y la comodidad en cada una de nuestras elegantes habitaciones diseñadas para ofrecerte una experiencia inolvidable</p>
+            </div>
         </div>
-      {% endif %}
-
-      <h4>Habitación {{ h.numero }}</h4>
-      <p><strong>Tipo:</strong> {{ h.tipo }}</p>
-      
-      <!-- Botones -->
-      <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-        <a href="{% url 'agregar_al_carrito' h.id %}" style="padding: 8px 12px; background-color: #006400; color: white; border-radius: 5px; text-decoration: none;">agregar al carrito</a>
-        <a href="{% url 'detalle_habitacion_publica' h.id %}" style="padding: 8px 12px; background-color: #808000; color: white; border-radius: 5px; text-decoration: none;">Detalles</a>
-      </div>
     </div>
-  {% endfor %}
-</div>
+</section>
+
+<!-- Rediseñado el filtro con mejor UX y elementos visuales -->
+<section class="filter-section">
+    <div class="container">
+        <div class="filter-card">
+            <div class="filter-header">
+                <h3><i class="fas fa-filter"></i> Encuentra tu Habitación Perfecta</h3>
+                <p>Utiliza los filtros para encontrar la habitación que mejor se adapte a tus necesidades</p>
+            </div>
+            <form class="filter-form" id="filter-form">
+                <div class="filter-grid">
+                    <div class="filter-item">
+                        <label for="tipo"><i class="fas fa-bed"></i> Tipo de Habitación</label>
+                        <select id="tipo" name="tipo">
+                            <option value="">Todos los tipos</option>
+                            <option value="individual">Individual</option>
+                            <option value="doble">Doble</option>
+                            <option value="suite">Suite</option>
+                            <option value="presidencial">Presidencial</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="precio-min"><i class="fas fa-dollar-sign"></i> Precio Mínimo</label>
+                        <input type="number" id="precio-min" name="precio-min" placeholder="$0">
+                    </div>
+                    <div class="filter-item">
+                        <label for="precio-max"><i class="fas fa-dollar-sign"></i> Precio Máximo</label>
+                        <input type="number" id="precio-max" name="precio-max" placeholder="$1000">
+                    </div>
+                    <div class="filter-item">
+                        <label for="capacidad"><i class="fas fa-users"></i> Capacidad</label>
+                        <select id="capacidad" name="capacidad">
+                            <option value="">Cualquier capacidad</option>
+                            <option value="1">1 persona</option>
+                            <option value="2">2 personas</option>
+                            <option value="3">3 personas</option>
+                            <option value="4">4+ personas</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn-filter btn-primary">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                        <button type="button" class="btn-filter btn-secondary" id="clear-filters">
+                            <i class="fas fa-times"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Mejorado el grid de habitaciones con mejor diseño de cards -->
+<section class="rooms-showcase">
+    <div class="container">
+        <div class="section-header">
+            <h2>Habitaciones Disponibles</h2>
+            <div class="section-divider"></div>
+        </div>
+        
+        <div class="rooms-grid" id="rooms-grid">
+            {% for h in habitaciones %}
+            <div class="room-card-enhanced" data-tipo="{{ h.tipo|lower }}" data-precio="{{ h.precio }}" data-capacidad="{{ h.capacidad }}">
+                <div class="room-image-container">
+                    {% if h.imagen %}
+                        <img src="{{ h.imagen.url }}" alt="Habitación {{ h.numero }}" class="room-img">
+                    {% else %}
+                        <img src="/placeholder.svg?height=280&width=400" alt="Habitación {{ h.numero }}" class="room-img">
+                    {% endif %}
+                    <div class="room-badge">
+                        <span class="room-number">{{ h.numero }}</span>
+                    </div>
+                    <div class="room-overlay-new">
+                        <div class="overlay-content">
+                            <a href="{% url 'detalle_habitacion_publica' h.id %}" class="btn-overlay">
+                                <i class="fas fa-eye"></i> Ver Detalles
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="room-details">
+                    <div class="room-title-section">
+                        <div class="room-type-badge">{{ h.tipo|title }}</div>
+                        <h3 class="room-title">Habitación {{ h.numero }}</h3>
+                        <div class="room-capacity-info">
+                            <i class="fas fa-users"></i>
+                            <span>{{ h.capacidad }} {% if h.capacidad == 1 %}huésped{% else %}huéspedes{% endif %}</span>
+                        </div>
+                    </div>
+                    
+                    <p class="room-description">{{ h.descripcion|default:"Habitación elegante con todas las comodidades modernas para una estancia perfecta en nuestro hotel de lujo." }}</p>
+                    
+                    <div class="room-amenities-grid">
+                        <div class="amenity-item">
+                            <i class="fas fa-wifi"></i>
+                            <span>WiFi Gratis</span>
+                        </div>
+                        <div class="amenity-item">
+                            <i class="fas fa-tv"></i>
+                            <span>Smart TV</span>
+                        </div>
+                        <div class="amenity-item">
+                            <i class="fas fa-snowflake"></i>
+                            <span>Aire A/C</span>
+                        </div>
+                        <div class="amenity-item">
+                            <i class="fas fa-bath"></i>
+                            <span>Baño Privado</span>
+                        </div>
+                    </div>
+                    
+                    <div class="room-footer">
+                        <div class="price-section">
+                            <span class="price-label">Desde</span>
+                            <span class="room-price-new">${{ h.precio }}</span>
+                            <span class="price-period">/noche</span>
+                        </div>
+                        
+                        <div class="room-actions-new">
+                            <a href="{% url 'agregar_al_carrito' h.id %}" class="btn-action btn-primary">
+                                <i class="fas fa-shopping-cart"></i>
+                                Reservar
+                            </a>
+                            <a href="{% url 'detalle_habitacion_publica' h.id %}" class="btn-action btn-outline">
+                                <i class="fas fa-info-circle"></i>
+                                Detalles
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-rooms-found">
+                <div class="no-rooms-icon">
+                    <i class="fas fa-bed"></i>
+                </div>
+                <h3>No hay habitaciones disponibles</h3>
+                <p>Por favor, intenta con otros filtros o vuelve más tarde.</p>
+                <button class="btn-primary" id="reset-search">
+                    <i class="fas fa-refresh"></i> Reiniciar Búsqueda
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
 {% endblock %}
