@@ -15,15 +15,15 @@ COPY requirements.txt /code/
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Copiar todo el código al contenedor
+# Copiar todo el código
 COPY . /code/
 
-# Copiar el script y darle permisos
+# Copiar script y darle permisos
 COPY wait_for_db.sh /wait_for_db.sh
 RUN chmod +x /wait_for_db.sh
 
-# Punto de entrada: espera a la DB
+# Entrada: esperar a DB
 ENTRYPOINT ["/wait_for_db.sh"]
 
-# Comando por defecto: correr el servidor Django
+# Comando por defecto: ejecutar Django
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

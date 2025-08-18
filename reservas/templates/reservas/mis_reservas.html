@@ -1,25 +1,237 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Mis Reservas{% endblock %}
+
 {% block content %}
-<h2>Mis reservas</h2>
+<div class="container-fluid py-5" style="background: linear-gradient(135deg, var(--beige-light) 0%, var(--beige-warm) 100%);">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="text-center">
+                    <h1 class="display-4 fw-bold text-dark mb-3">Mis Reservas</h1>
+                    <p class="lead text-muted">Gestiona y revisa todas tus reservas en Hotel Elegante</p>
+                </div>
+            </div>
+        </div>
 
-{% if reservas %}
-  <ul>
-    {% for reserva in reservas %}
-  <li>
-    <strong>Habitación:</strong> {{ reserva.habitacion.numero }} - {{ reserva.habitacion.tipo }}<br>
-    <strong>Servicio:</strong> {{ reserva.get_servicio_display }}<br>
-    <strong>Fecha:</strong> {{ reserva.fecha_reserva|date:"d/m/Y H:i" }}<br>
+        <!-- Filtros -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0" style="background: var(--white);">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Estado</label>
+                                <select class="form-select" id="filtro-estado">
+                                    <option value="">Todos los estados</option>
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="confirmada">Confirmada</option>
+                                    <option value="en_curso">En Curso</option>
+                                    <option value="completada">Completada</option>
+                                    <option value="cancelada">Cancelada</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Fecha desde</label>
+                                <input type="date" class="form-control" id="fecha-desde">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Fecha hasta</label>
+                                <input type="date" class="form-control" id="fecha-hasta">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="btn btn-primary w-100" id="aplicar-filtros">
+                                    <i class="fas fa-search me-2"></i>Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <form action="{% url 'cancelar_reserva' reserva.id %}" method="post" style="display:inline;">
-      {% csrf_token %}
-      <button type="submit" onclick="return confirm('¿Seguro que querés cancelar esta reserva?');">Cancelar</button>
-    </form>
-  </li>
-{% endfor %}
+        <!-- Lista de Reservas -->
+        <div class="row" id="reservas-container">
+            {% if reservas %}
+                {% for reserva in reservas %}
+                <div class="col-12 mb-4 reserva-item" data-estado="{{ reserva.estado }}" data-fecha="{{ reserva.fecha_entrada }}">
+                    <div class="card shadow-sm border-0 h-100 reserva-card">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <!-- Imagen de la habitación -->
+                                <div class="col-md-3">
+                                    <div class="position-relative">
+                                        {% if reserva.habitacion.imagen %}
+                                            <img src="{{ reserva.habitacion.imagen.url }}" class="img-fluid rounded" alt="Habitación {{ reserva.habitacion.numero }}">
+                                        {% else %}
+                                            <img src="/placeholder.svg?height=200&width=300" class="img-fluid rounded" alt="Habitación {{ reserva.habitacion.numero }}">
+                                        {% endif %}
+                                        <span class="badge estado-badge estado-{{ reserva.estado }} position-absolute top-0 end-0 m-2">
+                                            {{ reserva.get_estado_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Información de la reserva -->
+                                <div class="col-md-6">
+                                    <h4 class="card-title text-dark mb-3">
+                                        <i class="fas fa-bed me-2 text-primary"></i>
+                                        Habitación {{ reserva.habitacion.numero }}
+                                    </h4>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Check-in</small>
+                                            <strong class="text-dark">{{ reserva.fecha_entrada|date:"d/m/Y" }}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Check-out</small>
+                                            <strong class="text-dark">{{ reserva.fecha_salida|date:"d/m/Y" }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Huéspedes</small>
+                                            <strong class="text-dark">{{ reserva.numero_huespedes }} persona{{ reserva.numero_huespedes|pluralize:"s" }}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Noches</small>
+                                            <strong class="text-dark">{{ reserva.calcular_noches }} noche{{ reserva.calcular_noches|pluralize:"s" }}</strong>
+                                        </div>
+                                    </div>
+                                    {% if reserva.servicios_adicionales.all %}
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block mb-1">Servicios adicionales</small>
+                                        {% for servicio in reserva.servicios_adicionales.all %}
+                                            <span class="badge bg-light text-dark me-1">{{ servicio.nombre }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Precio y acciones -->
+                                <div class="col-md-3 text-end">
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block">Total</small>
+                                        <h3 class="text-primary fw-bold mb-0">${{ reserva.precio_total }}</h3>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="verDetalles({{ reserva.id }})">
+                                            <i class="fas fa-eye me-1"></i>Ver Detalles
+                                        </button>
+                                        {% if reserva.estado == 'pendiente' or reserva.estado == 'confirmada' %}
+                                        <button class="btn btn-outline-warning btn-sm" onclick="modificarReserva({{ reserva.id }})">
+                                            <i class="fas fa-edit me-1"></i>Modificar
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="cancelarReserva({{ reserva.id }})">
+                                            <i class="fas fa-times me-1"></i>Cancelar
+                                        </button>
+                                        {% endif %}
+                                        {% if reserva.estado == 'completada' %}
+                                        <button class="btn btn-outline-success btn-sm" onclick="dejarResena({{ reserva.id }})">
+                                            <i class="fas fa-star me-1"></i>Reseña
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Estado vacío -->
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-calendar-times fa-4x text-muted"></i>
+                        </div>
+                        <h3 class="text-muted mb-3">No tienes reservas aún</h3>
+                        <p class="text-muted mb-4">¡Es hora de planificar tu próxima escapada de lujo!</p>
+                        <a href="{% url 'habitaciones' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-bed me-2"></i>Explorar Habitaciones
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
 
-{% else %}
-  <p>No tenés reservas registradas.</p>
-{% endif %}
+        <!-- Paginación -->
+        {% if reservas.has_other_pages %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <nav aria-label="Paginación de reservas">
+                    <ul class="pagination justify-content-center">
+                        {% if reservas.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ reservas.previous_page_number }}">Anterior</a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in reservas.paginator.page_range %}
+                            {% if reservas.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if reservas.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ reservas.next_page_number }}">Siguiente</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
 
-<a href="{% url 'lista_habitaciones' %}">Volver a habitaciones</a>
+<!-- Modal de Detalles -->
+<div class="modal fade" id="modalDetalles" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de la Reserva</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalles-content">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Cancelación -->
+<div class="modal fade" id="modalCancelar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancelar Reserva</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas cancelar esta reserva?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Esta acción no se puede deshacer. Revisa nuestras políticas de cancelación.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Motivo de cancelación (opcional)</label>
+                    <textarea class="form-control" id="motivo-cancelacion" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mantener Reserva</button>
+                <button type="button" class="btn btn-danger" id="confirmar-cancelacion">Cancelar Reserva</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

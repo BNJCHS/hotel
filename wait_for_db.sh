@@ -1,12 +1,13 @@
 #!/bin/sh
+set -e
 
-echo "Esperando a que la base de datos esté disponible en $DB_HOST:$DB_PORT..."
+host="${DB_HOST:-db}"
+port="${DB_PORT:-3306}"
 
-# Esperar hasta que la DB esté disponible
-while ! nc -z $DB_HOST $DB_PORT; do
-  sleep 1
+echo "Esperando a la base de datos en $host:$port..."
+until nc -z "$host" "$port"; do
+  sleep 2
 done
 
-echo "Base de datos disponible. Iniciando servidor Django..."
-
+echo "Base de datos disponible, iniciando Django..."
 exec "$@"

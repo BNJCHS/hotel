@@ -1,133 +1,243 @@
 {% extends "base_admin.html" %}
 
-{% block title %}Panel de Administración - Hotel{% endblock %}
+{% block title %}Dashboard - Hotel Admin{% endblock %}
 
 {% block content %}
-<div class="container">
-    <aside class="sidebar">
-        <h2>HotelAdmin</h2>
-        <nav>
-            <ul>
-                <li onclick="showSection('dashboard')">Dashboard</li>
-                <li onclick="showSection('reservas')">Reservas</li>
-                <li onclick="showSection('clientes')">Clientes</li>
-                <li onclick="showSection('habitaciones')">Habitaciones</li>
-                <li onclick="showSection('logout')">Cerrar sesión</li>
-            </ul>
-        </nav>
-    </aside>
-    
-    <main class="content">
-        {% comment "Dashboard Section" %}
-        <section id="dashboard" class="section active">
-            <h1>Dashboard</h1>
-            <div class="dashboard-cards">
-                <div class="card"><h3>Reservas</h3><p>128</p></div>
-                <div class="card"><h3>Clientes</h3><p>94</p></div>
-                <div class="card"><h3>Habitaciones</h3><p>50 / 60 ocupadas</p></div>
-                <div class="card"><h3>Ingresos</h3><p>$12,450</p></div>
-            </div>
-            <div class="dashboard-graph">
-                <h3>Tasa de Ocupación Semanal</h3>
-                <div class="bar-graph">
-                    <div class="bar" style="height: 80%">Lun</div>
-                    <div class="bar" style="height: 65%">Mar</div>
-                    <div class="bar" style="height: 90%">Mié</div>
-                    <div class="bar" style="height: 70%">Jue</div>
-                    <div class="bar" style="height: 50%">Vie</div>
-                    <div class="bar" style="height: 60%">Sáb</div>
-                    <div class="bar" style="height: 75%">Dom</div>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="hotel-heading">Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-calendar me-1"></i>Hoy
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-calendar-week me-1"></i>Esta Semana
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Ocupación Actual</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ ocupacion_actual }}%</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-bed fa-2x"></i>
+                    </div>
                 </div>
             </div>
-        </section>
-{% endcomment %}
-        {% comment "Reservas Section" %}
-        <section id="reservas" class="section">
-            <h1>Gestión de Reservas</h1>
-            <form class="reserva-form" onsubmit="agregarReserva(event)">
-                <h2>Agregar nueva reserva</h2>
-                <label>Nombre del Cliente: <input type="text" id="nombre" required /></label>
-                <label>Habitación: <input type="text" id="habitacion" required /></label>
-                <label>Fecha Entrada: <input type="date" id="entrada" required /></label>
-                <label>Fecha Salida: <input type="date" id="salida" required /></label>
-                <label>Estado:
-                    <select id="estado">
-                        <option>Confirmada</option>
-                        <option>Pendiente</option>
-                        <option>Cancelada</option>
-                    </select>
-                </label>
-                <button type="submit">Agregar</button>
-            </form>
-            <h2>Reservas existentes</h2>
-            <table class="tabla-reservas">
-                <thead>
-                    <tr><th>Cliente</th><th>Habitación</th><th>Entrada</th><th>Salida</th><th>Estado</th></tr>
-                </thead>
-                <tbody id="tabla-reservas">
-                    <!-- Se inserta con JS -->
-                </tbody>
-            </table>
-        </section>
-{% endcomment %}
-        {% comment "Clientes Section" %}
-        <section id="clientes" class="section">
-            <h1>Gestión de Clientes</h1>
-            <form class="cliente-form" onsubmit="agregarCliente(event)">
-                <h2>Agregar nuevo cliente</h2>
-                <label>Nombre completo: <input type="text" id="cliente-nombre" required /></label>
-                <label>Correo electrónico: <input type="email" id="cliente-email" required /></label>
-                <label>Teléfono: <input type="tel" id="cliente-telefono" required /></label>
-                <label>Documento de identidad: <input type="text" id="cliente-documento" required /></label>
-                <button type="submit">Agregar</button>
-            </form>
-            <h2>Clientes registrados</h2>
-            <table class="tabla-clientes">
-                <thead>
-                    <tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Documento</th></tr>
-                </thead>
-                <tbody id="tabla-clientes">
-                    <!-- Se inserta con JS -->
-                </tbody>
-            </table>
-        </section>
-{% endcomment %}
-        {% comment "Habitaciones Section" %}
-        <section id="habitaciones" class="section">
-            <h1>Gestión de Habitaciones</h1>
-            <form class="habitacion-form" onsubmit="agregarHabitacion(event)">
-                <h2>Agregar nueva habitación</h2>
-                <label>Número: <input type="number" id="habitacion-numero" required /></label>
-                <label>Tipo:
-                    <select id="habitacion-tipo" required>
-                        <option>Individual</option>
-                        <option>Doble</option>
-                        <option>Suite</option>
-                    </select>
-                </label>
-                <label>Precio por noche ($): <input type="number" id="habitacion-precio" required /></label>
-                <label>Estado:
-                    <select id="habitacion-estado" required>
-                        <option>Disponible</option>
-                        <option>Ocupada</option>
-                        <option>Mantenimiento</option>
-                    </select>
-                </label>
-                <button type="submit">Agregar</button>
-            </form>
-            <h2>Habitaciones registradas</h2>
-            <table class="tabla-habitaciones">
-                <thead>
-                    <tr><th>Número</th><th>Tipo</th><th>Precio</th><th>Estado</th></tr>
-                </thead>
-                <tbody id="tabla-habitaciones">
-                    <!-- Se inserta con JS -->
-                </tbody>
-            </table>
-        </section>
-{% endcomment %}
-        {% comment "Logout Section" %}
-        <section id
-{% endcomment %}
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Ingresos Hoy</div>
+                        <div class="h5 mb-0 font-weight-bold">${{ ingresos_hoy|floatformat:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Check-ins Hoy</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ checkins_hoy }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-sign-in-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Check-outs Hoy</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ checkouts_hoy }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-sign-out-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="row">
+    <!-- Reservas Recientes -->
+    <div class="col-lg-8 mb-4">
+        <div class="card card-hotel">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Reservas Recientes</h5>
+                <a href="{% url 'reservas_list' %}" class="btn btn-sm btn-hotel-primary">Ver Todas</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Habitación</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reserva in reservas_recientes %}
+                            <tr>
+                                <td>{{ reserva.cliente.nombre_completo }}</td>
+                                <td>{{ reserva.habitacion.numero }}</td>
+                                <td>{{ reserva.fecha_checkin|date:"d/m/Y" }}</td>
+                                <td>{{ reserva.fecha_checkout|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="badge bg-{% if reserva.estado == 'confirmada' %}success{% elif reserva.estado == 'pendiente' %}warning{% else %}secondary{% endif %}">
+                                        {{ reserva.get_estado_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No hay reservas recientes</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estado de Habitaciones -->
+    <div class="col-lg-4 mb-4">
+        <div class="card card-hotel">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bed me-2"></i>Estado de Habitaciones</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Disponibles</span>
+                        <span class="badge badge-available">{{ habitaciones_disponibles }}</span>
+                    </div>
+                    <div class="progress mb-2" style="height: 8px;">
+                        <div class="progress-bar" style="width: {{ porcentaje_disponibles }}%; background-color: var(--hotel-primary);"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Ocupadas</span>
+                        <span class="badge badge-occupied">{{ habitaciones_ocupadas }}</span>
+                    </div>
+                    <div class="progress mb-2" style="height: 8px;">
+                        <div class="progress-bar bg-danger" style="width: {{ porcentaje_ocupadas }}%;"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Mantenimiento</span>
+                        <span class="badge badge-maintenance">{{ habitaciones_mantenimiento }}</span>
+                    </div>
+                    <div class="progress mb-2" style="height: 8px;">
+                        <div class="progress-bar bg-secondary" style="width: {{ porcentaje_mantenimiento }}%;"></div>
+                    </div>
+                </div>
+                
+                <a href="{% url 'habitaciones_list' %}" class="btn btn-hotel-secondary btn-sm w-100">
+                    <i class="fas fa-eye me-1"></i>Ver Habitaciones
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card card-hotel">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if user.profile.can_manage_reservations %}
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'reservas_create' %}" class="btn btn-hotel-primary w-100">
+                            <i class="fas fa-plus me-2"></i>Nueva Reserva
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user.profile.can_manage_clients %}
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'clientes_create' %}" class="btn btn-hotel-secondary w-100">
+                            <i class="fas fa-user-plus me-2"></i>Nuevo Cliente
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user.profile.can_manage_rooms %}
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'habitaciones_list' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-bed me-2"></i>Gestionar Habitaciones
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user.profile.can_manage_services %}
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'servicios_list' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-concierge-bell me-2"></i>Servicios
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh dashboard every 5 minutes
+    setTimeout(function() {
+        location.reload();
+    }, 300000);
+    
+    // Add some interactivity to stats cards
+    document.querySelectorAll('.stats-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+</script>
 {% endblock %}

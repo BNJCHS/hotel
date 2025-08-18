@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil - Hotel Elegante{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <!-- Agregando hero section elegante para el perfil -->
+    <div class="profile-hero">
+        <div class="profile-hero-overlay"></div>
+        <div class="container">
+            <div class="profile-hero-content">
+                <div class="profile-avatar-large">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="Foto de perfil">
+                    {% else %}
+                        <div class="avatar-placeholder-large">
+                            {{ user.first_name|first|default:user.username|first|upper }}{{ user.last_name|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div class="avatar-edit-overlay" onclick="document.getElementById('avatar').click()">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <div class="profile-hero-info">
+                    <h1 class="profile-name">{{ user.get_full_name|default:user.username }}</h1>
+                    <p class="profile-email">{{ user.email }}</p>
+                    <div class="profile-badges">
+                        <span class="badge-member">
+                            <i class="fas fa-crown"></i>
+                            Miembro desde {{ user.date_joined|date:"F Y" }}
+                        </span>
+                        <span class="badge-status">
+                            <i class="fas fa-circle text-success"></i>
+                            Activo
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container profile-content">
+        <div class="row">
+            <!-- Sidebar de navegación del perfil -->
+            <div class="col-lg-3 mb-4">
+                <div class="profile-sidebar">
+                    <div class="sidebar-menu">
+                        <a href="#personal-info" class="sidebar-item active" data-section="personal-info">
+                            <i class="fas fa-user"></i>
+                            <span>Información Personal</span>
+                        </a>
+                        <a href="#reservations" class="sidebar-item" data-section="reservations">
+                            <i class="fas fa-bed"></i>
+                            <span>Mis Reservas</span>
+                        </a>
+                        <a href="#settings" class="sidebar-item" data-section="settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Configuración</span>
+                        </a>
+                        <a href="#preferences" class="sidebar-item" data-section="preferences">
+                            <i class="fas fa-heart"></i>
+                            <span>Preferencias</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido principal con secciones mejoradas -->
+            <div class="col-lg-9">
+                <!-- Información Personal -->
+                <div class="profile-section active" id="personal-info">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2><i class="fas fa-user-edit"></i> Información Personal</h2>
+                            <button class="btn-edit" onclick="toggleEditMode()">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </div>
+                        
+                        <form id="profile-form" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;">
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="first_name">
+                                        <i class="fas fa-user"></i>
+                                        Nombre
+                                    </label>
+                                    <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" readonly class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="last_name">
+                                        <i class="fas fa-user"></i>
+                                        Apellido
+                                    </label>
+                                    <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}" readonly class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">
+                                        <i class="fas fa-envelope"></i>
+                                        Email
+                                    </label>
+                                    <input type="email" id="email" name="email" value="{{ user.email }}" readonly class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">
+                                        <i class="fas fa-phone"></i>
+                                        Teléfono
+                                    </label>
+                                    <input type="tel" id="phone" name="phone" value="{{ user.profile.phone|default:'' }}" readonly class="form-control">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="bio">
+                                    <i class="fas fa-quote-left"></i>
+                                    Biografía
+                                </label>
+                                <textarea id="bio" name="bio" rows="4" readonly class="form-control">{{ user.profile.bio|default:'' }}</textarea>
+                            </div>
+                            
+                            <div class="form-actions" id="form-actions" style="display: none;">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Guardar Cambios
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Mis Reservas -->
+                <div class="profile-section" id="reservations">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2><i class="fas fa-bed"></i> Mis Reservas</h2>
+                            <a href="{% url 'lista_habitaciones' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus"></i> Nueva Reserva
+                            </a>
+                        </div>
+                        
+                        <div class="reservations-container">
+                            {% if reservations %}
+                                {% for reservation in reservations %}
+                                <div class="reservation-card-elegant">
+                                    <div class="reservation-image">
+                                        <img src="/placeholder.svg?height=120&width=200" alt="Habitación">
+                                        <div class="reservation-status-badge status-{{ reservation.status }}">
+                                            {{ reservation.get_status_display }}
+                                        </div>
+                                    </div>
+                                    <div class="reservation-details">
+                                        <h3>Habitación {{ reservation.room.numero }}</h3>
+                                        <div class="reservation-info-grid">
+                                            <div class="info-item">
+                                                <i class="fas fa-calendar-check"></i>
+                                                <span>Check-in: {{ reservation.checkin|date:"d/m/Y" }}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <i class="fas fa-calendar-times"></i>
+                                                <span>Check-out: {{ reservation.checkout|date:"d/m/Y" }}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <i class="fas fa-users"></i>
+                                                <span>{{ reservation.guests }} huésped{{ reservation.guests|pluralize:"es" }}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <i class="fas fa-dollar-sign"></i>
+                                                <span>${{ reservation.total_price }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="reservation-actions">
+                                        <a href="{% url 'detalle_reserva' reservation.id %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye"></i> Ver Detalles
+                                        </a>
+                                        {% if reservation.status == 'confirmed' %}
+                                        <button class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-times"></i> Cancelar
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="no-reservations-elegant">
+                                    <div class="no-reservations-icon">
+                                        <i class="fas fa-bed"></i>
+                                    </div>
+                                    <h3>No tienes reservas aún</h3>
+                                    <p>Descubre nuestras elegantes habitaciones y haz tu primera reserva</p>
+                                    <a href="{% url 'lista_habitaciones' %}" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Explorar Habitaciones
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración -->
+                <div class="profile-section" id="settings">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2><i class="fas fa-cog"></i> Configuración de Cuenta</h2>
+                        </div>
+                        
+                        <div class="settings-grid">
+                            <div class="setting-card">
+                                <div class="setting-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <h3>Cambiar Contraseña</h3>
+                                    <p>Actualiza tu contraseña para mantener tu cuenta segura</p>
+                                </div>
+                                <div class="setting-action">
+                                    <a href="{% url 'password_change' %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-key"></i> Cambiar
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <h3>Notificaciones</h3>
+                                    <p>Configura cómo quieres recibir nuestras comunicaciones</p>
+                                </div>
+                                <div class="setting-action">
+                                    <button class="btn btn-outline-primary" onclick="toggleNotifications()">
+                                        <i class="fas fa-cog"></i> Configurar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <h3>Privacidad</h3>
+                                    <p>Controla la visibilidad de tu información personal</p>
+                                </div>
+                                <div class="setting-action">
+                                    <button class="btn btn-outline-primary">
+                                        <i class="fas fa-eye"></i> Configurar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferencias -->
+                <div class="profile-section" id="preferences">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2><i class="fas fa-heart"></i> Preferencias</h2>
+                        </div>
+                        
+                        <div class="preferences-content">
+                            <div class="preference-group">
+                                <h3><i class="fas fa-bed"></i> Preferencias de Habitación</h3>
+                                <div class="preference-options">
+                                    <label class="preference-option">
+                                        <input type="checkbox" name="smoking" value="no">
+                                        <span class="checkmark"></span>
+                                        Habitación para no fumadores
+                                    </label>
+                                    <label class="preference-option">
+                                        <input type="checkbox" name="floor" value="high">
+                                        <span class="checkmark"></span>
+                                        Piso alto
+                                    </label>
+                                    <label class="preference-option">
+                                        <input type="checkbox" name="view" value="ocean">
+                                        <span class="checkmark"></span>
+                                        Vista al mar
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="preference-group">
+                                <h3><i class="fas fa-utensils"></i> Preferencias Alimentarias</h3>
+                                <div class="preference-options">
+                                    <label class="preference-option">
+                                        <input type="checkbox" name="diet" value="vegetarian">
+                                        <span class="checkmark"></span>
+                                        Vegetariano
+                                    </label>
+                                    <label class="preference-option">
+                                        <input type="checkbox" name="diet" value="vegan">
+                                        <span class="checkmark"></span>
+                                        Vegano
+                                    </label>
+                                    <label class="preference-option">
+                                        <input type="checkbox" name="allergies" value="gluten">
+                                        <span class="checkmark"></span>
+                                        Sin gluten
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary">
+                                <i class="fas fa-save"></i> Guardar Preferencias
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,11 +1,216 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Seleccionar Servicios{% endblock %}
+
 {% block content %}
-<h2>Elegí el tipo de servicio para la habitación {{ habitacion.numero }}</h2>
+<div class="container-fluid py-5" style="background: linear-gradient(135deg, var(--hotel-beige) 0%, var(--hotel-cream) 100%);">
+    <div class="container">
+        <!-- Progress Bar -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="progress-container">
+                    <div class="progress-step completed">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Habitación</div>
+                    </div>
+                    <div class="progress-line completed"></div>
+                    <div class="progress-step active">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Servicios</div>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Confirmación</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Confirmar Reserva</button>
-</form>
+        <!-- Header -->
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold text-dark mb-3">Servicios Adicionales</h1>
+                <p class="lead text-muted">Personaliza tu experiencia con nuestros servicios de lujo</p>
+            </div>
+        </div>
+
+        <!-- Resumen de Reserva -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 reservation-summary">
+                    <div class="card-body p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-2">
+                                <img src="/placeholder.svg?height=100&width=150" class="img-fluid rounded" alt="Habitación">
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="mb-2">Habitación {{ habitacion.numero }} - {{ habitacion.tipo|title }}</h5>
+                                <div class="row g-2 text-muted">
+                                    <div class="col-6">
+                                        <i class="fas fa-calendar-check me-1"></i>
+                                        {{ fecha_entrada|date:"d/m/Y" }} - {{ fecha_salida|date:"d/m/Y" }}
+                                    </div>
+                                    <div class="col-6">
+                                        <i class="fas fa-users me-1"></i>
+                                        {{ numero_huespedes }} huésped{{ numero_huespedes|pluralize:"es" }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="price-summary">
+                                    <small class="text-muted d-block">Precio base</small>
+                                    <h4 class="text-primary mb-0">${{ precio_base }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros de Servicios -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Categoría</label>
+                                <select class="form-select" id="filtro-categoria">
+                                    <option value="">Todas las categorías</option>
+                                    <option value="spa">Spa y Bienestar</option>
+                                    <option value="restaurante">Restaurante</option>
+                                    <option value="transporte">Transporte</option>
+                                    <option value="entretenimiento">Entretenimiento</option>
+                                    <option value="negocios">Servicios de Negocios</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Precio máximo</label>
+                                <input type="range" class="form-range" id="precio-maximo" min="0" max="500" value="500">
+                                <div class="d-flex justify-content-between">
+                                    <small>$0</small>
+                                    <small id="precio-valor">$500</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button class="btn btn-outline-primary w-100" id="limpiar-filtros">
+                                    <i class="fas fa-times me-2"></i>Limpiar Filtros
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid de Servicios -->
+        <div class="row" id="servicios-grid">
+            {% for servicio in servicios %}
+            <div class="col-lg-4 col-md-6 mb-4 servicio-item" data-categoria="{{ servicio.categoria }}" data-precio="{{ servicio.precio }}">
+                <div class="card service-card h-100 shadow-sm border-0">
+                    <div class="card-img-container">
+                        {% if servicio.imagen %}
+                            <img src="{{ servicio.imagen.url }}" class="card-img-top" alt="{{ servicio.nombre }}">
+                        {% else %}
+                            <img src="/placeholder.svg?height=200&width=300" class="card-img-top" alt="{{ servicio.nombre }}">
+                        {% endif %}
+                        <div class="service-category-badge">{{ servicio.get_categoria_display }}</div>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-dark mb-2">{{ servicio.nombre }}</h5>
+                        <p class="card-text text-muted flex-grow-1">{{ servicio.descripcion }}</p>
+                        
+                        {% if servicio.duracion_minutos %}
+                        <div class="service-duration mb-2">
+                            <i class="fas fa-clock me-1 text-primary"></i>
+                            <small class="text-muted">{{ servicio.duracion_minutos }} minutos</small>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <div class="price-tag">
+                                <span class="h5 text-primary mb-0">${{ servicio.precio }}</span>
+                            </div>
+                            <div class="service-actions">
+                                <button class="btn btn-outline-primary btn-sm me-2" onclick="verDetallesServicio({{ servicio.id }})">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm agregar-servicio" 
+                                        data-id="{{ servicio.id }}" 
+                                        data-nombre="{{ servicio.nombre }}" 
+                                        data-precio="{{ servicio.precio }}">
+                                    <i class="fas fa-plus me-1"></i>Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-concierge-bell fa-4x text-muted mb-3"></i>
+                    <h3 class="text-muted">No hay servicios disponibles</h3>
+                    <p class="text-muted">Los servicios se cargarán pronto.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Servicios Seleccionados -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 selected-services-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shopping-cart me-2"></i>
+                            Servicios Seleccionados (<span id="servicios-count">0</span>)
+                        </h5>
+                    </div>
+                    <div class="card-body" id="servicios-seleccionados">
+                        <div class="empty-state text-center py-4">
+                            <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Selecciona servicios para personalizar tu experiencia</p>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="total-summary">
+                                    <span class="text-muted">Total servicios: </span>
+                                    <span class="h5 text-primary mb-0" id="total-servicios">$0</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-outline-secondary me-2" onclick="volverHabitaciones()">
+                                    <i class="fas fa-arrow-left me-1"></i>Volver
+                                </button>
+                                <button class="btn btn-success" id="continuar-reserva" disabled>
+                                    Continuar <i class="fas fa-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalles del Servicio -->
+<div class="modal fade" id="modalDetallesServicio" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles del Servicio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalles-servicio-content">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
-

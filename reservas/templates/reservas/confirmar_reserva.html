@@ -1,0 +1,382 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Reserva{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5" style="background: linear-gradient(135deg, var(--hotel-beige) 0%, var(--hotel-cream) 100%);">
+    <div class="container">
+        <!-- Progress Bar -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="progress-container">
+                    <div class="progress-step completed">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Habitación</div>
+                    </div>
+                    <div class="progress-line completed"></div>
+                    <div class="progress-step completed">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Servicios</div>
+                    </div>
+                    <div class="progress-line completed"></div>
+                    <div class="progress-step active">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Confirmación</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold text-dark mb-3">Confirmar Reserva</h1>
+                <p class="lead text-muted">Revisa los detalles de tu reserva antes de confirmar</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Resumen de Reserva -->
+            <div class="col-lg-8 mb-4">
+                <!-- Información de la Habitación -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bed me-2"></i>
+                            Detalles de la Habitación
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                {% if habitacion.imagen %}
+                                    <img src="{{ habitacion.imagen.url }}" class="img-fluid rounded" alt="Habitación {{ habitacion.numero }}">
+                                {% else %}
+                                    <img src="/placeholder.svg?height=200&width=300" class="img-fluid rounded" alt="Habitación {{ habitacion.numero }}">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <h4 class="text-dark mb-3">Habitación {{ habitacion.numero }} - {{ habitacion.tipo|title }}</h4>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <div class="info-item">
+                                            <i class="fas fa-calendar-check text-primary me-2"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Check-in</small>
+                                                <strong>{{ fecha_entrada|date:"d/m/Y" }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="info-item">
+                                            <i class="fas fa-calendar-times text-primary me-2"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Check-out</small>
+                                                <strong>{{ fecha_salida|date:"d/m/Y" }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="info-item">
+                                            <i class="fas fa-users text-primary me-2"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Huéspedes</small>
+                                                <strong>{{ numero_huespedes }} persona{{ numero_huespedes|pluralize:"s" }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="info-item">
+                                            <i class="fas fa-moon text-primary me-2"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Noches</small>
+                                                <strong>{{ noches }} noche{{ noches|pluralize:"s" }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-muted mb-0">{{ habitacion.descripcion }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Servicios Seleccionados -->
+                {% if servicios_seleccionados %}
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-concierge-bell me-2"></i>
+                            Servicios Adicionales ({{ servicios_seleccionados|length }})
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for servicio in servicios_seleccionados %}
+                            <div class="col-md-6 mb-3">
+                                <div class="service-summary-item">
+                                    <div class="d-flex align-items-center">
+                                        <div class="service-icon-small me-3">
+                                            <i class="fas fa-spa"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ servicio.nombre }}</h6>
+                                            <small class="text-muted">{{ servicio.get_categoria_display }}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <strong class="text-success">${{ servicio.precio }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Información del Huésped -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user me-2"></i>
+                            Información del Huésped Principal
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="guest-info-form">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-user me-1 text-primary"></i>
+                                        Nombre *
+                                    </label>
+                                    <input type="text" class="form-control" name="nombre" value="{{ user.first_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-user me-1 text-primary"></i>
+                                        Apellido *
+                                    </label>
+                                    <input type="text" class="form-control" name="apellido" value="{{ user.last_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-envelope me-1 text-primary"></i>
+                                        Email *
+                                    </label>
+                                    <input type="email" class="form-control" name="email" value="{{ user.email }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-phone me-1 text-primary"></i>
+                                        Teléfono *
+                                    </label>
+                                    <input type="tel" class="form-control" name="telefono" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-id-card me-1 text-primary"></i>
+                                        Documento de Identidad *
+                                    </label>
+                                    <input type="text" class="form-control" name="documento" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-calendar me-1 text-primary"></i>
+                                        Fecha de Nacimiento *
+                                    </label>
+                                    <input type="date" class="form-control" name="fecha_nacimiento" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-sticky-note me-1 text-primary"></i>
+                                        Solicitudes Especiales
+                                    </label>
+                                    <textarea class="form-control" name="notas" rows="3" placeholder="Cualquier solicitud especial o comentario..."></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Políticas y Términos -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Políticas del Hotel
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-dark mb-2">
+                                    <i class="fas fa-clock text-warning me-2"></i>
+                                    Horarios
+                                </h6>
+                                <ul class="list-unstyled mb-3">
+                                    <li><small>• Check-in: 15:00 hrs</small></li>
+                                    <li><small>• Check-out: 12:00 hrs</small></li>
+                                    <li><small>• Recepción 24 horas</small></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-dark mb-2">
+                                    <i class="fas fa-ban text-danger me-2"></i>
+                                    Cancelaciones
+                                </h6>
+                                <ul class="list-unstyled mb-3">
+                                    <li><small>• Gratuita hasta 24h antes</small></li>
+                                    <li><small>• Cargo del 50% mismo día</small></li>
+                                    <li><small>• No-show: cargo completo</small></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="accept-terms" required>
+                            <label class="form-check-label" for="accept-terms">
+                                Acepto los <a href="#" class="text-primary">términos y condiciones</a> y las <a href="#" class="text-primary">políticas de cancelación</a> del hotel
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen de Precios -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 price-summary-card sticky-top" style="top: 2rem;">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calculator me-2"></i>
+                            Resumen de Precios
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Desglose de precios -->
+                        <div class="price-breakdown">
+                            <div class="price-item d-flex justify-content-between mb-2">
+                                <span>Habitación ({{ noches }} noche{{ noches|pluralize:"s" }})</span>
+                                <span>${{ precio_habitacion }}</span>
+                            </div>
+                            
+                            {% if servicios_seleccionados %}
+                            <div class="price-item d-flex justify-content-between mb-2">
+                                <span>Servicios adicionales</span>
+                                <span>${{ precio_servicios }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="price-item d-flex justify-content-between mb-2">
+                                <span>Impuestos (18%)</span>
+                                <span>${{ impuestos }}</span>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="price-total d-flex justify-content-between mb-3">
+                                <strong class="h5">Total</strong>
+                                <strong class="h4 text-primary">${{ precio_total }}</strong>
+                            </div>
+                        </div>
+
+                        <!-- Métodos de Pago -->
+                        <div class="payment-methods mb-4">
+                            <h6 class="mb-3">
+                                <i class="fas fa-credit-card me-2 text-primary"></i>
+                                Método de Pago
+                            </h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_method" id="credit_card" value="credit_card" checked>
+                                <label class="form-check-label" for="credit_card">
+                                    <i class="fas fa-credit-card me-2"></i>
+                                    Tarjeta de Crédito/Débito
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal">
+                                <label class="form-check-label" for="paypal">
+                                    <i class="fab fa-paypal me-2"></i>
+                                    PayPal
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="payment_method" id="bank_transfer" value="bank_transfer">
+                                <label class="form-check-label" for="bank_transfer">
+                                    <i class="fas fa-university me-2"></i>
+                                    Transferencia Bancaria
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success btn-lg" id="confirm-reservation">
+                                <i class="fas fa-check me-2"></i>
+                                Confirmar Reserva
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="volverServicios()">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Volver a Servicios
+                            </button>
+                        </div>
+
+                        <!-- Garantía -->
+                        <div class="guarantee-badges mt-4">
+                            <div class="text-center">
+                                <div class="d-flex justify-content-center gap-3 mb-2">
+                                    <i class="fas fa-shield-alt text-success fa-2x"></i>
+                                    <i class="fas fa-lock text-primary fa-2x"></i>
+                                    <i class="fas fa-medal text-warning fa-2x"></i>
+                                </div>
+                                <small class="text-muted">
+                                    Reserva segura • Mejor precio garantizado • Cancelación gratuita
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle me-2"></i>
+                    ¡Reserva Confirmada!
+                </h5>
+            </div>
+            <div class="modal-body text-center py-5">
+                <div class="success-animation mb-4">
+                    <i class="fas fa-check-circle fa-5x text-success"></i>
+                </div>
+                <h3 class="text-dark mb-3">¡Gracias por tu reserva!</h3>
+                <p class="lead text-muted mb-4">
+                    Tu reserva ha sido confirmada exitosamente. 
+                    Recibirás un email de confirmación en los próximos minutos.
+                </p>
+                <div class="reservation-number mb-4">
+                    <div class="bg-light p-3 rounded">
+                        <strong>Número de Reserva: <span class="text-primary" id="reservation-number">#HTL-2024-001</span></strong>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{% url 'mis_reservas' %}" class="btn btn-primary">
+                        <i class="fas fa-list me-2"></i>
+                        Ver Mis Reservas
+                    </a>
+                    <a href="{% url 'index' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home me-2"></i>
+                        Volver al Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,11 +1,14 @@
 // DOM Elements
+// DOM Elements
 const navToggle = document.getElementById("nav-toggle")
 const navMenu = document.getElementById("nav-menu")
 const header = document.getElementById("header")
 const scrollIndicator = document.querySelector(".scroll-indicator")
 const bookingForm = document.getElementById("booking-form")
 const contactForm = document.querySelector(".contact-form")
-// const newsletterForm = document.querySelector(".newsletter-form")
+const newsletterForm = document.querySelector(".newsletter-form")
+const profileTrigger = document.getElementById("profileTrigger")
+const dropdownMenu = document.getElementById("dropdownMenu")
 
 // Mobile Navigation Toggle
 if (navToggle && navMenu) {
@@ -346,6 +349,403 @@ document.querySelectorAll(".contact-item").forEach((item) => {
       icon.style.transform = "scale(1) rotate(0deg)"
     }
   })
+})
+
+// Room Filters Functionality
+let applyFilters // Declare applyFilters variable here
+
+document.addEventListener("DOMContentLoaded", () => {
+  const filterForm = document.getElementById("filter-form")
+  const clearFiltersBtn = document.getElementById("clear-filters")
+  const roomsGrid = document.getElementById("rooms-grid")
+
+  if (filterForm && roomsGrid) {
+    // Filter form handler
+    filterForm.addEventListener("submit", (e) => {
+      e.preventDefault()
+      applyFilters()
+    })
+
+    // Clear filters handler
+    if (clearFiltersBtn) {
+      clearFiltersBtn.addEventListener("click", () => {
+        filterForm.reset()
+        applyFilters()
+        showNotification("Filtros limpiados", "info")
+      })
+    }
+
+    // Real-time filtering on input change
+    const filterInputs = filterForm.querySelectorAll("input, select")
+    filterInputs.forEach((input) => {
+      input.addEventListener("change", applyFilters)
+    })
+
+    applyFilters = () => {
+      const formData = new FormData(filterForm)
+      const filters = {
+        tipo: formData.get("tipo") || "",
+        precioMin: Number.parseInt(formData.get("precio-min")) || 0,
+        precioMax: Number.parseInt(formData.get("precio-max")) || 9999,
+        capacidad: formData.get("capacidad") || "",
+      }
+
+      const roomCards = roomsGrid.querySelectorAll(".room-card")
+      let visibleCount = 0
+
+      roomCards.forEach((card) => {
+        const cardTipo = card.dataset.tipo || ""
+        const cardPrecio = Number.parseInt(card.dataset.precio) || 0
+        const cardCapacidad = card.dataset.capacidad || ""
+
+        let shouldShow = true
+
+        // Filter by type
+        if (filters.tipo && !cardTipo.includes(filters.tipo)) {
+          shouldShow = false
+        }
+
+        // Filter by price range
+        if (cardPrecio < filters.precioMin || cardPrecio > filters.precioMax) {
+          shouldShow = false
+        }
+
+        // Filter by capacity
+        if (filters.capacidad) {
+          const requiredCapacity = Number.parseInt(filters.capacidad)
+          const roomCapacity = Number.parseInt(cardCapacidad)
+          if (roomCapacity < requiredCapacity) {
+            shouldShow = false
+          }
+        }
+
+        // Show/hide card with animation
+        if (shouldShow) {
+          card.style.display = "block"
+          card.style.opacity = "0"
+          card.style.transform = "translateY(20px)"
+          setTimeout(
+            () => {
+              card.style.opacity = "1"
+              card.style.transform = "translateY(0)"
+            },
+            100 + visibleCount * 50,
+          )
+          visibleCount++
+        } else {
+          card.style.opacity = "0"
+          card.style.transform = "translateY(-20px)"
+          setTimeout(() => {
+            card.style.display = "none"
+          }, 300)
+        }
+      })
+
+      // Show no results message if no rooms visible
+      let noResultsMsg = roomsGrid.querySelector(".no-results")
+      if (visibleCount === 0) {
+        if (!noResultsMsg) {
+          noResultsMsg = document.createElement("div")
+          noResultsMsg.className = "no-results"
+          noResultsMsg.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: var(--text-light);">
+                            <i class="fas fa-search" style="font-size: 4rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                            <h3 style="color: var(--secondary-color); margin-bottom: 0.5rem;">No se encontraron habitaciones</h3>
+                            <p>Intenta ajustar los filtros para encontrar habitaciones disponibles.</p>
+                        </div>
+                    `
+          roomsGrid.appendChild(noResultsMsg)
+        }
+        noResultsMsg.style.display = "block"
+      } else {
+        if (noResultsMsg) {
+          noResultsMsg.style.display = "none"
+        }
+      }
+
+      // Update results count
+      updateResultsCount(visibleCount)
+    }
+
+    function updateResultsCount(count) {
+      let countElement = document.querySelector(".results-count")
+      if (!countElement) {
+        countElement = document.createElement("div")
+        countElement.className = "results-count"
+        countElement.style.cssText = `
+                    text-align: center;
+                    margin: 1rem 0;
+                    color: var(--text-light);
+                    font-weight: 600;
+                `
+        const container = roomsGrid.parentElement
+        container.insertBefore(countElement, roomsGrid)
+      }
+
+      countElement.textContent = `${count} habitación${count !== 1 ? "es" : ""} encontrada${count !== 1 ? "s" : ""}`
+    }
+
+    // Initialize filters
+    applyFilters()
+  }
+
+  // Room card enhanced interactions
+  const roomCards = document.querySelectorAll(".room-card")
+  roomCards.forEach((card) => {
+    // Enhanced hover effects
+    card.addEventListener("mouseenter", function () {
+      this.style.transform = "translateY(-8px)"
+      this.style.boxShadow = "var(--shadow-heavy)"
+
+      // Animate price badge
+      const priceElement = this.querySelector(".room-price")
+      if (priceElement) {
+        priceElement.style.transform = "scale(1.05)"
+      }
+
+      // Animate amenities
+      const amenities = this.querySelectorAll(".amenity")
+      amenities.forEach((amenity, index) => {
+        setTimeout(() => {
+          amenity.style.transform = "translateY(-2px)"
+        }, index * 50)
+      })
+    })
+
+    card.addEventListener("mouseleave", function () {
+      this.style.transform = "translateY(0)"
+      this.style.boxShadow = "var(--shadow-light)"
+
+      // Reset price badge
+      const priceElement = this.querySelector(".room-price")
+      if (priceElement) {
+        priceElement.style.transform = "scale(1)"
+      }
+
+      // Reset amenities
+      const amenities = this.querySelectorAll(".amenity")
+      amenities.forEach((amenity) => {
+        amenity.style.transform = "translateY(0)"
+      })
+    })
+
+    // Add to cart button enhancement
+    const addToCartBtn = card.querySelector('a[href*="agregar_al_carrito"]')
+    if (addToCartBtn) {
+      addToCartBtn.addEventListener("click", function (e) {
+        e.preventDefault()
+
+        // Add loading state
+        const originalText = this.innerHTML
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agregando...'
+        this.style.pointerEvents = "none"
+
+        // Simulate adding to cart
+        setTimeout(() => {
+          this.innerHTML = '<i class="fas fa-check"></i> Agregado'
+          this.style.background = "var(--accent-color)"
+
+          showNotification("Habitación agregada al carrito", "success")
+
+          // Reset button after 2 seconds
+          setTimeout(() => {
+            this.innerHTML = originalText
+            this.style.background = "var(--primary-color)"
+            this.style.pointerEvents = "auto"
+          }, 2000)
+        }, 1000)
+      })
+    }
+  })
+
+  // Price range slider enhancement
+  const priceMinInput = document.getElementById("precio-min")
+  const priceMaxInput = document.getElementById("precio-max")
+
+  if (priceMinInput && priceMaxInput) {
+    // Add real-time price validation
+    priceMinInput.addEventListener("input", function () {
+      const minValue = Number.parseInt(this.value) || 0
+      const maxValue = Number.parseInt(priceMaxInput.value) || 9999
+
+      if (minValue > maxValue) {
+        priceMaxInput.value = minValue
+      }
+    })
+
+    priceMaxInput.addEventListener("input", function () {
+      const maxValue = Number.parseInt(this.value) || 9999
+      const minValue = Number.parseInt(priceMinInput.value) || 0
+
+      if (maxValue < minValue) {
+        priceMinInput.value = maxValue
+      }
+    })
+  }
+})
+
+// Quick search functionality
+function addQuickSearch() {
+  const roomsListing = document.querySelector(".rooms-listing")
+  if (!roomsListing) return
+
+  const searchContainer = document.createElement("div")
+  searchContainer.className = "quick-search-container"
+  searchContainer.style.cssText = `
+        background: var(--white);
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: var(--shadow-light);
+        margin-bottom: 2rem;
+    `
+
+  searchContainer.innerHTML = `
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+                <input type="text" id="quick-search" placeholder="Buscar habitaciones..." 
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 1rem;">
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button class="quick-filter-btn" data-filter="individual">Individual</button>
+                <button class="quick-filter-btn" data-filter="doble">Doble</button>
+                <button class="quick-filter-btn" data-filter="suite">Suite</button>
+                <button class="quick-filter-btn" data-filter="presidencial">Presidencial</button>
+            </div>
+        </div>
+    `
+
+  const container = roomsListing.querySelector(".container")
+  container.insertBefore(searchContainer, container.firstChild)
+
+  // Style quick filter buttons
+  const quickFilterBtns = searchContainer.querySelectorAll(".quick-filter-btn")
+  quickFilterBtns.forEach((btn) => {
+    btn.style.cssText = `
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        `
+
+    btn.addEventListener("click", function () {
+      // Toggle active state
+      const isActive = this.classList.contains("active")
+
+      // Remove active from all buttons
+      quickFilterBtns.forEach((b) => {
+        b.classList.remove("active")
+        b.style.background = "transparent"
+        b.style.color = "var(--primary-color)"
+      })
+
+      if (!isActive) {
+        this.classList.add("active")
+        this.style.background = "var(--primary-color)"
+        this.style.color = "var(--white)"
+
+        // Set filter
+        const tipoSelect = document.getElementById("tipo")
+        if (tipoSelect) {
+          tipoSelect.value = this.dataset.filter
+          applyFilters()
+        }
+      } else {
+        // Clear filter
+        const tipoSelect = document.getElementById("tipo")
+        if (tipoSelect) {
+          tipoSelect.value = ""
+          applyFilters()
+        }
+      }
+    })
+  })
+
+  // Quick search input
+  const quickSearchInput = document.getElementById("quick-search")
+  if (quickSearchInput) {
+    quickSearchInput.addEventListener("input", function () {
+      const searchTerm = this.value.toLowerCase()
+      const roomCards = document.querySelectorAll(".room-card")
+
+      roomCards.forEach((card) => {
+        const roomTitle = card.querySelector("h3").textContent.toLowerCase()
+        const roomDescription = card.querySelector(".room-description").textContent.toLowerCase()
+        const roomType = card.querySelector(".room-type").textContent.toLowerCase()
+
+        const matches =
+          roomTitle.includes(searchTerm) || roomDescription.includes(searchTerm) || roomType.includes(searchTerm)
+
+        if (matches || searchTerm === "") {
+          card.style.display = "block"
+          card.style.opacity = "1"
+        } else {
+          card.style.display = "none"
+          card.style.opacity = "0"
+        }
+      })
+    })
+  }
+}
+
+// Initialize quick search when DOM is loaded
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(addQuickSearch, 100)
+})
+
+// Profile Dropdown Functionality
+document.addEventListener("DOMContentLoaded", () => {
+  if (profileTrigger && dropdownMenu) {
+    // Toggle dropdown on click
+    profileTrigger.addEventListener("click", (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      dropdownMenu.classList.toggle("active")
+    })
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!profileTrigger.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        dropdownMenu.classList.remove("active")
+      }
+    })
+
+    // Close dropdown when pressing Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        dropdownMenu.classList.remove("active")
+      }
+    })
+
+    // Close dropdown when clicking on menu items
+    const dropdownItems = dropdownMenu.querySelectorAll(".dropdown-item")
+    dropdownItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        dropdownMenu.classList.remove("active")
+      })
+    })
+
+    // Add smooth animation for dropdown arrow
+    const dropdownArrow = profileTrigger.querySelector(".dropdown-arrow")
+    if (dropdownArrow) {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === "attributes" && mutation.attributeName === "class") {
+            if (dropdownMenu.classList.contains("active")) {
+              dropdownArrow.style.transform = "rotate(180deg)"
+            } else {
+              dropdownArrow.style.transform = "rotate(0deg)"
+            }
+          }
+        })
+      })
+
+      observer.observe(dropdownMenu, { attributes: true })
+    }
+  }
 })
 
 console.log("Hotel Elegante - Website loaded successfully! 🏨")

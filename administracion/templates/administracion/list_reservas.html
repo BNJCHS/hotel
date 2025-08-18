@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservas - Hotel Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="hotel-heading">Gestión de Reservas</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'reservas_create' %}" class="btn btn-hotel-primary">
+            <i class="fas fa-plus me-2"></i>Nueva Reserva
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card card-hotel mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="estado" class="form-label">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                    <option value="confirmada" {% if request.GET.estado == 'confirmada' %}selected{% endif %}>Confirmada</option>
+                    <option value="checkin" {% if request.GET.estado == 'checkin' %}selected{% endif %}>Check-in</option>
+                    <option value="checkout" {% if request.GET.estado == 'checkout' %}selected{% endif %}>Check-out</option>
+                    <option value="cancelada" {% if request.GET.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="fecha_desde" class="form-label">Desde</label>
+                <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" value="{{ request.GET.fecha_desde }}">
+            </div>
+            <div class="col-md-3">
+                <label for="fecha_hasta" class="form-label">Hasta</label>
+                <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" value="{{ request.GET.fecha_hasta }}">
+            </div>
+            <div class="col-md-3">
+                <label for="buscar" class="form-label">Buscar Cliente</label>
+                <input type="text" class="form-control" id="buscar" name="buscar" placeholder="Nombre del cliente" value="{{ request.GET.buscar }}">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-hotel-primary">
+                    <i class="fas fa-search me-2"></i>Filtrar
+                </button>
+                <a href="{% url 'reservas_list' %}" class="btn btn-outline-secondary ms-2">
+                    <i class="fas fa-times me-2"></i>Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Reservas -->
+<div class="card card-hotel">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Habitación</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Huéspedes</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reserva in reservas %}
+                    <tr>
+                        <td><strong>#{{ reserva.id }}</strong></td>
+                        <td>
+                            <div>{{ reserva.cliente.nombre_completo }}</div>
+                            <small class="text-muted">{{ reserva.cliente.email }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ reserva.habitacion.numero }}</span>
+                            <small class="d-block text-muted">{{ reserva.habitacion.tipo }}</small>
+                        </td>
+                        <td>{{ reserva.fecha_checkin|date:"d/m/Y" }}</td>
+                        <td>{{ reserva.fecha_checkout|date:"d/m/Y" }}</td>
+                        <td>{{ reserva.numero_huespedes }}</td>
+                        <td><strong>${{ reserva.total|floatformat:0 }}</strong></td>
+                        <td>
+                            <span class="badge bg-{% if reserva.estado == 'confirmada' %}success{% elif reserva.estado == 'pendiente' %}warning{% elif reserva.estado == 'checkin' %}primary{% elif reserva.estado == 'checkout' %}info{% else %}secondary{% endif %}">
+                                {{ reserva.get_estado_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'reservas_detail' reserva.id %}" class="btn btn-sm btn-outline-primary" title="Ver Detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if user.profile.can_edit_reservations %}
+                                <a href="{% url 'reservas_edit' reserva.id %}" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% endif %}
+                                {% if reserva.estado == 'confirmada' and user.profile.can_checkin %}
+                                <button class="btn btn-sm btn-success" onclick="realizarCheckin({{ reserva.id }})" title="Check-in">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </button>
+                                {% endif %}
+                                {% if reserva.estado == 'checkin' and user.profile.can_checkout %}
+                                <button class="btn btn-sm btn-info" onclick="realizarCheckout({{ reserva.id }})" title="Check-out">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                            <div>No se encontraron reservas</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        {% if is_paginated %}
+        <nav aria-label="Paginación de reservas">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.fecha_desde %}&fecha_desde={{ request.GET.fecha_desde }}{% endif %}{% if request.GET.fecha_hasta %}&fecha_hasta={{ request.GET.fecha_hasta }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Primera</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.fecha_desde %}&fecha_desde={{ request.GET.fecha_desde }}{% endif %}{% if request.GET.fecha_hasta %}&fecha_hasta={{ request.GET.fecha_hasta }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Anterior</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.fecha_desde %}&fecha_desde={{ request.GET.fecha_desde }}{% endif %}{% if request.GET.fecha_hasta %}&fecha_hasta={{ request.GET.fecha_hasta }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Siguiente</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.fecha_desde %}&fecha_desde={{ request.GET.fecha_desde }}{% endif %}{% if request.GET.fecha_hasta %}&fecha_hasta={{ request.GET.fecha_hasta }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Última</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function realizarCheckin(reservaId) {
+    if (confirm('¿Está seguro de realizar el check-in para esta reserva?')) {
+        fetch(`/reservas/${reservaId}/checkin/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al realizar check-in: ' + data.error);
+            }
+        });
+    }
+}
+
+function realizarCheckout(reservaId) {
+    if (confirm('¿Está seguro de realizar el check-out para esta reserva?')) {
+        fetch(`/reservas/${reservaId}/checkout/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al realizar check-out: ' + data.error);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
