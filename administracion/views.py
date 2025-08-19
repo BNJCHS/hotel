@@ -13,6 +13,7 @@ from django.utils import timezone
 from .models import *
 from .forms import *
 from .decorators import role_required
+from .forms import HuespedForm 
 import json
 
 def login_view(request):
@@ -115,24 +116,58 @@ def cliente_edit(request, pk):
 # HUÉSPEDES
 @login_required
 @role_required(['admin', 'recepcionista', 'gerente'])
-def huespedes_list(request):
-    cliente_id = request.GET.get('cliente')
-    huespedes = Huesped.objects.select_related('cliente')
+def huesped_create(request):
+    if request.method == 'POST':
+        form = HuespedForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Huésped creado exitosamente.')
+            return redirect('huespedes_list')
+    else:
+        form = HuespedForm()
     
-    if cliente_id:
-        huespedes = huespedes.filter(cliente_id=cliente_id)
+    return render(request, 'huespedes/form.html', {
+        'form': form,
+        'title': 'Nuevo Huésped'
+    })
+
+@login_required
+@role_required(['admin', 'recepcionista', 'gerente'])
+def huespedes_list(request):
+    search = request.GET.get('search', '')
+    huespedes = Huesped.objects.all()
+    
+    if search:
+        huespedes = huespedes.filter(
+            Q(nombre__icontains=search) |
+            Q(apellido__icontains=search) |
+            Q(email__icontains=search) |
+            Q(cedula__icontains=search)
+        )
     
     paginator = Paginator(huespedes, 10)
     page = request.GET.get('page')
     huespedes = paginator.get_page(page)
     
-    clientes = Cliente.objects.filter(activo=True)
+    return render(request, 'huespedes/list.html', {'huespedes': huespedes, 'search': search})
+
+
+@login_required
+@role_required(['admin', 'recepcionista', 'gerente'])
+def huesped_edit(request, pk):
+    huesped = get_object_or_404(Huesped, pk=pk)
     
-    return render(request, 'huespedes/list.html', {
-        'huespedes': huespedes,
-        'clientes': clientes,
-        'selected_cliente': cliente_id
-    })
+    if request.method == 'POST':
+        form = HuespedForm(request.POST, instance=huesped)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Huésped actualizado exitosamente.')
+            return redirect('huespedes_list')
+    else:
+        form = HuespedForm(instance=huesped)
+    
+    return render(request, 'huespedes/form.html', {'form': form, 'title': 'Editar Huésped'})
+
 
 # SERVICIOS
 @login_required
@@ -154,6 +189,25 @@ def servicios_list(request):
 
 @login_required
 @role_required(['admin', 'gerente'])
+def servicio_edit(request, pk):
+    servicio = get_object_or_404(Servicio, pk=pk)
+    
+    if request.method == 'POST':
+        form = ServicioForm(request.POST, instance=servicio)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Servicio actualizado exitosamente.')
+            return redirect('servicios_list')
+    else:
+        form = ServicioForm(instance=servicio)
+    
+    return render(request, 'servicios/form.html', {
+        'form': form,
+        'title': 'Editar Servicio'
+    })
+
+@login_required
+@role_required(['admin', 'gerente'])
 def servicio_create(request):
     if request.method == 'POST':
         form = ServicioForm(request.POST)
@@ -165,6 +219,26 @@ def servicio_create(request):
         form = ServicioForm()
     
     return render(request, 'servicios/form.html', {'form': form, 'title': 'Nuevo Servicio'})
+
+@login_required
+@role_required(['admin', 'gerente'])
+def toggle_servicio_disponibilidad(request, pk):
+    """Activa/Desactiva un servicio vía AJAX o POST normal"""
+    servicio = get_object_or_404(Servicio, pk=pk)
+
+    if request.method == 'POST':
+        servicio.disponible = not servicio.disponible
+        servicio.save()
+        messages.success(
+            request,
+            f"El servicio '{servicio.nombre}' ahora está {'disponible' if servicio.disponible else 'no disponible'}."
+        )
+        return redirect('servicios_list')
+
+    return render(request, 'servicios/confirmar_toggle.html', {
+        'servicio': servicio
+    })
+
 
 # EMPLEADOS
 @login_required
@@ -182,6 +256,43 @@ def empleados_list(request):
         'empleados': empleados,
         'departamentos': departamentos,
         'selected_departamento': departamento
+    })
+
+@login_required
+@role_required(['admin', 'gerente'])
+def empleado_create(request):
+    if request.method == 'POST':
+        form = EmpleadoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Empleado creado exitosamente.')
+            return redirect('empleados_list')
+    else:
+        form = EmpleadoForm()
+    
+    return render(request, 'empleados/form.html', {
+        'form': form,
+        'title': 'Nuevo Empleado'
+    })
+
+
+@login_required
+@role_required(['admin', 'gerente'])
+def empleado_edit(request, pk):
+    empleado = get_object_or_404(Empleado, pk=pk)
+    
+    if request.method == 'POST':
+        form = EmpleadoForm(request.POST, instance=empleado)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Empleado actualizado exitosamente.')
+            return redirect('empleados_list')
+    else:
+        form = EmpleadoForm(instance=empleado)
+    
+    return render(request, 'empleados/form.html', {
+        'form': form,
+        'title': 'Editar Empleado'
     })
 
 # PLANES DE HOSPEDAJE
