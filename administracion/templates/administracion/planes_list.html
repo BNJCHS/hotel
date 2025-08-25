@@ -1,0 +1,38 @@
+{% extends "administracion/base_admin.html" %}
+{% block title %}Planes{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h2 class="mb-0">Planes</h2>
+  <a href="{% url 'planes_create' %}" class="btn btn-success">Nuevo plan</a>
+</div>
+
+{% include "administracion/_list_toolbar.html" %}
+
+<table class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Precio</th>
+      <th>Descripción</th>
+      <th class="text-end">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in page_obj.object_list %}
+    <tr>
+      <td>{{ p.nombre }}</td>
+      <td>${{ p.precio }}</td>
+      <td class="text-truncate" style="max-width: 400px;">{{ p.descripcion }}</td>
+      <td class="text-end">
+        <a href="{% url 'planes_edit' p.id %}" class="btn btn-sm btn-warning">Editar</a>
+        <a href="{% url 'planes_delete' p.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="text-center text-muted">Sin planes registrados.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% include "administracion/_pagination.html" %}
+{% endblock %}

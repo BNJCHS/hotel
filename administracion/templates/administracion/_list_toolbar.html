@@ -1,0 +1,7 @@
+<form method="get" class="d-flex gap-2 mb-3">
+  <input type="text" name="q" value="{{ q|default:'' }}" class="form-control" placeholder="Buscar...">
+  <button class="btn btn-outline-primary" type="submit">Buscar</button>
+  {% if q %}
+    <a class="btn btn-outline-secondary" href="?">Limpiar</a>
+  {% endif %}
+</form>

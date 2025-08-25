@@ -1,0 +1,10 @@
+{% extends "administracion/base_admin.html" %}
+{% block title %}Eliminar empleado{% endblock %}
+{% block content %}
+<h2>¿Eliminar a {{ empleado.nombre }} {{ empleado.apellido }}?</h2>
+<form method="post" class="mt-3">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+  <a href="{% url 'empleados_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

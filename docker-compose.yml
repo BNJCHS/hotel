@@ -23,4 +23,4 @@ services:
       MYSQL_PASSWORD: hotel_pass
       MYSQL_ROOT_PASSWORD: root_pass
     ports:
-      - "3306:3306"
+      - "3307:3306"

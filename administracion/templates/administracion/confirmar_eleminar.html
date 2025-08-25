@@ -1,9 +1,0 @@
-{% extends "base_admin.html" %}
-{% block content %}
-<h2>¿Eliminar habitación {{ habitacion.numero }}?</h2>
-<form method="post">
-  {% csrf_token %}
-  <button type="submit">Confirmar</button>
-  <a href="{% url 'lista_habitaciones_admin' %}">Cancelar</a>
-</form>
-{% endblock %}
