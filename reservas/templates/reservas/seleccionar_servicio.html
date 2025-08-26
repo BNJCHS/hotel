@@ -5,6 +5,7 @@
 {% block content %}
 <div class="container-fluid py-5" style="background: linear-gradient(135deg, var(--hotel-beige) 0%, var(--hotel-cream) 100%);">
     <div class="container">
+
         <!-- Progress Bar -->
         <div class="row mb-5">
             <div class="col-12">
@@ -159,58 +160,86 @@
             {% endfor %}
         </div>
 
-        <!-- Servicios Seleccionados -->
-        <div class="row mt-5">
-            <div class="col-12">
-                <div class="card shadow-sm border-0 selected-services-card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-shopping-cart me-2"></i>
-                            Servicios Seleccionados (<span id="servicios-count">0</span>)
-                        </h5>
-                    </div>
-                    <div class="card-body" id="servicios-seleccionados">
-                        <div class="empty-state text-center py-4">
-                            <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
-                            <p class="text-muted mb-0">Selecciona servicios para personalizar tu experiencia</p>
+        <!-- Form para enviar servicios seleccionados -->
+        <form method="POST" id="form-reserva">
+            {% csrf_token %}
+            <div id="inputs-servicios"></div>
+
+            <!-- Servicios Seleccionados -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 selected-services-card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Servicios Seleccionados (<span id="servicios-count">0</span>)
+                            </h5>
                         </div>
-                    </div>
-                    <div class="card-footer bg-light">
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <div class="total-summary">
-                                    <span class="text-muted">Total servicios: </span>
-                                    <span class="h5 text-primary mb-0" id="total-servicios">$0</span>
-                                </div>
+                        <div class="card-body" id="servicios-seleccionados">
+                            <div class="empty-state text-center py-4">
+                                <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">Selecciona servicios para personalizar tu experiencia</p>
                             </div>
-                            <div class="col-md-6 text-end">
-                                <button class="btn btn-outline-secondary me-2" onclick="volverHabitaciones()">
-                                    <i class="fas fa-arrow-left me-1"></i>Volver
-                                </button>
-                                <button class="btn btn-success" id="continuar-reserva" disabled>
-                                    Continuar <i class="fas fa-arrow-right ms-1"></i>
-                                </button>
-                            </div>
+                        </div>
+                        <div class="card-footer bg-light text-end">
+                            <button type="submit" class="btn btn-success" id="continuar-reserva" disabled>
+                                Continuar <i class="fas fa-arrow-right ms-1"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
+
     </div>
 </div>
 
-<!-- Modal de Detalles del Servicio -->
-<div class="modal fade" id="modalDetallesServicio" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Detalles del Servicio</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="detalles-servicio-content">
-                <!-- Contenido cargado dinámicamente -->
-            </div>
-        </div>
-    </div>
-</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const serviciosSeleccionados = new Map();
+    const inputsServicios = document.getElementById("inputs-servicios");
+
+    function actualizarUI() {
+        const contenedor = document.getElementById("servicios-seleccionados");
+        contenedor.innerHTML = "";
+        inputsServicios.innerHTML = "";
+
+        if (serviciosSeleccionados.size === 0) {
+            contenedor.innerHTML = `<div class="empty-state text-center py-4">
+                                        <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-0">Selecciona servicios para personalizar tu experiencia</p>
+                                    </div>`;
+            document.getElementById("continuar-reserva").disabled = true;
+        } else {
+            serviciosSeleccionados.forEach(s => {
+                const div = document.createElement("div");
+                div.className = "d-flex justify-content-between align-items-center mb-2";
+                div.innerHTML = `<span>${s.nombre}</span><span>$${s.precio}</span>`;
+                contenedor.appendChild(div);
+
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "servicios";
+                input.value = s.id;
+                inputsServicios.appendChild(input);
+            });
+            document.getElementById("servicios-count").textContent = serviciosSeleccionados.size;
+            document.getElementById("continuar-reserva").disabled = false;
+        }
+    }
+
+    document.querySelectorAll(".agregar-servicio").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const id = this.dataset.id;
+            const nombre = this.dataset.nombre;
+            const precio = this.dataset.precio;
+
+            if (!serviciosSeleccionados.has(id)) {
+                serviciosSeleccionados.set(id, {id, nombre, precio});
+                actualizarUI();
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

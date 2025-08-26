@@ -750,14 +750,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 console.log("Hotel Elegante - Website loaded successfully! 🏨")
 
-
+// Obtener CSRF token
 function getCookie(name) {
     let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + "=")) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
             }
@@ -766,6 +766,25 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Función para actualizar contador y total
+function actualizarResumen() {
+    const contenedor = document.getElementById("servicios-seleccionados");
+    const servicios = contenedor.querySelectorAll(".servicio-agregado");
+    const contador = document.getElementById("servicios-count");
+    const total = document.getElementById("total-servicios");
+
+    let totalPrecio = 0;
+    servicios.forEach(s => {
+        totalPrecio += parseFloat(s.dataset.precio);
+    });
+
+    contador.textContent = servicios.length;
+    total.textContent = `$${totalPrecio}`;
+
+    document.getElementById("continuar-reserva").disabled = servicios.length === 0;
+}
+
+// Manejar click en botones agregar
 document.querySelectorAll(".agregar-servicio").forEach((btn) => {
     btn.addEventListener("click", function() {
         const servicioId = this.dataset.id;
@@ -789,24 +808,45 @@ document.querySelectorAll(".agregar-servicio").forEach((btn) => {
                 if (emptyState) emptyState.remove();
 
                 const servicioDiv = document.createElement("div");
-                servicioDiv.className = "d-flex justify-content-between align-items-center mb-2";
+                servicioDiv.className = "d-flex justify-content-between align-items-center mb-2 servicio-agregado";
+                servicioDiv.dataset.id = data.servicio.id;
+                servicioDiv.dataset.precio = data.servicio.precio;
                 servicioDiv.innerHTML = `
                     <span>${data.servicio.nombre}</span>
-                    <span>$${data.servicio.precio}</span>
+                    <div>
+                        <span>$${data.servicio.precio}</span>
+                        <button class="btn btn-sm btn-outline-danger ms-2 eliminar-servicio">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 `;
                 contenedor.appendChild(servicioDiv);
 
-                // Actualizar contador y total
-                const contador = document.getElementById("servicios-count");
-                const total = document.getElementById("total-servicios");
-                contador.textContent = parseInt(contador.textContent) + 1;
-                total.textContent = `$${parseInt(total.textContent.replace("$","")) + data.servicio.precio}`;
+                // Manejar eliminar servicio
+                servicioDiv.querySelector(".eliminar-servicio").addEventListener("click", function() {
+                    servicioDiv.remove();
+                    showNotification(`Servicio "${data.servicio.nombre}" eliminado`, "info");
+                    actualizarResumen();
 
-                // Habilitar botón continuar
-                document.getElementById("continuar-reserva").disabled = false;
+                    // Si no quedan servicios, mostrar estado vacío
+                    if (contenedor.querySelectorAll(".servicio-agregado").length === 0) {
+                        const emptyDiv = document.createElement("div");
+                        emptyDiv.className = "empty-state text-center py-4";
+                        emptyDiv.innerHTML = `
+                            <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Selecciona servicios para personalizar tu experiencia</p>
+                        `;
+                        contenedor.appendChild(emptyDiv);
+                    }
+                });
+
+                // Actualizar contador y total
+                actualizarResumen();
+
             } else {
                 showNotification(data.error || "Error al agregar servicio", "error");
             }
-        });
+        })
+        .catch(() => showNotification("Error al agregar servicio", "error"));
     });
 });
