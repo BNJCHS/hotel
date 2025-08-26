@@ -1,0 +1,33 @@
+{% extends 'administracion/base_admin.html' %}
+{% block title %}Habitaciones - Stock{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Stock de Habitaciones</h2>
+    <a href="{% url 'habitaciones_stock_create' %}" class="btn btn-success mb-3">➕ Agregar Stock</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Tipo de Habitación</th>
+                <th>Cantidad en Stock</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in stocks %}
+            <tr>
+                <td>{{ stock.habitacion.tipo }}</td>
+                <td>{{ stock.cantidad }}</td>
+                <td>
+                    <a href="{% url 'habitaciones_stock_edit' stock.id %}" class="btn btn-warning btn-sm">✏️ Editar</a>
+                    <a href="{% url 'habitaciones_stock_delete' stock.id %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No hay stock cargado aún.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

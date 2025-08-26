@@ -1,0 +1,37 @@
+{% extends "administracion/base_admin.html" %}
+{% block title %}Habitaciones{% endblock %}
+{% block page_title %}Gestión de Habitaciones{% endblock %}
+
+{% block content %}
+<a href="{% url 'habitaciones_create' %}" class="btn btn-primary mb-3">➕ Nueva Habitación</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tipo</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for h in habitaciones %}
+        <tr>
+            <td>{{ h.id }}</td>
+            <td>{{ h.tipo }}</td>
+            <td>${{ h.precio }}</td>
+            <td>{{ h.stock }}</td>
+            <td>
+                <a href="{% url 'habitaciones_edit' h.id %}" class="btn btn-warning btn-sm">✏️</a>
+                <a href="{% url 'habitaciones_delete' h.id %}" class="btn btn-danger btn-sm">🗑️</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No hay habitaciones cargadas</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "administracion/base_admin.html" %}
+{% block title %}Eliminar Habitación{% endblock %}
+{% block page_title %}Confirmar Eliminación{% endblock %}
+
+{% block content %}
+<p>¿Estás seguro de eliminar la habitación <strong>{{ habitacion.tipo }}</strong>?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a href="{% url 'habitaciones_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

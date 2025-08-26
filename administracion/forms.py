@@ -38,3 +38,4 @@ class HuespedForm(forms.ModelForm):
     class Meta:
         model = Huesped
         fields = "__all__"
+

@@ -749,3 +749,64 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 console.log("Hotel Elegante - Website loaded successfully! 🏨")
+
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.querySelectorAll(".agregar-servicio").forEach((btn) => {
+    btn.addEventListener("click", function() {
+        const servicioId = this.dataset.id;
+
+        fetch("/reservas/servicio/agregar/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: JSON.stringify({ servicio_id: servicioId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Servicio "${data.servicio.nombre}" agregado`, "success");
+
+                // Actualizar la lista de servicios seleccionados
+                const contenedor = document.getElementById("servicios-seleccionados");
+                const emptyState = contenedor.querySelector(".empty-state");
+                if (emptyState) emptyState.remove();
+
+                const servicioDiv = document.createElement("div");
+                servicioDiv.className = "d-flex justify-content-between align-items-center mb-2";
+                servicioDiv.innerHTML = `
+                    <span>${data.servicio.nombre}</span>
+                    <span>$${data.servicio.precio}</span>
+                `;
+                contenedor.appendChild(servicioDiv);
+
+                // Actualizar contador y total
+                const contador = document.getElementById("servicios-count");
+                const total = document.getElementById("total-servicios");
+                contador.textContent = parseInt(contador.textContent) + 1;
+                total.textContent = `$${parseInt(total.textContent.replace("$","")) + data.servicio.precio}`;
+
+                // Habilitar botón continuar
+                document.getElementById("continuar-reserva").disabled = false;
+            } else {
+                showNotification(data.error || "Error al agregar servicio", "error");
+            }
+        });
+    });
+});

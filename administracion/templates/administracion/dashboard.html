@@ -42,6 +42,15 @@
   <div class="card-header bg-dark text-white">
     Últimas Reservas
   </div>
+  <div class="col-xl-3 col-md-6 mb-4">
+    <div class="stats-card bg-info text-white shadow">
+        <div class="card-body">
+            <h5 class="card-title">Habitaciones</h5>
+            <p class="card-text">Gestiona tipos y stock de habitaciones.</p>
+            <a href="{% url 'habitaciones_list' %}" class="btn btn-light btn-sm">Ver</a>
+        </div>
+    </div>
+</div>
   <div class="card-body">
     {% if ultimas_reservas %}
       <table class="table table-sm">
