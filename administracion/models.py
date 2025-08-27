@@ -20,6 +20,7 @@ class Plan(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
     descripcion = models.TextField()
     precio = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    imagen = models.ImageField(upload_to='planes/', null=True, blank=True)  # <-- nuevo
 
     class Meta:
         ordering = ["nombre"]
@@ -37,6 +38,7 @@ class Promocion(models.Model):
     )
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
+    imagen = models.ImageField(upload_to='promociones/', null=True, blank=True)  # <-- nuevo
 
     class Meta:
         ordering = ["-fecha_inicio", "nombre"]

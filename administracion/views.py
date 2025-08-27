@@ -2,19 +2,27 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.db.models import Q
-
+from reservas.models import Reserva
 from .models import Empleado, Plan, Promocion, Servicio, Huesped
 from .forms import EmpleadoForm, PlanForm, PromocionForm, ServicioForm, HuespedForm
+from reservas.models import Huesped 
 
-# -------- Dashboard en /admin/ --------
+from django.db.models import Sum
+
 def dashboard(request):
-    # Conecta métricas reales de tus otras apps cuando quieras
+    total_reservas = Reserva.objects.count()
+    total_ingresos = Reserva.objects.aggregate(total=Sum("monto"))["total"] or 0
+    total_huespedes = Huesped.objects.count()
+    total_empleados = Empleado.objects.count()
+
+    reservas = Reserva.objects.order_by("-fecha_reserva")[:5]  # últimas 5
+
     context = {
-        "total_reservas": 120,               # ej. Reserva.objects.count()
-        "total_ingresos": 45000,             # ej. sum de pagos
-        "total_clientes": Huesped.objects.count(),
-        "total_empleados": Empleado.objects.count(),
-        "ultimas_reservas": [],              # ej. Reserva.objects.order_by('-fecha')[:5]
+        "total_reservas": total_reservas,
+        "total_ingresos": total_ingresos,
+        'total_huespedes': total_huespedes,
+        "total_empleados": total_empleados,
+        "reservas": reservas,
     }
     return render(request, "administracion/dashboard.html", context)
 

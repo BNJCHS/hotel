@@ -37,12 +37,7 @@
     </div>
   </div>
 </div>
-
-<div class="card mt-4 shadow-sm">
-  <div class="card-header bg-dark text-white">
-    Últimas Reservas
-  </div>
-  <div class="col-xl-3 col-md-6 mb-4">
+<div class="col-xl-3 col-md-6 mb-4">
     <div class="stats-card bg-info text-white shadow">
         <div class="card-body">
             <h5 class="card-title">Habitaciones</h5>
@@ -50,19 +45,24 @@
             <a href="{% url 'habitaciones_list' %}" class="btn btn-light btn-sm">Ver</a>
         </div>
     </div>
+<div class="card mt-4 shadow-sm">
+  <div class="card-header bg-dark text-white">
+    Últimas Reservas
+  </div>
+  
 </div>
   <div class="card-body">
-    {% if ultimas_reservas %}
+    {% if reservas %}
       <table class="table table-sm">
         <thead>
           <tr><th>Cliente</th><th>Habitación</th><th>Fecha</th><th>Monto</th></tr>
         </thead>
         <tbody>
-          {% for r in ultimas_reservas %}
+          {% for r in reservas %}
             <tr>
-              <td>{{ r.cliente }}</td>
+              <td>{{ r.huesped }}</td>
               <td>{{ r.habitacion }}</td>
-              <td>{{ r.fecha }}</td>
+              <td>{{ r.fecha_reserva }}</td>
               <td>${{ r.monto }}</td>
             </tr>
           {% endfor %}
