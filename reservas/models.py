@@ -14,6 +14,9 @@ class Reserva(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     habitacion = models.ForeignKey(Habitacion, on_delete=models.CASCADE)
     servicios = models.ManyToManyField(Servicio, blank=True)
+    plan = models.ForeignKey('administracion.Plan', on_delete=models.SET_NULL, null=True, blank=True)
+    promocion = models.ForeignKey('administracion.Promocion', on_delete=models.SET_NULL, null=True, blank=True)
+
     fecha_reserva = models.DateTimeField(auto_now_add=True)
     confirmada = models.BooleanField(default=False)
     metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, blank=True, null=True)
@@ -23,10 +26,9 @@ class Reserva(models.Model):
     check_out = models.DateField(null=True, blank=True)
     cantidad_huespedes = models.PositiveIntegerField(default=1)
 
-
     def __str__(self):
         return f"Reserva de {self.usuario.username} - Habitación {self.habitacion.numero}"
-    
+
 
 class Huesped(models.Model):
     nombre = models.CharField(max_length=100)

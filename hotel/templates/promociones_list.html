@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Promociones - Hotel Elegante{% endblock %}
+
+{% block content %}
+<section class="promociones-section container my-5">
+    <h2 class="text-center mb-4">Promociones Vigentes</h2>
+    <div class="row">
+        {% for promo in promociones %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-success">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ promo.nombre }}</h5>
+                    <p class="card-text">{{ promo.descripcion|truncatewords:30 }}</p>
+                    <p class="fw-bold text-danger">Descuento: {{ promo.descuento }}%</p>
+                    <small class="text-muted">Válida desde {{ promo.fecha_inicio }} hasta {{ promo.fecha_fin }}</small>
+                    <form method="post" action="{% url 'confirmar_reserva' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="promocion_id" value="{{ promo.id }}">
+                        <button type="submit" class="btn btn-success mt-auto">Reservar con Promo</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center">No hay promociones disponibles en este momento.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+

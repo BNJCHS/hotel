@@ -1,27 +1,27 @@
-/* Variables personalizadas para Bootstrap */
 :root {
-  --bs-primary: #d4af37;
-  --bs-secondary: #2c3e50;
-  --hotel-gold: #d4af37;
-  --hotel-navy: #2c3e50;
-  --hotel-beige: #faf8f3;
-  --hotel-cream: #f5f2ed;
-  --hotel-brown: #8b7355;
-  --hotel-dark-gold: #b8941f;
+  --bs-primary: #FFD700; /* dorado brillante */
+  --bs-secondary: #3B2F2F; /* marrón oscuro */
+  --hotel-gold: #FFD700; /* dorado brillante */
+  --hotel-brown: #3B2F2F; /* marrón oscuro */
+  --hotel-beige: #F5F5DC; /* beige cálido */
+  --hotel-cream: #FAFAFA; /* blanco suave */
+  --hotel-text: #2A2A2A; /* gris oscuro elegante */
+  --hotel-dark-gold: #CCAC00; /* dorado más oscuro */
 }
 
-/* Agregando estilos globales más elegantes */
+/* Fondo general */
 body {
   background-color: var(--hotel-beige);
+  color: var(--hotel-text); /* letras más legibles */
   font-family: "Inter", sans-serif;
   line-height: 1.6;
 }
 
-/* Mejorando el header con más estilo */
+/* Navbar */
 .navbar {
-  background: linear-gradient(135deg, var(--hotel-navy) 0%, rgba(235, 235, 235, 0.95) 100%);
+  background: linear-gradient(135deg, var(--hotel-brown) 0%, rgba(59, 47, 47, 0.95) 100%);
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(241, 241, 241, 0.1);
+  box-shadow: 0 4px 20px rgba(59, 47, 47, 0.2);
   padding: 1rem 0;
 }
 
@@ -29,42 +29,27 @@ body {
   font-family: "Playfair Display", serif;
   font-weight: 700;
   color: var(--hotel-gold) !important;
-  text-shadow: 2px 2px 4px rgb(255, 255, 255);
+  text-shadow: 2px 2px 4px rgb(250, 250, 250);
 }
 
-/* Mejorando navegación con efectos más sofisticados */
-.nav-link {
-  position: relative;
-  color: white !important;
+/* 🔥 Forzamos color claro en todos los links del navbar */
+.navbar .nav-link {
+  color: #FAFAFA !important; /* blanco suave */
   font-weight: 500;
   padding: 0.75rem 1.25rem !important;
   transition: all 0.3s ease;
   border-radius: 8px;
 }
 
-.nav-link::before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  background: var(--hotel-gold);
-  transition: all 0.3s ease;
-  transform: translateX(-50%);
-}
-
-.nav-link:hover::before {
-  width: 80%;
-}
-
-.nav-link:hover {
-  color: var(--hotel-gold) !important;
-  background-color: rgba(235, 196, 66, 0.726);
+.navbar .nav-link:hover,
+.navbar .nav-link:focus,
+.navbar .nav-link.active {
+  color: #FFD700 !important; /* dorado al pasar el mouse o activo */
+  background-color: rgba(255, 215, 0, 0.15);
   transform: translateY(-2px);
 }
 
-/* Botones más elegantes */
+/* Botones dorados */
 .btn-hotel-gold {
   background: linear-gradient(135deg, var(--hotel-gold), var(--hotel-dark-gold));
   border: none;
@@ -73,7 +58,7 @@ body {
   padding: 0.75rem 2rem;
   border-radius: 50px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -81,8 +66,26 @@ body {
 .btn-hotel-gold:hover {
   background: linear-gradient(135deg, var(--hotel-dark-gold), var(--hotel-brown));
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
   color: white;
+}
+
+/* Títulos */
+h1, h2, h3, h4, h5 {
+  color: var(--hotel-brown); /* más elegantes */
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+}
+
+/* Enlaces dentro del contenido */
+a {
+  color: var(--hotel-gold);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--hotel-dark-gold);
 }
 
 /* Dropdown de perfil más elegante */

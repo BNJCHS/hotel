@@ -214,6 +214,35 @@
         </div>
     </div>
 </section>
+<section class="seccion-planes">
+    <h2>Planes Destacados</h2>
+    <div class="cards-container">
+        {% for plan in planes %}
+        <div class="card">
+            <img src="{{ plan.imagen.url }}" alt="{{ plan.nombre }}">
+            <h3>{{ plan.nombre }}</h3>
+            <p>{{ plan.descripcion|truncatechars:100 }}</p>
+            <p class="precio">Precio: ${{ plan.precio }}</p>
+            <a href="{% url 'plan_detalle' plan.id %}" class="btn">Ver más</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="seccion-promociones">
+    <h2>Promociones Destacadas</h2>
+    <div class="cards-container">
+        {% for promo in promociones %}
+        <div class="card">
+            <img src="{{ promo.imagen.url }}" alt="{{ promo.nombre }}">
+            <h3>{{ promo.nombre }}</h3>
+            <p>{{ promo.descripcion|truncatechars:100 }}</p>
+            <p class="descuento">Descuento: {{ promo.descuento }}%</p>
+            <a href="{% url 'promocion_detalle' promo.id %}" class="btn">Ver más</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
 
 <!-- Contact Section -->
 <section class="contact-section" id="contacto">

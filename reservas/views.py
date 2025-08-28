@@ -149,6 +149,8 @@ from decimal import Decimal
 def confirmar_reserva(request):
     habitacion_id = request.session.get('habitacion_id')
     servicios_ids = request.session.get('servicios_seleccionados', [])
+    plan_id = request.session.get('plan_id')
+    promocion_id = request.session.get('promocion_id')
     fecha_entrada = request.session.get('fecha_entrada')
     fecha_salida = request.session.get('fecha_salida')
     numero_huespedes = request.session.get('numero_huespedes', 1)
@@ -159,17 +161,37 @@ def confirmar_reserva(request):
     habitacion = get_object_or_404(Habitacion, id=habitacion_id)
     servicios = Servicio.objects.filter(id__in=servicios_ids)
 
-    # Convertir precios a Decimal para evitar errores
-    precio_habitacion = Decimal(habitacion.precio)
-    precio_servicios = sum(Decimal(servicio.precio) for servicio in servicios)
-    impuestos = Decimal('0.18') * (precio_habitacion + precio_servicios)
-    precio_total = precio_habitacion + precio_servicios + impuestos
+    plan = None
+    promocion = None
+    precio_total = Decimal('0')
+
+    # Si eligió un plan
+    if plan_id:
+        plan = get_object_or_404(Plan, id=plan_id)
+        precio_total = Decimal(plan.precio)
+
+    # Si eligió una promoción
+    elif promocion_id:
+        promocion = get_object_or_404(Promocion, id=promocion_id)
+        precio_habitacion = Decimal(habitacion.precio)
+        precio_servicios = sum(Decimal(servicio.precio) for servicio in servicios)
+        subtotal = precio_habitacion + precio_servicios
+        descuento = (promocion.descuento / Decimal('100')) * subtotal
+        precio_total = subtotal - descuento
+
+    # Si no hay plan ni promoción → lógica normal
+    else:
+        precio_habitacion = Decimal(habitacion.precio)
+        precio_servicios = sum(Decimal(servicio.precio) for servicio in servicios)
+        impuestos = Decimal('0.18') * (precio_habitacion + precio_servicios)
+        precio_total = precio_habitacion + precio_servicios + impuestos
 
     if request.method == 'POST':
-        # Crear la reserva confirmada
         reserva = Reserva.objects.create(
             usuario=request.user,
             habitacion=habitacion,
+            plan=plan,
+            promocion=promocion,
             check_in=fecha_entrada,
             check_out=fecha_salida,
             cantidad_huespedes=numero_huespedes,
@@ -180,10 +202,10 @@ def confirmar_reserva(request):
         reserva.servicios.set(servicios)
 
         # Limpiar sesión
-        for key in ['habitacion_id', 'servicios_seleccionados', 'fecha_entrada', 'fecha_salida', 'numero_huespedes']:
+        for key in ['habitacion_id', 'servicios_seleccionados', 'plan_id', 'promocion_id', 'fecha_entrada', 'fecha_salida', 'numero_huespedes']:
             request.session.pop(key, None)
 
-        # Enviar email de confirmación
+        # Enviar email confirmación
         token_url = request.build_absolute_uri(
             reverse('confirmar_reserva_token', args=[reserva.token])
         )
@@ -194,19 +216,17 @@ def confirmar_reserva(request):
             recipient_list=[request.user.email],
         )
 
-        # Redirigir a mensaje de reserva enviada
         return render(request, 'reservas/reserva_enviada.html', {'email': request.user.email})
 
     return render(request, 'reservas/confirmar_reserva.html', {
         'habitacion': habitacion,
         'servicios': servicios,
-        'precio_habitacion': precio_habitacion,
-        'precio_servicios': precio_servicios,
-        'impuestos': impuestos,
+        'plan': plan,
+        'promocion': promocion,
         'precio_total': precio_total,
         'fecha_entrada': fecha_entrada,
         'fecha_salida': fecha_salida,
-        'numero_huespedes': numero_huespedes
+        'numero_huespedes': numero_huespedes,
     })
 
 @login_required
