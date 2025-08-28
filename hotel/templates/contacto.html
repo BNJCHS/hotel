@@ -1,133 +1,216 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Contacto - Hotel Elegante{% endblock %}
+{% block title %}Hotel Paradise - Bienvenido al Paraíso{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<section class="page-hero">
+<section class="hero" id="hero">
     <div class="hero-background">
-        <img src="/placeholder.svg?height=400&width=1200" alt="Contacto Hotel Elegante" class="hero-image">
+        <img src="/placeholder.svg?height=800&width=1200" alt="Hotel Paradise" class="hero-image">
         <div class="hero-overlay"></div>
     </div>
-    <div class="container">
-        <div class="page-hero-content">
-            <h1>Contacto</h1>
-            <p>Estamos aquí para ayudarte. Ponte en contacto con nosotros</p>
+    
+    <div class="hero-content">
+        <h1 class="hero-title">Bienvenido al Paraíso</h1>
+        <p class="hero-subtitle">Experimenta el lujo y la comodidad en un entorno único</p>
+        <div class="hero-buttons">
+            <a href="{% url 'seleccionar_fechas' %}" class="btn btn-primary">Reservar Ahora</a>
+            <a href="#habitaciones" class="btn btn-secondary">Ver Habitaciones</a>
         </div>
+    </div>
+    
+    <div class="scroll-indicator">
+        <i class="fas fa-chevron-down"></i>
     </div>
 </section>
 
-<!-- Información de Contacto -->
-<section class="contact-info-section">
+<!-- Booking Form Section -->
+<section class="booking-section" id="reservar">
     <div class="container">
-        <div class="contact-info-grid">
-            <div class="contact-item">
-                <div class="contact-icon">
-                    <i class="fas fa-map-marker-alt"></i>
-                </div>
-                <h3>Dirección</h3>
-                <p>Av. Principal 123<br>Centro de la Ciudad<br>CP 12345</p>
-            </div>
-            
-            <div class="contact-item">
-                <div class="contact-icon">
-                    <i class="fas fa-phone"></i>
-                </div>
-                <h3>Teléfono</h3>
-                <p>+1 (555) 123-4567<br>+1 (555) 123-4568</p>
-            </div>
-            
-            <div class="contact-item">
-                <div class="contact-icon">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <h3>Email</h3>
-                <p>info@hotelelegante.com<br>reservas@hotelelegante.com</p>
-            </div>
-            
-            <div class="contact-item">
-                <div class="contact-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h3>Horarios</h3>
-                <p>Recepción: 24/7<br>Restaurante: 6:00 - 23:00<br>Spa: 8:00 - 22:00</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Formulario de Contacto -->
-<section class="contact-form-section">
-    <div class="container">
-        <div class="contact-content">
-            <div class="contact-form-container">
-                <h2>Envíanos un Mensaje</h2>
-                <p>Completa el formulario y nos pondremos en contacto contigo lo antes posible</p>
-                
-                <form class="contact-form" method="post" action="{% url 'contact' %}" id="contact-form">
-                    {% csrf_token %}
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="first-name">Nombre</label>
-                            <input type="text" id="first-name" name="first_name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="last-name">Apellido</label>
-                            <input type="text" id="last-name" name="last_name" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Teléfono</label>
-                            <input type="tel" id="phone" name="phone">
-                        </div>
-                    </div>
-                    
+        <div class="booking-form-container">
+            <h2>Reserva tu Estancia</h2>
+            <form class="booking-form" id="booking-form">
+                <div class="form-row">
                     <div class="form-group">
-                        <label for="subject">Asunto</label>
-                        <select id="subject" name="subject" required>
-                            <option value="">Seleccionar asunto</option>
-                            <option value="reserva">Consulta de Reserva</option>
-                            <option value="evento">Eventos y Celebraciones</option>
-                            <option value="servicios">Información de Servicios</option>
-                            <option value="quejas">Quejas y Sugerencias</option>
-                            <option value="otro">Otro</option>
+                        <label for="checkin">Fecha de Entrada</label>
+                        <input type="date" id="checkin" name="checkin" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkout">Fecha de Salida</label>
+                        <input type="date" id="checkout" name="checkout" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="guests">Huéspedes</label>
+                        <select id="guests" name="guests" required>
+                            <option value="1">1 Huésped</option>
+                            <option value="2">2 Huéspedes</option>
+                            <option value="3">3 Huéspedes</option>
+                            <option value="4">4 Huéspedes</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
-                        <label for="message">Mensaje</label>
-                        <textarea id="message" name="message" rows="6" required placeholder="Escribe tu mensaje aquí..."></textarea>
+                        <button type="submit" class="btn btn-primary">Buscar Disponibilidad</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="about-section">
+    <div class="container">
+        <div class="about-content">
+            <div class="about-text">
+                <h2>Una Experiencia Inolvidable</h2>
+                <p>Hotel Paradise combina elegancia moderna con hospitalidad excepcional. Nuestras instalaciones de lujo y servicios personalizados garantizan una estancia memorable.</p>
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-star"></i>
+                        <span>Servicio 5 Estrellas</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-wifi"></i>
+                        <span>WiFi Gratuito</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-swimming-pool"></i>
+                        <span>Piscina Infinity</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-spa"></i>
+                        <span>Spa & Wellness</span>
+                    </div>
+                </div>
+            </div>
+            <div class="about-image">
+                <img src="/placeholder.svg?height=500&width=600" alt="Hotel Lobby">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Rooms Section -->
+<section class="rooms-section" id="habitaciones">
+    <div class="container">
+        <div class="section-header">
+            <h2>Nuestras Habitaciones</h2>
+            <p>Descubre nuestras elegantes habitaciones diseñadas para tu máximo confort</p>
+        </div>
+        
+        <div class="rooms-grid">
+            <!-- Aquí podrías usar un loop si tuvieras habitaciones desde la base de datos -->
+            <div class="room-card">
+                <div class="room-image">
+                    <img src="/placeholder.svg?height=300&width=400" alt="Habitación Deluxe">
+                    <div class="room-price">$299/noche</div>
+                </div>
+                <div class="room-content">
+                    <h3>Habitación Deluxe</h3>
+                    <p>Espaciosa habitación con vista al mar y todas las comodidades modernas.</p>
+                    <ul class="room-amenities">
+                        <li><i class="fas fa-bed"></i> Cama King Size</li>
+                        <li><i class="fas fa-tv"></i> TV 55" Smart</li>
+                        <li><i class="fas fa-bath"></i> Baño de Mármol</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline">Ver Detalles</a>
+                </div>
+            </div>
+            <!-- Añade más habitaciones según necesites -->
+        </div>
+    </div>
+</section>
+
+<!-- Plans Section -->
+<section class="seccion-planes">
+    <h2>Planes Destacados</h2>
+    <div class="cards-container">
+        {% for plan in planes|slice:":3" %}
+        <div class="card">
+            <div class="icon-placeholder">
+                <i class="fas fa-suitcase-rolling fa-4x"></i>
+            </div>
+            <h3>{{ plan.nombre }}</h3>
+            <p>{{ plan.descripcion|truncatechars:100 }}</p>
+            <p class="precio">Precio: ${{ plan.precio }}</p>
+            <a href="{% url 'plan_detalle' plan.id %}" class="btn">Ver más</a>
+        </div>
+        {% endfor %}
+    </div>
+    <a href="{% url 'planes_list' %}" class="btn btn-outline mt-3">Ver todos los planes</a>
+</section>
+
+<!-- Promotions Section -->
+<section class="seccion-promociones">
+    <h2>Promociones Destacadas</h2>
+    <div class="cards-container">
+        {% for promo in promociones|slice:":3" %}
+        <div class="card">
+            <div class="icon-placeholder">
+                <i class="fas fa-tags fa-4x"></i>
+            </div>
+            <h3>{{ promo.nombre }}</h3>
+            <p>{{ promo.descripcion|truncatechars:100 }}</p>
+            <p class="descuento">Descuento: {{ promo.descuento }}%</p>
+            <a href="{% url 'promocion_detalle' promo.id %}" class="btn">Ver más</a>
+        </div>
+        {% endfor %}
+    </div>
+    <a href="{% url 'promociones_list' %}" class="btn btn-outline mt-3">Ver todas las promociones</a>
+</section>
+
+<!-- Contact Section -->
+<section class="contact-section" id="contacto">
+    <div class="container">
+        <div class="contact-content">
+            <div class="contact-info">
+                <h2>Contáctanos</h2>
+                <p>Estamos aquí para hacer tu estancia perfecta. No dudes en contactarnos.</p>
+                
+                <div class="contact-details">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Dirección</h4>
+                            <p>Av. Principal 123, Ciudad Paraíso<br>CP 12345, País</p>
+                        </div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary btn-large">Enviar Mensaje</button>
-                </form>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Teléfono</h4>
+                            <p>+1 (555) 123-4567<br>+1 (555) 123-4568</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p>info@hotelparadise.com<br>reservas@hotelparadise.com</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div class="contact-map">
-                <h3>Nuestra Ubicación</h3>
-                <div class="map-placeholder">
-                    <img src="/placeholder.svg?height=300&width=400" alt="Ubicación Hotel Elegante">
-                    <div class="map-overlay">
-                        <p><i class="fas fa-map-marker-alt"></i> Av. Principal 123, Centro de la Ciudad</p>
+            <div class="contact-form-container">
+                <form class="contact-form">
+                    <div class="form-group">
+                        <input type="text" placeholder="Nombre completo" required>
                     </div>
-                </div>
-                
-                <div class="location-details">
-                    <h4>Cómo Llegar</h4>
-                    <ul>
-                        <li><strong>En Auto:</strong> Estacionamiento gratuito disponible</li>
-                        <li><strong>Transporte Público:</strong> Estación de metro a 2 cuadras</li>
-                        <li><strong>Aeropuerto:</strong> 30 minutos en taxi</li>
-                        <li><strong>Tren:</strong> Estación central a 10 minutos</li>
-                    </ul>
-                </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" placeholder="Teléfono">
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Mensaje" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
+                </form>
             </div>
         </div>
     </div>

@@ -4,12 +4,40 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, get_object_or_404
 from administracion.models import Plan, Promocion
+from django.contrib.auth.decorators import login_required
+from reservas.models import Reserva
+from habitaciones.models import Habitacion
+from django.contrib import messages
 import json
 from datetime import datetime, timedelta
 
-def index(request):
-    return render(request, 'index.html')
+def lista_habitaciones(request):
+    habitaciones = Habitacion.objects.all()  # Todas las habitaciones
+    context = {
+        'habitaciones': habitaciones
+    }
+    return render(request, 'lista_habitaciones.html', context)
+def habitacion_detalle(request, id):
+    habitacion = get_object_or_404(Habitacion, id=id)
+    context = {
+        'habitacion': habitacion
+    }
+    return render(request, 'habitacion_detalle.html', context)
 
+# vistas.py
+def seleccionar_habitacion(request, habitacion_id):
+    request.session['habitacion_id'] = habitacion_id
+    return redirect('seleccionar_fechas')
+
+
+def index(request):
+    planes = Plan.objects.all()[:3]  # Los primeros 3 planes
+    promociones = Promocion.objects.all()[:3]  # Las primeras 3 promociones
+    context = {
+        'planes': planes,
+        'promociones': promociones
+    }
+    return render(request, 'index.html', context)
 def about(request):
     """
     Vista de la página Sobre Nosotros
@@ -179,11 +207,11 @@ from administracion.models import Plan, Promocion
 
 def planes_list(request):
     planes = Plan.objects.all()
-    return render(request, "hotel/planes_list.html", {"planes": planes})
+    return render(request, "planes_lista.html", {"planes": planes})
 
 def promociones_list(request):
     promociones = Promocion.objects.all()
-    return render(request, "hotel/promociones_list.html", {"promociones": promociones})
+    return render(request, "promociones_lista.html", {"promociones": promociones})
 
 def plan_detalle(request, plan_id):
     plan = get_object_or_404(Plan, id=plan_id)
@@ -193,20 +221,39 @@ def promocion_detalle(request, promocion_id):
     promocion = get_object_or_404(Promocion, id=promocion_id)
     return render(request, 'promocion_detalle.html', {'promocion': promocion})
 
-def seleccionar_plan(request, plan_id):
+@login_required
+def reservar_plan(request, plan_id):
     plan = get_object_or_404(Plan, id=plan_id)
-    
-    # Guardamos en la sesión los datos del plan
-    request.session['plan_id'] = plan.id
-    request.session['precio_plan'] = str(plan.precio)  # lo pasamos a string porque Django no guarda Decimal
-    
-    return redirect('confirmar_reserva')
 
-def seleccionar_promocion(request, promo_id):
-    promocion = get_object_or_404(Promocion, id=promo_id)
-    
-    # Guardamos en la sesión los datos de la promo
-    request.session['promo_id'] = promocion.id
-    request.session['precio_promo'] = str(promocion.precio)
-    
-    return redirect('confirmar_reserva')
+    # 👉 Podrías permitir elegir habitación, por ahora pongo la primera libre
+    habitacion = Habitacion.objects.first()
+
+    reserva = Reserva.objects.create(
+        usuario=request.user,
+        habitacion=habitacion,
+        plan=plan,
+        confirmada=False
+    )
+    reserva.save()
+
+    messages.success(request, f"Reserva creada con el plan {plan.nombre}")
+    return redirect('detalle_reserva', reserva_id=reserva.id)
+
+
+@login_required
+def reservar_promocion(request, promocion_id):
+    promocion = get_object_or_404(Promocion, id=promocion_id)
+
+    # 👉 Igual que arriba: deberías elegir habitación, ahora pongo la primera libre
+    habitacion = Habitacion.objects.first()
+
+    reserva = Reserva.objects.create(
+        usuario=request.user,
+        habitacion=habitacion,
+        promocion=promocion,
+        confirmada=False
+    )
+    reserva.save()
+
+    messages.success(request, f"Reserva creada con la promoción {promocion.nombre}")
+    return redirect('detalle_reserva', reserva_id=reserva.id)

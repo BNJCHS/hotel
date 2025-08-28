@@ -59,8 +59,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-LOGIN_URL = '/usuarios/login/'
-LOGOUT_REDIRECT_URL = '/usuarios/login/'
+LOGIN_URL = '/registration/login/'
+LOGOUT_REDIRECT_URL = '/registration/login/'
 LOGIN_REDIRECT_URL = '/'
 
 

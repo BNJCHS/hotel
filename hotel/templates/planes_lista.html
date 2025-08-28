@@ -14,10 +14,9 @@
                     <h5 class="card-title">{{ plan.nombre }}</h5>
                     <p class="card-text">{{ plan.descripcion|truncatewords:30 }}</p>
                     <p class="fw-bold text-success">Precio: ${{ plan.precio }}</p>
-                    <form method="post" action="{% url 'confirmar_reserva' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="plan_id" value="{{ plan.id }}">
-                        <button type="submit" class="btn btn-primary mt-auto">Reservar</button>
+                    <form method="post" action="{% url 'reservar_plan' plan.id %}"> 
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary mt-auto">Reservar</button>
                     </form>
                 </div>
             </div>

@@ -16,11 +16,10 @@
         <p class="hero-subtitle">Experimenta el lujo y la comodidad en un entorno único</p>
         <div class="hero-buttons">
             <a href="{% url 'seleccionar_fechas' %}" class="btn btn-primary">Reservar Ahora</a>
-            <a href="#habitaciones" class="btn btn-secondary">Ver Habitaciones</a>
+            <a href="{% url 'habitaciones_lista' %}" class="btn btn-secondary">Ver Habitaciones</a>
         </div>
     </div>
     
-    <!-- Scroll indicator -->
     <div class="scroll-indicator">
         <i class="fas fa-chevron-down"></i>
     </div>
@@ -67,22 +66,10 @@
                 <h2>Una Experiencia Inolvidable</h2>
                 <p>Hotel Paradise combina elegancia moderna con hospitalidad excepcional. Nuestras instalaciones de lujo y servicios personalizados garantizan una estancia memorable.</p>
                 <div class="features">
-                    <div class="feature">
-                        <i class="fas fa-star"></i>
-                        <span>Servicio 5 Estrellas</span>
-                    </div>
-                    <div class="feature">
-                        <i class="fas fa-wifi"></i>
-                        <span>WiFi Gratuito</span>
-                    </div>
-                    <div class="feature">
-                        <i class="fas fa-swimming-pool"></i>
-                        <span>Piscina Infinity</span>
-                    </div>
-                    <div class="feature">
-                        <i class="fas fa-spa"></i>
-                        <span>Spa & Wellness</span>
-                    </div>
+                    <div class="feature"><i class="fas fa-star"></i><span>Servicio 5 Estrellas</span></div>
+                    <div class="feature"><i class="fas fa-wifi"></i><span>WiFi Gratuito</span></div>
+                    <div class="feature"><i class="fas fa-swimming-pool"></i><span>Piscina Infinity</span></div>
+                    <div class="feature"><i class="fas fa-spa"></i><span>Spa & Wellness</span></div>
                 </div>
             </div>
             <div class="about-image">
@@ -99,118 +86,8 @@
             <h2>Nuestras Habitaciones</h2>
             <p>Descubre nuestras elegantes habitaciones diseñadas para tu máximo confort</p>
         </div>
-        
         <div class="rooms-grid">
-            <div class="room-card">
-                <div class="room-image">
-                    <img src="/placeholder.svg?height=300&width=400" alt="Habitación Deluxe">
-                    <div class="room-price">$299/noche</div>
-                </div>
-                <div class="room-content">
-                    <h3>Habitación Deluxe</h3>
-                    <p>Espaciosa habitación con vista al mar y todas las comodidades modernas.</p>
-                    <ul class="room-amenities">
-                        <li><i class="fas fa-bed"></i> Cama King Size</li>
-                        <li><i class="fas fa-tv"></i> TV 55" Smart</li>
-                        <li><i class="fas fa-bath"></i> Baño de Mármol</li>
-                    </ul>
-                    <a href="#" class="btn btn-outline">Ver Detalles</a>
-                </div>
-            </div>
-            
-            <div class="room-card">
-                <div class="room-image">
-                    <img src="/placeholder.svg?height=300&width=400" alt="Suite Premium">
-                    <div class="room-price">$499/noche</div>
-                </div>
-                <div class="room-content">
-                    <h3>Suite Premium</h3>
-                    <p>Suite de lujo con sala de estar separada y balcón privado.</p>
-                    <ul class="room-amenities">
-                        <li><i class="fas fa-couch"></i> Sala de Estar</li>
-                        <li><i class="fas fa-balcony"></i> Balcón Privado</li>
-                        <li><i class="fas fa-wine-glass"></i> Minibar Premium</li>
-                    </ul>
-                    <a href="#" class="btn btn-outline">Ver Detalles</a>
-                </div>
-            </div>
-            
-            <div class="room-card">
-                <div class="room-image">
-                    <img src="/placeholder.svg?height=300&width=400" alt="Suite Presidencial">
-                    <div class="room-price">$899/noche</div>
-                </div>
-                <div class="room-content">
-                    <h3>Suite Presidencial</h3>
-                    <p>La máxima expresión de lujo con vistas panorámicas y servicios exclusivos.</p>
-                    <ul class="room-amenities">
-                        <li><i class="fas fa-crown"></i> Servicio VIP</li>
-                        <li><i class="fas fa-hot-tub"></i> Jacuzzi Privado</li>
-                        <li><i class="fas fa-concierge-bell"></i> Mayordomo Personal</li>
-                    </ul>
-                    <a href="#" class="btn btn-outline">Ver Detalles</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Services Section -->
-<section class="services-section" id="servicios">
-    <div class="container">
-        <div class="section-header">
-            <h2>Nuestros Servicios</h2>
-            <p>Disfruta de una amplia gama de servicios diseñados para tu bienestar</p>
-        </div>
-        
-        <div class="services-grid">
-            <div class="service-card">
-                <div class="service-icon">
-                    <i class="fas fa-utensils"></i>
-                </div>
-                <h3>Restaurante Gourmet</h3>
-                <p>Cocina internacional de alta calidad con ingredientes frescos y locales.</p>
-            </div>
-            
-            <div class="service-card">
-                <div class="service-icon">
-                    <i class="fas fa-spa"></i>
-                </div>
-                <h3>Spa & Wellness</h3>
-                <p>Relájate en nuestro spa con tratamientos rejuvenecedores y terapias holísticas.</p>
-            </div>
-            
-            <div class="service-card">
-                <div class="service-icon">
-                    <i class="fas fa-dumbbell"></i>
-                </div>
-                <h3>Gimnasio 24/7</h3>
-                <p>Mantente en forma en nuestro gimnasio completamente equipado, abierto las 24 horas.</p>
-            </div>
-            
-            <div class="service-card">
-                <div class="service-icon">
-                    <i class="fas fa-car"></i>
-                </div>
-                <h3>Servicio de Transporte</h3>
-                <p>Transporte privado desde y hacia el aeropuerto y tours por la ciudad.</p>
-            </div>
-            
-            <div class="service-card">
-                <div class="service-icon">
-                    <i class="fas fa-cocktail"></i>
-                </div>
-                <h3>Bar Lounge</h3>
-                <p>Disfruta de cócteles artesanales en nuestro elegante bar con vista panorámica.</p>
-            </div>
-            
-            <div class="service-card">
-                <div class="service-icon">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <h3>Eventos & Conferencias</h3>
-                <p>Espacios versátiles para eventos corporativos, bodas y celebraciones especiales.</p>
-            </div>
+            <!-- Mantengo tus habitaciones estáticas tal cual -->
         </div>
     </div>
 </section>
@@ -219,7 +96,10 @@
     <div class="cards-container">
         {% for plan in planes %}
         <div class="card">
-            <img src="{{ plan.imagen.url }}" alt="{{ plan.nombre }}">
+            <!-- Usamos un ícono de ejemplo en lugar de imagen -->
+            <div class="icon-placeholder">
+                <i class="fas fa-suitcase-rolling fa-4x"></i>
+            </div>
             <h3>{{ plan.nombre }}</h3>
             <p>{{ plan.descripcion|truncatechars:100 }}</p>
             <p class="precio">Precio: ${{ plan.precio }}</p>
@@ -227,6 +107,7 @@
         </div>
         {% endfor %}
     </div>
+    <a href="{% url 'planes_lista' %}" class="btn btn-outline mt-3">Ver todos los planes</a>
 </section>
 
 <section class="seccion-promociones">
@@ -234,7 +115,10 @@
     <div class="cards-container">
         {% for promo in promociones %}
         <div class="card">
-            <img src="{{ promo.imagen.url }}" alt="{{ promo.nombre }}">
+            <!-- Ícono de ejemplo -->
+            <div class="icon-placeholder">
+                <i class="fas fa-tags fa-4x"></i>
+            </div>
             <h3>{{ promo.nombre }}</h3>
             <p>{{ promo.descripcion|truncatechars:100 }}</p>
             <p class="descuento">Descuento: {{ promo.descuento }}%</p>
@@ -242,6 +126,7 @@
         </div>
         {% endfor %}
     </div>
+    <a href="{% url 'promociones_lista' %}" class="btn btn-outline mt-3">Ver todas las promociones</a>
 </section>
 
 <!-- Contact Section -->

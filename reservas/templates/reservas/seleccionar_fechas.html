@@ -6,6 +6,14 @@
 <div class="container py-5">
     <h2 class="mb-4">Seleccionar Fechas y Huéspedes</h2>
 
+    {% if habitacion %}
+        <div class="card mb-4 p-3">
+            <h4>Habitación Seleccionada: {{ habitacion.nombre }}</h4>
+            <p>{{ habitacion.descripcion|default:"Sin descripción" }}</p>
+            <p>Precio: ${{ habitacion.precio }}</p>
+        </div>
+    {% endif %}
+
     {% if error %}
         <div class="alert alert-danger">{{ error }}</div>
     {% endif %}

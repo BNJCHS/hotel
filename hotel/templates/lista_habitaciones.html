@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Habitaciones Disponibles{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Habitaciones Disponibles</h2>
+    <div class="row g-4">
+        {% for habitacion in habitaciones %}
+        <div class="col-md-4">
+            <div class="card h-100 p-3">
+                <h5>{{ habitacion.nombre }}</h5>
+                <p>{{ habitacion.descripcion|truncatechars:100 }}</p>
+                <p>Precio: ${{ habitacion.precio }}</p>
+                <a href="{% url 'reservar_habitacion' habitacion.id %}" class="btn btn-primary">Reservar esta habitación</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

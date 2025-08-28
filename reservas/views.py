@@ -21,9 +21,21 @@ from .forms import HuespedForm
 from django.forms import modelformset_factory
 
 @login_required
+def reservar_habitacion(request, habitacion_id):
+    habitacion = get_object_or_404(Habitacion, id=habitacion_id)
+    request.session['habitacion_id'] = habitacion.id  # Guardamos la habitación en sesión
+    return redirect('seleccionar_fechas')
+
+@login_required
 def seleccionar_fechas(request):
     today = date.today().isoformat()
     HuespedFormSet = modelformset_factory(Huesped, form=HuespedForm, extra=0, can_delete=False)
+
+    habitacion_id = request.session.get('habitacion_id')
+    if not habitacion_id:
+        return redirect('list_habitaciones')  # Si no hay habitación seleccionada, volvemos
+
+    habitacion = Habitacion.objects.get(id=habitacion_id)
 
     if request.method == 'POST':
         fecha_entrada = request.POST.get('fecha_entrada')
@@ -31,21 +43,23 @@ def seleccionar_fechas(request):
         numero_huespedes = int(request.POST.get('numero_huespedes', 0))
 
         if not fecha_entrada or not fecha_salida or numero_huespedes < 1:
-            return render(request, 'reservas/seleccionar_fechas.html', {'error': 'Todos los campos son obligatorios.', 'today': today})
+            return render(request, 'reservas/seleccionar_fechas.html', {
+                'error': 'Todos los campos son obligatorios.', 
+                'today': today,
+                'habitacion': habitacion
+            })
 
-        # Guardar fechas y cantidad en sesión
         request.session['fecha_entrada'] = fecha_entrada
         request.session['fecha_salida'] = fecha_salida
         request.session['numero_huespedes'] = numero_huespedes
 
-        # Crear formset con el número de huéspedes
+        # Formset de huéspedes
         if 'huespedes_submitted' in request.POST:
             formset = HuespedFormSet(request.POST, queryset=Huesped.objects.none())
             if formset.is_valid():
-                # Guardar huéspedes en sesión o en DB
                 huespedes_data = formset.cleaned_data
                 request.session['huespedes'] = huespedes_data
-                return redirect('lista_habitaciones')
+                return redirect('seleccionar_servicio')
         else:
             HuespedFormSetExtra = modelformset_factory(Huesped, form=HuespedForm, extra=numero_huespedes, can_delete=False)
             formset = HuespedFormSetExtra(queryset=Huesped.objects.none())
@@ -56,9 +70,13 @@ def seleccionar_fechas(request):
             'fecha_salida': fecha_salida,
             'numero_huespedes': numero_huespedes,
             'today': today,
+            'habitacion': habitacion
         })
 
-    return render(request, 'reservas/seleccionar_fechas.html', {'today': today})
+    return render(request, 'reservas/seleccionar_fechas.html', {
+        'today': today,
+        'habitacion': habitacion
+    })
 @csrf_exempt
 def agregar_servicio(request):
     if request.method == "POST":
@@ -116,11 +134,6 @@ def seleccionar_servicio(request):
     habitacion_id = request.session.get('habitacion_id')
     if not habitacion_id:
         return redirect('lista_habitaciones')
-@login_required
-def seleccionar_servicio(request):
-    habitacion_id = request.session.get('habitacion_id')
-    if not habitacion_id:
-        return redirect('lista_habitaciones')
 
     habitacion = get_object_or_404(Habitacion, id=habitacion_id)
     servicios = Servicio.objects.all()
@@ -145,6 +158,10 @@ def reserva_exitosa(request):
 
 from decimal import Decimal
 
+from datetime import datetime
+
+
+
 @login_required
 def confirmar_reserva(request):
     habitacion_id = request.session.get('habitacion_id')
@@ -165,29 +182,33 @@ def confirmar_reserva(request):
     promocion = None
     precio_total = Decimal('0')
 
+    # Calcular noches
+    noches = (datetime.strptime(fecha_salida, "%Y-%m-%d") - datetime.strptime(fecha_entrada, "%Y-%m-%d")).days
+    if noches <= 0:
+        noches = 1
+
+    # Precios base
+    precio_habitacion = Decimal(habitacion.precio) * noches
+    precio_servicios = sum(Decimal(servicio.precio) for servicio in servicios)
+    impuestos = Decimal('0.18') * (precio_habitacion + precio_servicios)
+
     # Si eligió un plan
     if plan_id:
         plan = get_object_or_404(Plan, id=plan_id)
         precio_total = Decimal(plan.precio)
-
     # Si eligió una promoción
     elif promocion_id:
         promocion = get_object_or_404(Promocion, id=promocion_id)
-        precio_habitacion = Decimal(habitacion.precio)
-        precio_servicios = sum(Decimal(servicio.precio) for servicio in servicios)
         subtotal = precio_habitacion + precio_servicios
         descuento = (promocion.descuento / Decimal('100')) * subtotal
         precio_total = subtotal - descuento
-
     # Si no hay plan ni promoción → lógica normal
     else:
-        precio_habitacion = Decimal(habitacion.precio)
-        precio_servicios = sum(Decimal(servicio.precio) for servicio in servicios)
-        impuestos = Decimal('0.18') * (precio_habitacion + precio_servicios)
         precio_total = precio_habitacion + precio_servicios + impuestos
 
+    # Si es POST → confirmar reserva
     if request.method == 'POST':
-        reserva = Reserva.objects.create(
+        reserva = Reserva(
             usuario=request.user,
             habitacion=habitacion,
             plan=plan,
@@ -199,6 +220,7 @@ def confirmar_reserva(request):
             metodo_pago=request.POST.get('metodo_pago', 'efectivo'),
             confirmada=True
         )
+        reserva.save()  # <-- Guardamos primero para poder usar ManyToMany
         reserva.servicios.set(servicios)
 
         # Limpiar sesión
@@ -218,17 +240,21 @@ def confirmar_reserva(request):
 
         return render(request, 'reservas/reserva_enviada.html', {'email': request.user.email})
 
+    # Si es GET → mostrar resumen antes de confirmar
     return render(request, 'reservas/confirmar_reserva.html', {
         'habitacion': habitacion,
-        'servicios': servicios,
+        'servicios_seleccionados': servicios,
         'plan': plan,
         'promocion': promocion,
-        'precio_total': precio_total,
         'fecha_entrada': fecha_entrada,
         'fecha_salida': fecha_salida,
         'numero_huespedes': numero_huespedes,
+        'precio_total': precio_total,
+        'precio_habitacion': precio_habitacion,
+        'precio_servicios': precio_servicios,
+        'impuestos': impuestos,
+        'noches': noches,
     })
-
 @login_required
 def confirmar_reserva_token(request, token):
     reserva = get_object_or_404(Reserva, token=token, usuario=request.user)

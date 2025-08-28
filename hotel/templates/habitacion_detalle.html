@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ habitacion.nombre }} - Hotel Paradise{% endblock %}
+
+{% block content %}
+<section class="room-detail-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>{{ habitacion.nombre }}</h2>
+            <p>{{ habitacion.descripcion }}</p>
+        </div>
+
+        <div class="room-detail-grid">
+            <!-- Imagen / ícono de la habitación -->
+            <div class="room-image">
+                <div class="icon-placeholder">
+                    <i class="fas fa-bed fa-6x"></i>
+                </div>
+                <div class="room-price">${{ habitacion.precio }}/noche</div>
+            </div>
+
+            <!-- Detalles -->
+            <div class="room-info">
+                <h3>Comodidades</h3>
+                <ul class="room-amenities">
+                    {% for amenidad in habitacion.amenidades.all %}
+                    <li><i class="fas fa-check"></i> {{ amenidad.nombre }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3>Servicios Incluidos</h3>
+                <ul>
+                    <li>WiFi Gratis</li>
+                    <li>Desayuno incluido</li>
+                    <li>Servicio a la habitación</li>
+                    <!-- Podés agregar más según tus modelos -->
+                </ul>
+
+                <a href="{% url 'seleccionar_fechas' %}" class="btn btn-primary">Reservar Esta Habitación</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
