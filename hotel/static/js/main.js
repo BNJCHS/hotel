@@ -786,6 +786,7 @@ function actualizarResumen() {
 
 // Manejar click en botones agregar
 document.querySelectorAll(".agregar-servicio").forEach((btn) => {
+  btn.removeEventListener("click", function() {
     btn.addEventListener("click", function() {
         const servicioId = this.dataset.id;
 
@@ -849,4 +850,5 @@ document.querySelectorAll(".agregar-servicio").forEach((btn) => {
         })
         .catch(() => showNotification("Error al agregar servicio", "error"));
     });
+  })
 });

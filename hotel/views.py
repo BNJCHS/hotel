@@ -5,9 +5,12 @@ from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, get_object_or_404
 from administracion.models import Plan, Promocion
 from django.contrib.auth.decorators import login_required
-from reservas.models import Reserva
 from habitaciones.models import Habitacion
 from django.contrib import messages
+from django.contrib import send_mail
+from django.conf import settings
+from django.db import transaction
+from reservas.models import Reserva
 import json
 from datetime import datetime, timedelta
 
@@ -257,3 +260,26 @@ def reservar_promocion(request, promocion_id):
 
     messages.success(request, f"Reserva creada con la promoción {promocion.nombre}")
     return redirect('detalle_reserva', reserva_id=reserva.id)
+
+def confirmar_reserva(request):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre")
+        email_usuario = request.POST.get("email")
+        fecha = request.POST.get("fecha")
+        
+        try:
+            whit transaction.atomic():
+            # Guardar la reserva
+            reserva = Reserva(nombre=nombre, email=email_usuario, fecha=fecha)
+            reserva.save() #en este momento se genera el ID
+
+            # Enviar mail de confirmacion
+            asunto = "Reserva Confirmada"
+            mensaje = (
+                f"hola {nombre}, /n/n"
+                f"Tu reserva fue confirmada correctamente. /n"
+                f"Codigo de reserva: {reserva.id}, /n"
+                f"Fecha: {reserva.fecha}, /n/n"
+                f"Gracias por elegirnos."
+            )
+            send_mail(asunto, mensaje, settings.DEFAULT_FROM)

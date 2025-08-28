@@ -8,7 +8,52 @@
   --hotel-text: #2A2A2A; /* gris oscuro elegante */
   --hotel-dark-gold: #CCAC00; /* dorado más oscuro */
 }
+/* Colores principales */
+:root {
+  --color-dorado: #b8860b;  /* dorado fuerte */
+  --color-beige: #f5f5dc;   /* beige cálido */
+  --color-texto: #2c2c2c;   /* gris oscuro para contraste */
+  --color-blanco: #ffffff;
+}
 
+/* Navbar */
+.navbar {
+  background-color: var(--color-beige);
+  color: var(--color-dorado);
+}
+
+.navbar a {
+  color: var(--color-dorado);
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.navbar a:hover {
+  color: var(--color-texto);
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  background: var(--color-dorado);
+  color: var(--color-blanco);
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.hero .hero-title {
+  color: var(--color-blanco);
+}
+
+.hero .btn-primary {
+  background: black;
+  color: var(--color-blanco);
+}
+
+.hero .btn-secondary {
+  background: var(--color-beige);
+  color: var(--color-texto);
+}
 /* Fondo general */
 body {
   background-color: var(--hotel-beige);
@@ -29,22 +74,21 @@ body {
   font-family: "Playfair Display", serif;
   font-weight: 700;
   color: var(--hotel-gold) !important;
-  text-shadow: 2px 2px 4px rgb(250, 250, 250);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
 }
 
-/* 🔥 Forzamos color claro en todos los links del navbar */
-.navbar .nav-link {
-  color: #FAFAFA !important; /* blanco suave */
+/* Links navegación */
+.nav-link {
+  position: relative;
+  color: var(--hotel-cream) !important;
   font-weight: 500;
   padding: 0.75rem 1.25rem !important;
   transition: all 0.3s ease;
   border-radius: 8px;
 }
 
-.navbar .nav-link:hover,
-.navbar .nav-link:focus,
-.navbar .nav-link.active {
-  color: #FFD700 !important; /* dorado al pasar el mouse o activo */
+.nav-link:hover {
+  color: var(--hotel-gold) !important;
   background-color: rgba(255, 215, 0, 0.15);
   transform: translateY(-2px);
 }
