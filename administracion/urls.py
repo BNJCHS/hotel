@@ -34,4 +34,6 @@ urlpatterns = [
     path("huespedes/nuevo/", views.huespedes_create, name="huespedes_create"),
     path("huespedes/editar/<int:pk>/", views.huespedes_edit, name="huespedes_edit"),
     path("huespedes/eliminar/<int:pk>/", views.huespedes_delete, name="huespedes_delete"),
+
+    path('ver-reservas/', views.ver_reservas, name='ver_reservas'),
 ]

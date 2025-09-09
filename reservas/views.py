@@ -19,6 +19,8 @@ from decimal import Decimal
 from .models import Huesped
 from .forms import HuespedForm
 from django.forms import modelformset_factory
+from administracion.models import Plan, Promocion
+
 
 @login_required
 def reservar_habitacion(request, habitacion_id):
@@ -161,94 +163,64 @@ from decimal import Decimal
 from datetime import datetime
 
 
-
 @login_required
-def confirmar_reserva(request):
-    habitacion_id = request.session.get('habitacion_id')
-    servicios_ids = request.session.get('servicios_seleccionados', [])
-    plan_id = request.session.get('plan_id')
-    promocion_id = request.session.get('promocion_id')
-    fecha_entrada = request.session.get('fecha_entrada')
-    fecha_salida = request.session.get('fecha_salida')
-    numero_huespedes = request.session.get('numero_huespedes', 1)
+def confirmar_reserva(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
 
-    if not habitacion_id or not fecha_entrada or not fecha_salida:
-        return redirect('lista_habitaciones')
+    noches = 1
+    if reserva.check_in and reserva.check_out:
+        noches = (reserva.check_out - reserva.check_in).days or 1
 
-    habitacion = get_object_or_404(Habitacion, id=habitacion_id)
-    servicios = Servicio.objects.filter(id__in=servicios_ids)
+    precio_habitacion = reserva.habitacion.precio * noches
+    precio_servicios = sum(servicio.precio for servicio in reserva.servicios.all())
+    subtotal = precio_habitacion + precio_servicios
 
-    plan = get_object_or_404(Plan, id=plan_id) if plan_id else None
-    promocion = get_object_or_404(Promocion, id=promocion_id) if promocion_id else None
+    if reserva.plan:
+        subtotal += reserva.plan.precio
 
-    # Calcular noches
-    noches = (datetime.strptime(fecha_salida, "%Y-%m-%d") - datetime.strptime(fecha_entrada, "%Y-%m-%d")).days
-    if noches <= 0:
-        noches = 1
+    descuento = 0
+    if reserva.promocion:
+        descuento = (subtotal * reserva.promocion.descuento) / 100
+        subtotal -= descuento
 
-    # Precios base para mostrar en el resumen
-    precio_habitacion = Decimal(habitacion.precio) * noches
-    precio_servicios = sum(Decimal(servicio.precio) for servicio in servicios)
-    impuestos = Decimal('0.18') * (precio_habitacion + precio_servicios)
+    impuestos = subtotal * Decimal("0.18")
+    precio_total = subtotal + impuestos
 
-    if plan:
-        precio_total = Decimal(plan.precio)
-    elif promocion:
-        subtotal = precio_habitacion + precio_servicios
-        descuento = (promocion.descuento / Decimal('100')) * subtotal
-        precio_total = subtotal - descuento
-    else:
-        precio_total = precio_habitacion + precio_servicios + impuestos
+    if request.method == "POST":
+        metodo_pago = request.POST.get("metodo_pago")
+        if metodo_pago:
+            reserva.metodo_pago = metodo_pago
+            reserva.monto = precio_total
+            reserva.confirmada = False  # aún pendiente de confirmar
+            reserva.save()
 
-    # Si es POST → confirmar reserva
-    if request.method == 'POST':
-        reserva = Reserva(
-            usuario=request.user,
-            habitacion=habitacion,   # FK
-            plan=plan,
-            promocion=promocion,
-            check_in=fecha_entrada,
-            check_out=fecha_salida,
-            cantidad_huespedes=numero_huespedes,
-            metodo_pago=request.POST.get('metodo_pago', 'efectivo'),
-            confirmada=True
-        )
-        reserva.save()                # Primero guardar
-        reserva.servicios.set(servicios)  # Luego asignar M2M
+            # Enviar correo de confirmación
+            confirm_url = request.build_absolute_uri(
+                reverse("confirmar_reserva_token", args=[reserva.token])
+            )
+            send_mail(
+                "Confirma tu reserva",
+                f"Hola {request.user.username}, por favor confirma tu reserva haciendo clic en el siguiente enlace:\n{confirm_url}",
+                settings.DEFAULT_FROM_EMAIL,
+                [request.user.email],
+                fail_silently=False,
+            )
 
-        # Limpiar sesión
-        for key in ['habitacion_id', 'servicios_seleccionados', 'plan_id',
-                    'promocion_id', 'fecha_entrada', 'fecha_salida', 'numero_huespedes']:
-            request.session.pop(key, None)
+            # Mostrar la página de "Reserva Enviada"
+            return render(request, 'reservas/reserva_enviada.html', {'email': request.user.email})
 
-        # Enviar email confirmación
-        token_url = request.build_absolute_uri(
-            reverse('confirmar_reserva_token', args=[reserva.token])
-        )
-        send_mail(
-            subject='Confirma tu reserva',
-            message=f'Hola {request.user.first_name}, confirma tu reserva haciendo clic en este enlace:\n{token_url}',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[request.user.email],
-        )
-
-        return render(request, 'reservas/reserva_enviada.html', {'email': request.user.email})
-
-    # Si es GET → mostrar resumen antes de confirmar
-    return render(request, 'reservas/confirmar_reserva.html', {
-        'habitacion': habitacion,
-        'servicios_seleccionados': servicios,
-        'plan': plan,
-        'promocion': promocion,
-        'fecha_entrada': fecha_entrada,
-        'fecha_salida': fecha_salida,
-        'numero_huespedes': numero_huespedes,
-        'precio_total': precio_total,
-        'precio_habitacion': precio_habitacion,
-        'precio_servicios': precio_servicios,
-        'impuestos': impuestos,
-        'noches': noches,
+    return render(request, "reservas/confirmar_reserva.html", {
+        "reserva": reserva,
+        "habitacion": reserva.habitacion,
+        "servicios_seleccionados": reserva.servicios.all(),
+        "precio_habitacion": precio_habitacion,
+        "precio_servicios": precio_servicios,
+        "descuento": descuento,
+        "impuestos": impuestos,
+        "precio_total": precio_total,
+        "noches": noches,
     })
+
 @login_required
 def confirmar_reserva_token(request, token):
     reserva = get_object_or_404(Reserva, token=token, usuario=request.user)

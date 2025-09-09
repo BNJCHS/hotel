@@ -1,19 +1,18 @@
 from django import forms
 from reservas.models import Reserva, Huesped
+from django.forms import modelformset_factory
 
 class SeleccionarServicioForm(forms.ModelForm):
     class Meta:
         model = Reserva
-        fields = ['servicios']  # <- plural, no 'servicio'
+        fields = ['servicios']  
         widgets = {
-            'servicios': forms.CheckboxSelectMultiple,
+            'servicios': forms.CheckboxSelectMultiple(),  
         }
 
 class HuespedForm(forms.ModelForm):
     class Meta:
         model = Huesped
         fields = ['nombre', 'apellido', 'edad', 'genero', 'dni']
-
-from django.forms import modelformset_factory
 
 HuespedFormSet = modelformset_factory(Huesped, form=HuespedForm, extra=0)

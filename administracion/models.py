@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from habitaciones.models import Habitacion
 
 class Empleado(models.Model):
     nombre = models.CharField(max_length=100)
@@ -16,17 +17,20 @@ class Empleado(models.Model):
     def __str__(self):
         return f"{self.apellido}, {self.nombre} - {self.puesto}"
 
+
 class Plan(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
     descripcion = models.TextField()
     precio = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
-    imagen = models.ImageField(upload_to='planes/', null=True, blank=True)  # <-- nuevo
+    imagen = models.ImageField(upload_to='planes/', null=True, blank=True)
+    habitacion = models.ForeignKey(Habitacion, on_delete=models.CASCADE)  # Habitación asociada al plan
 
     class Meta:
         ordering = ["nombre"]
 
     def __str__(self):
         return self.nombre
+
 
 class Promocion(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
@@ -38,14 +42,13 @@ class Promocion(models.Model):
     )
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
-    imagen = models.ImageField(upload_to='promociones/', null=True, blank=True)  # <-- nuevo
+    imagen = models.ImageField(upload_to='promociones/', null=True, blank=True)
 
     class Meta:
         ordering = ["-fecha_inicio", "nombre"]
 
     def __str__(self):
         return f"{self.nombre} ({self.descuento}%)"
-
 class Servicio(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
     descripcion = models.TextField()

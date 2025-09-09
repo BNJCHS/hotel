@@ -103,11 +103,11 @@
             <h3>{{ plan.nombre }}</h3>
             <p>{{ plan.descripcion|truncatechars:100 }}</p>
             <p class="precio">Precio: ${{ plan.precio }}</p>
-            <a href="{% url 'plan_detalle' plan.id %}" class="btn">Ver más</a>
+            <a href="{% url 'detalle_plan' plan.id %}" class="btn">Ver más</a>
         </div>
         {% endfor %}
     </div>
-    <a href="{% url 'planes_lista' %}" class="btn btn-outline mt-3">Ver todos los planes</a>
+    <a href="{% url 'planes_y_promociones' %}" class="btn btn-outline mt-3">Ver todos los planes</a>
 </section>
 
 <section class="seccion-promociones">
@@ -126,7 +126,7 @@
         </div>
         {% endfor %}
     </div>
-    <a href="{% url 'promociones_lista' %}" class="btn btn-outline mt-3">Ver todas las promociones</a>
+    <a href="{% url 'planes_y_promociones' %}" class="btn btn-outline mt-3">Ver todas las promociones</a>
 </section>
 
 <!-- Contact Section -->

@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from habitaciones.models import Habitacion
 from administracion.models import Servicio  
-import uuid
+from decimal import Decimal
+
 
 import uuid
 from django.db import models
@@ -10,8 +11,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from habitaciones.models import Habitacion
-from administracion.models import Servicio
-
+from administracion.models import Servicio,Plan,Promocion
 
 
 class Reserva(models.Model):
@@ -22,37 +22,16 @@ class Reserva(models.Model):
     ]
 
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    habitacion = models.ForeignKey('habitaciones.Habitacion', on_delete=models.CASCADE)
-    servicios = models.ManyToManyField('servicios.Servicio', blank=True)
+    habitacion = models.ForeignKey(Habitacion, on_delete=models.CASCADE)
+    servicios = models.ManyToManyField(Servicio, blank=True)  # ✅ Clase directa
 
-    # Nuevos campos para relación con administración
-    plan = models.ForeignKey(
-        'administracion.Plan',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-    promocion = models.ForeignKey(
-        'administracion.Promocion',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
+    plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, null=True, blank=True)
+    promocion = models.ForeignKey(Promocion, on_delete=models.SET_NULL, null=True, blank=True)
 
     fecha_reserva = models.DateTimeField(auto_now_add=True)
     confirmada = models.BooleanField(default=False)
-    metodo_pago = models.CharField(
-        max_length=20,
-        choices=METODOS_PAGO,
-        blank=True,
-        null=True
-    )
-    token = models.CharField(
-        max_length=64,
-        default=uuid.uuid4,
-        editable=False,
-        unique=True
-    )
+    metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, blank=True, null=True)
+    token = models.CharField(max_length=64, default=uuid.uuid4, editable=False, unique=True)
     monto = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     check_in = models.DateField(null=True, blank=True)
     check_out = models.DateField(null=True, blank=True)
@@ -70,7 +49,6 @@ class Reserva(models.Model):
         return detalle
 
     def clean(self):
-        # No permitir tener plan y promoción al mismo tiempo
         if self.plan and self.promocion:
             raise ValidationError("La reserva no puede tener un plan y una promoción al mismo tiempo.")
 
@@ -79,7 +57,7 @@ class Reserva(models.Model):
         precio_base = self.habitacion.precio if self.habitacion else Decimal('0')
         precio_servicios = Decimal('0')
 
-        # Solo sumar servicios si corresponde (cuando ya existe pk)
+        # Solo sumar servicios si la reserva ya existe en DB
         if incluir_servicios:
             precio_servicios = sum(Decimal(servicio.precio) for servicio in self.servicios.all())
 
@@ -95,7 +73,7 @@ class Reserva(models.Model):
         return total
 
     def save(self, *args, **kwargs):
-        # Si aún no tiene pk → calcular sin servicios
+        # Primer save sin servicios, luego recalcular con servicios
         if self.pk:
             self.monto = self.calcular_total(incluir_servicios=True)
         else:

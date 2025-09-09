@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle Plan{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow-sm mb-4">
+        {% if plan.imagen %}
+            <img src="{{ plan.imagen.url }}" class="card-img-top" alt="{{ plan.nombre }}">
+        {% endif %}
+        <div class="card-body">
+            <h3 class="card-title">{{ plan.nombre }}</h3>
+            <p class="card-text">{{ plan.descripcion }}</p>
+            <p class="h5">Precio: ${{ plan.precio }}</p>
+            <p class="h6">Habitación asignada: {{ plan.habitacion.numero }}</p>
+            <a href="{% url 'reservar_plan' plan.id %}" class="btn btn-success">Seleccionar Plan</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

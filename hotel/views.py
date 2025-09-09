@@ -10,6 +10,7 @@ from habitaciones.models import Habitacion
 from django.contrib import messages
 import json
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 def lista_habitaciones(request):
     habitaciones = Habitacion.objects.all()  # Todas las habitaciones
@@ -213,47 +214,63 @@ def promociones_list(request):
     promociones = Promocion.objects.all()
     return render(request, "promociones_lista.html", {"promociones": promociones})
 
-def plan_detalle(request, plan_id):
+def detalle_plan(request, plan_id):
     plan = get_object_or_404(Plan, id=plan_id)
-    return render(request, 'plan_detalle.html', {'plan': plan})
+    return render(request, 'detalle_plan.html', {'plan': plan})
 
 def promocion_detalle(request, promocion_id):
     promocion = get_object_or_404(Promocion, id=promocion_id)
     return render(request, 'promocion_detalle.html', {'promocion': promocion})
 
 @login_required
+def planes_y_promociones(request):
+    planes = Plan.objects.all()
+    promociones = Promocion.objects.all()
+    return render(request, 'planes_promociones.html', {
+        'planes': planes,
+        'promociones': promociones
+    })
+
+# ===============================
+# Reservar un Plan
+# ===============================
+@login_required
 def reservar_plan(request, plan_id):
     plan = get_object_or_404(Plan, id=plan_id)
 
-    # 👉 Podrías permitir elegir habitación, por ahora pongo la primera libre
-    habitacion = Habitacion.objects.first()
-
+    # Crear la reserva con el plan
     reserva = Reserva.objects.create(
         usuario=request.user,
-        habitacion=habitacion,
+        habitacion=plan.habitacion,  # el plan ya tiene una habitación asociada
         plan=plan,
         confirmada=False
     )
-    reserva.save()
 
-    messages.success(request, f"Reserva creada con el plan {plan.nombre}")
-    return redirect('detalle_reserva', reserva_id=reserva.id)
+    # Redirigir a confirmar la reserva con el ID
+    return redirect("confirmar_reserva", reserva_id=reserva.id)
 
 
+# ===============================
+# Reservar una Promoción
+# ===============================
 @login_required
 def reservar_promocion(request, promocion_id):
     promocion = get_object_or_404(Promocion, id=promocion_id)
 
-    # 👉 Igual que arriba: deberías elegir habitación, ahora pongo la primera libre
-    habitacion = Habitacion.objects.first()
+    # ⚠️ Supongo que ya elegiste la habitación antes
+    habitacion_id = request.session.get("habitacion_id")
+    if not habitacion_id:
+        return redirect("seleccionar_habitacion")
 
+    habitacion = get_object_or_404(Habitacion, id=habitacion_id)
+
+    # Crear la reserva con la promoción
     reserva = Reserva.objects.create(
         usuario=request.user,
         habitacion=habitacion,
         promocion=promocion,
         confirmada=False
     )
-    reserva.save()
 
-    messages.success(request, f"Reserva creada con la promoción {promocion.nombre}")
-    return redirect('detalle_reserva', reserva_id=reserva.id)
+    # Redirigir a confirmar la reserva con el ID
+    return redirect("confirmar_reserva", reserva_id=reserva.id)

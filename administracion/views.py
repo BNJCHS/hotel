@@ -236,3 +236,9 @@ def huespedes_delete(request, pk):
         messages.success(request, "Huésped eliminado.")
         return redirect("huespedes_list")
     return render(request, "administracion/huespedes_confirm_delete.html", {"huesped": obj})
+
+def ver_reservas(request):
+    reservas = Reserva.objects.select_related('usuario', 'habitacion', 'plan', 'promocion') \
+                              .prefetch_related('servicios') \
+                              .order_by('-fecha_reserva')
+    return render(request, 'administracion/ver_reservas.html', {'reservas': reservas})
