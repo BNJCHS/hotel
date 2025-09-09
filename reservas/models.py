@@ -13,6 +13,7 @@ from habitaciones.models import Habitacion
 from administracion.models import Servicio
 
 
+
 class Reserva(models.Model):
     METODOS_PAGO = [
         ('efectivo', 'Efectivo'),
@@ -21,8 +22,8 @@ class Reserva(models.Model):
     ]
 
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    habitacion = models.ForeignKey(Habitacion, on_delete=models.CASCADE)
-    servicios = models.ManyToManyField(Servicio, blank=True)
+    habitacion = models.ForeignKey('habitaciones.Habitacion', on_delete=models.CASCADE)
+    servicios = models.ManyToManyField('servicios.Servicio', blank=True)
 
     # Nuevos campos para relación con administración
     plan = models.ForeignKey(
@@ -73,10 +74,14 @@ class Reserva(models.Model):
         if self.plan and self.promocion:
             raise ValidationError("La reserva no puede tener un plan y una promoción al mismo tiempo.")
 
-    def calcular_total(self):
+    def calcular_total(self, incluir_servicios=True):
         """Calcula el monto total de la reserva en base a habitación, servicios, plan y promoción."""
-        precio_base = self.habitacion.precio if self.habitacion else 0
-        precio_servicios = sum(servicio.precio for servicio in self.servicios.all())
+        precio_base = self.habitacion.precio if self.habitacion else Decimal('0')
+        precio_servicios = Decimal('0')
+
+        # Solo sumar servicios si corresponde (cuando ya existe pk)
+        if incluir_servicios:
+            precio_servicios = sum(Decimal(servicio.precio) for servicio in self.servicios.all())
 
         total = precio_base + precio_servicios
 
@@ -90,10 +95,13 @@ class Reserva(models.Model):
         return total
 
     def save(self, *args, **kwargs):
-        # Siempre recalcular el monto antes de guardar
-        self.monto = self.calcular_total()
-        super().save(*args, **kwargs)
+        # Si aún no tiene pk → calcular sin servicios
+        if self.pk:
+            self.monto = self.calcular_total(incluir_servicios=True)
+        else:
+            self.monto = self.calcular_total(incluir_servicios=False)
 
+        super().save(*args, **kwargs)
 
 class Huesped(models.Model):
     nombre = models.CharField(max_length=100)

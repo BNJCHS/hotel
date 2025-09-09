@@ -178,31 +178,25 @@ def confirmar_reserva(request):
     habitacion = get_object_or_404(Habitacion, id=habitacion_id)
     servicios = Servicio.objects.filter(id__in=servicios_ids)
 
-    plan = None
-    promocion = None
-    precio_total = Decimal('0')
+    plan = get_object_or_404(Plan, id=plan_id) if plan_id else None
+    promocion = get_object_or_404(Promocion, id=promocion_id) if promocion_id else None
 
     # Calcular noches
     noches = (datetime.strptime(fecha_salida, "%Y-%m-%d") - datetime.strptime(fecha_entrada, "%Y-%m-%d")).days
     if noches <= 0:
         noches = 1
 
-    # Precios base
+    # Precios base para mostrar en el resumen
     precio_habitacion = Decimal(habitacion.precio) * noches
     precio_servicios = sum(Decimal(servicio.precio) for servicio in servicios)
     impuestos = Decimal('0.18') * (precio_habitacion + precio_servicios)
 
-    # Si eligió un plan
-    if plan_id:
-        plan = get_object_or_404(Plan, id=plan_id)
+    if plan:
         precio_total = Decimal(plan.precio)
-    # Si eligió una promoción
-    elif promocion_id:
-        promocion = get_object_or_404(Promocion, id=promocion_id)
+    elif promocion:
         subtotal = precio_habitacion + precio_servicios
         descuento = (promocion.descuento / Decimal('100')) * subtotal
         precio_total = subtotal - descuento
-    # Si no hay plan ni promoción → lógica normal
     else:
         precio_total = precio_habitacion + precio_servicios + impuestos
 
@@ -210,21 +204,21 @@ def confirmar_reserva(request):
     if request.method == 'POST':
         reserva = Reserva(
             usuario=request.user,
-            habitacion=habitacion,
+            habitacion=habitacion,   # FK
             plan=plan,
             promocion=promocion,
             check_in=fecha_entrada,
             check_out=fecha_salida,
             cantidad_huespedes=numero_huespedes,
-            monto=precio_total,
             metodo_pago=request.POST.get('metodo_pago', 'efectivo'),
             confirmada=True
         )
-        reserva.save()  # <-- Guardamos primero para poder usar ManyToMany
-        reserva.servicios.set(servicios)
+        reserva.save()                # Primero guardar
+        reserva.servicios.set(servicios)  # Luego asignar M2M
 
         # Limpiar sesión
-        for key in ['habitacion_id', 'servicios_seleccionados', 'plan_id', 'promocion_id', 'fecha_entrada', 'fecha_salida', 'numero_huespedes']:
+        for key in ['habitacion_id', 'servicios_seleccionados', 'plan_id',
+                    'promocion_id', 'fecha_entrada', 'fecha_salida', 'numero_huespedes']:
             request.session.pop(key, None)
 
         # Enviar email confirmación
