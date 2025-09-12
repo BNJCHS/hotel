@@ -11,6 +11,7 @@ from django.contrib import messages
 import json
 from datetime import datetime, timedelta
 from decimal import Decimal
+from administracion.models import Servicio
 
 def lista_habitaciones(request):
     habitaciones = Habitacion.objects.all()  # Todas las habitaciones
@@ -32,12 +33,21 @@ def seleccionar_habitacion(request, habitacion_id):
 
 
 def index(request):
-    planes = Plan.objects.all()[:3]  # Los primeros 3 planes
-    promociones = Promocion.objects.all()[:3]  # Las primeras 3 promociones
+    # Traemos los primeros 3 planes y promociones
+    planes = Plan.objects.all()[:3]
+    promociones = Promocion.objects.all()[:3]
+
+    # Traemos todas las habitaciones y servicios (o los primeros 6 si querés limitar)
+    habitaciones = Habitacion.objects.all()[:6]
+    servicios = Servicio.objects.all()  # Podés limitar con [:6] si querés
+
     context = {
         'planes': planes,
-        'promociones': promociones
+        'promociones': promociones,
+        'habitaciones': habitaciones,
+        'servicios': servicios
     }
+
     return render(request, 'index.html', context)
 def about(request):
     """

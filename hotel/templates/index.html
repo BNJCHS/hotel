@@ -1,187 +1,132 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Hotel Paradise - Bienvenido al Paraíso{% endblock %}
-
 {% block content %}
-<!-- Hero Section -->
-<section class="hero" id="hero">
-    <div class="hero-background">
-        <img src="/placeholder.svg?height=800&width=1200" alt="Hotel Paradise" class="hero-image">
-        <div class="hero-overlay"></div>
-    </div>
-    
-    <div class="hero-content">
-        <h1 class="hero-title">Bienvenido al Paraíso</h1>
-        <p class="hero-subtitle">Experimenta el lujo y la comodidad en un entorno único</p>
-        <div class="hero-buttons">
-            <a href="{% url 'seleccionar_fechas' %}" class="btn btn-primary">Reservar Ahora</a>
-            <a href="{% url 'habitaciones_lista' %}" class="btn btn-secondary">Ver Habitaciones</a>
-        </div>
-    </div>
-    
-    <div class="scroll-indicator">
-        <i class="fas fa-chevron-down"></i>
-    </div>
+
+<!-- Hero -->
+<section class="hero text-center py-5">
+  <div class="container">
+    <h1 class="display-4 fw-bold">Bienvenido a La Toscana</h1>
+    <p class="lead">Descubre la elegancia, el confort y la mejor experiencia en hotelería</p>
+  </div>
 </section>
 
-<!-- Booking Form Section -->
-<section class="booking-section" id="reservar">
-    <div class="container">
-        <div class="booking-form-container">
-            <h2>Reserva tu Estancia</h2>
-            <form class="booking-form" id="booking-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="checkin">Fecha de Entrada</label>
-                        <input type="date" id="checkin" name="checkin" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="checkout">Fecha de Salida</label>
-                        <input type="date" id="checkout" name="checkout" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="guests">Huéspedes</label>
-                        <select id="guests" name="guests" required>
-                            <option value="1">1 Huésped</option>
-                            <option value="2">2 Huéspedes</option>
-                            <option value="3">3 Huéspedes</option>
-                            <option value="4">4 Huéspedes</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary">Buscar Disponibilidad</button>
-                    </div>
-                </div>
-            </form>
-        </div>
+<!-- Habitaciones -->
+<section class="py-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2 class="fw-bold">Nuestras Habitaciones</h2>
+      <p>Confort, estilo y todo lo que necesitas para una estadía inolvidable</p>
     </div>
-</section>
-
-<!-- About Section -->
-<section class="about-section">
-    <div class="container">
-        <div class="about-content">
-            <div class="about-text">
-                <h2>Una Experiencia Inolvidable</h2>
-                <p>Hotel Paradise combina elegancia moderna con hospitalidad excepcional. Nuestras instalaciones de lujo y servicios personalizados garantizan una estancia memorable.</p>
-                <div class="features">
-                    <div class="feature"><i class="fas fa-star"></i><span>Servicio 5 Estrellas</span></div>
-                    <div class="feature"><i class="fas fa-wifi"></i><span>WiFi Gratuito</span></div>
-                    <div class="feature"><i class="fas fa-swimming-pool"></i><span>Piscina Infinity</span></div>
-                    <div class="feature"><i class="fas fa-spa"></i><span>Spa & Wellness</span></div>
-                </div>
+    <div class="row g-4">
+      {% if habitaciones %}
+        {% for habitacion in habitaciones %}
+        <div class="col-md-4">
+          <div class="card h-100">
+            {% if habitacion.imagen %}
+            <img src="{{ habitacion.imagen.url }}" class="card-img-top" alt="{{ habitacion.nombre }}">
+            {% endif %}
+            <div class="card-body">
+              <h3 class="card-title h5">{{ habitacion.nombre }}</h3>
+              <p class="card-text">{{ habitacion.descripcion|truncatewords:20 }}</p>
             </div>
-            <div class="about-image">
-                <img src="/placeholder.svg?height=500&width=600" alt="Hotel Lobby">
+            <div class="card-footer text-center">
+              <a href="{% url 'habitacion_detalle' habitacion.id %}" class="btn btn-vino">Ver más</a>
             </div>
+          </div>
         </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-center">No hay habitaciones disponibles en este momento.</p>
+      {% endif %}
     </div>
+  </div>
 </section>
 
-<!-- Rooms Section -->
-<section class="rooms-section" id="habitaciones">
-    <div class="container">
-        <div class="section-header">
-            <h2>Nuestras Habitaciones</h2>
-            <p>Descubre nuestras elegantes habitaciones diseñadas para tu máximo confort</p>
-        </div>
-        <div class="rooms-grid">
-            <!-- Mantengo tus habitaciones estáticas tal cual -->
-        </div>
+<!-- Planes -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2 class="fw-bold">Planes Exclusivos</h2>
+      <p>Disfruta experiencias únicas pensadas para vos</p>
     </div>
-</section>
-<section class="seccion-planes">
-    <h2>Planes Destacados</h2>
-    <div class="cards-container">
+    <div class="row g-4">
+      {% if planes %}
         {% for plan in planes %}
-        <div class="card">
-            <!-- Usamos un ícono de ejemplo en lugar de imagen -->
-            <div class="icon-placeholder">
-                <i class="fas fa-suitcase-rolling fa-4x"></i>
+        <div class="col-md-4">
+          <div class="card h-100 text-center">
+            <div class="card-body">
+              <h3 class="card-title h5">{{ plan.nombre }}</h3>
+              <p class="card-text">{{ plan.descripcion|truncatewords:20 }}</p>
+              <span class="fw-bold text-vino">${{ plan.precio }}</span>
             </div>
-            <h3>{{ plan.nombre }}</h3>
-            <p>{{ plan.descripcion|truncatechars:100 }}</p>
-            <p class="precio">Precio: ${{ plan.precio }}</p>
-            <a href="{% url 'detalle_plan' plan.id %}" class="btn">Ver más</a>
+            <div class="card-footer text-center">
+              <a href="{% url 'detalle_plan' plan.id %}" class="btn btn-vino">Ver más</a>
+            </div>
+          </div>
         </div>
         {% endfor %}
+      {% else %}
+        <p class="text-center">No hay planes disponibles en este momento.</p>
+      {% endif %}
     </div>
-    <a href="{% url 'planes_y_promociones' %}" class="btn btn-outline mt-3">Ver todos los planes</a>
+  </div>
 </section>
 
-<section class="seccion-promociones">
-    <h2>Promociones Destacadas</h2>
-    <div class="cards-container">
+<!-- Promociones -->
+<section class="py-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2 class="fw-bold">Promociones</h2>
+      <p>Aprovechá las mejores ofertas y descuentos</p>
+    </div>
+    <div class="row g-4">
+      {% if promociones %}
         {% for promo in promociones %}
-        <div class="card">
-            <!-- Ícono de ejemplo -->
-            <div class="icon-placeholder">
-                <i class="fas fa-tags fa-4x"></i>
+        <div class="col-md-4">
+          <div class="card h-100 border-dorado text-center">
+            <div class="card-body">
+              <h3 class="card-title h5">{{ promo.nombre }}</h3>
+              <p class="card-text">{{ promo.descripcion|truncatewords:20 }}</p>
+              <span class="fw-bold text-vino">Válido hasta {{ promo.fecha_fin }}</span>
             </div>
-            <h3>{{ promo.nombre }}</h3>
-            <p>{{ promo.descripcion|truncatechars:100 }}</p>
-            <p class="descuento">Descuento: {{ promo.descuento }}%</p>
-            <a href="{% url 'promocion_detalle' promo.id %}" class="btn">Ver más</a>
+            <div class="card-footer text-center">
+              <a href="{% url 'promocion_detalle' promo.id %}" class="btn btn-vino">Ver más</a>
+            </div>
+          </div>
         </div>
         {% endfor %}
+      {% else %}
+        <p class="text-center">No hay promociones disponibles en este momento.</p>
+      {% endif %}
     </div>
-    <a href="{% url 'planes_y_promociones' %}" class="btn btn-outline mt-3">Ver todas las promociones</a>
+  </div>
 </section>
 
-<!-- Contact Section -->
-<section class="contact-section" id="contacto">
-    <div class="container">
-        <div class="contact-content">
-            <div class="contact-info">
-                <h2>Contáctanos</h2>
-                <p>Estamos aquí para hacer tu estancia perfecta. No dudes en contactarnos.</p>
-                
-                <div class="contact-details">
-                    <div class="contact-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <div>
-                            <h4>Dirección</h4>
-                            <p>Av. Principal 123, Ciudad Paraíso<br>CP 12345, País</p>
-                        </div>
-                    </div>
-                    
-                    <div class="contact-item">
-                        <i class="fas fa-phone"></i>
-                        <div>
-                            <h4>Teléfono</h4>
-                            <p>+1 (555) 123-4567<br>+1 (555) 123-4568</p>
-                        </div>
-                    </div>
-                    
-                    <div class="contact-item">
-                        <i class="fas fa-envelope"></i>
-                        <div>
-                            <h4>Email</h4>
-                            <p>info@hotelparadise.com<br>reservas@hotelparadise.com</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="contact-form-container">
-                <form class="contact-form">
-                    <div class="form-group">
-                        <input type="text" placeholder="Nombre completo" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" placeholder="Email" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="tel" placeholder="Teléfono">
-                    </div>
-                    <div class="form-group">
-                        <textarea placeholder="Mensaje" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
-                </form>
-            </div>
-        </div>
+<!-- Servicios -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2 class="fw-bold">Nuestros Servicios</h2>
+      <p>Todo lo que necesitas para una estadía perfecta</p>
     </div>
+    <div class="row g-4">
+      {% if servicios %}
+        {% for servicio in servicios %}
+        <div class="col-md-3 col-sm-6">
+          <div class="card h-100 text-center p-3">
+            <div class="card-body">
+              <h3 class="h6">{{ servicio.nombre }}</h3>
+              <p class="small">{{ servicio.descripcion|truncatewords:15 }}</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-center">No hay servicios cargados en este momento.</p>
+      {% endif %}
+    </div>
+  </div>
 </section>
+
 {% endblock %}
