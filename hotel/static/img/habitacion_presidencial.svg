@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <!-- Fondo con gradiente elegante -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0e68c" />
+      <stop offset="100%" stop-color="#ffd700" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fondo de la habitación -->
+  <rect width="400" height="300" fill="url(#bg-gradient)" />
+  
+  <!-- Pared de fondo con molduras -->
+  <rect x="20" y="20" width="360" height="200" fill="#ffffff" stroke="#d4af37" stroke-width="3" />
+  <rect x="30" y="30" width="340" height="180" fill="none" stroke="#d4af37" stroke-width="1" />
+  
+  <!-- Ventanas panorámicas -->
+  <rect x="220" y="40" width="150" height="140" fill="#d4f1f9" stroke="#d4af37" stroke-width="2" />
+  <line x1="295" y1="40" x2="295" y2="180" stroke="#d4af37" stroke-width="2" />
+  <line x1="220" y1="110" x2="370" y2="110" stroke="#d4af37" stroke-width="2" />
+  
+  <!-- Cama king size de lujo -->
+  <rect x="50" y="150" width="220" height="180" rx="10" ry="10" fill="#f8f8ff" stroke="#d4af37" stroke-width="3" transform="rotate(-90 50 150)" />
+  <rect x="50" y="130" width="220" height="30" rx="5" ry="5" fill="#fffacd" stroke="#d4af37" stroke-width="2" transform="rotate(-90 50 150)" />
+  <rect x="50" y="100" width="220" height="30" rx="5" ry="5" fill="#fffacd" stroke="#d4af37" stroke-width="2" transform="rotate(-90 50 150)" />
+  
+  <!-- Mesitas de noche de lujo -->
+  <rect x="40" y="170" width="40" height="50" fill="#8b4513" stroke="#d4af37" stroke-width="2" />
+  <rect x="45" y="175" width="30" height="10" fill="#d4af37" stroke="#b8860b" stroke-width="1" />
+  
+  <rect x="200" y="170" width="40" height="50" fill="#8b4513" stroke="#d4af37" stroke-width="2" />
+  <rect x="205" y="175" width="30" height="10" fill="#d4af37" stroke="#b8860b" stroke-width="1" />
+  
+  <!-- Lámparas de lujo -->
+  <rect x="50" y="160" width="20" height="10" fill="#ffd700" stroke="#d4af37" stroke-width="1" />
+  <rect x="55" y="140" width="10" height="20" fill="#d4af37" stroke="#b8860b" stroke-width="1" />
+  
+  <rect x="210" y="160" width="20" height="10" fill="#ffd700" stroke="#d4af37" stroke-width="1" />
+  <rect x="215" y="140" width="10" height="20" fill="#d4af37" stroke="#b8860b" stroke-width="1" />
+  
+  <!-- Área de estar de lujo -->
+  <rect x="40" y="50" width="140" height="50" rx="5" ry="5" fill="#800000" stroke="#8b0000" stroke-width="2" />
+  <rect x="40" y="40" width="140" height="15" rx="5" ry="5" fill="#800000" stroke="#8b0000" stroke-width="2" />
+  <rect x="50" y="50" width="25" height="50" rx="2" ry="2" fill="#800000" stroke="#8b0000" stroke-width="1" />
+  <rect x="95" y="50" width="25" height="50" rx="2" ry="2" fill="#800000" stroke="#8b0000" stroke-width="1" />
+  <rect x="140" y="50" width="25" height="50" rx="2" ry="2" fill="#800000" stroke="#8b0000" stroke-width="1" />
+  
+  <!-- Mesa de centro de lujo -->
+  <ellipse cx="110" cy="120" rx="40" ry="20" fill="#d4af37" stroke="#b8860b" stroke-width="2" />
+  <line x1="110" y1="120" x2="110" y2="140" stroke="#b8860b" stroke-width="6" />
+  <ellipse cx="110" cy="140" rx="20" ry="7" fill="#b8860b" stroke="#8b4513" stroke-width="1" />
+  
+  <!-- Candelabro -->
+  <circle cx="110" cy="30" r="10" fill="#ffd700" stroke="#d4af37" stroke-width="1" />
+  <line x1="95" y1="30" x2="125" y2="30" stroke="#d4af37" stroke-width="2" />
+  <line x1="110" y1="15" x2="110" y2="45" stroke="#d4af37" stroke-width="2" />
+  <line x1="100" y1="20" x2="120" y2="40" stroke="#d4af37" stroke-width="2" />
+  <line x1="120" y1="20" x2="100" y2="40" stroke="#d4af37" stroke-width="2" />
+  
+  <!-- Alfombra de lujo -->
+  <ellipse cx="120" cy="240" rx="140" ry="40" fill="#800000" stroke="#8b0000" stroke-width="2" />
+  <ellipse cx="120" cy="240" rx="120" ry="30" fill="#8b0000" stroke="#800000" stroke-width="1" />
+  <ellipse cx="120" cy="240" rx="100" ry="20" fill="#800000" stroke="#8b0000" stroke-width="1" />
+  
+  <!-- Texto descriptivo -->
+  <text x="200" y="280" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#8b0000">Suite Presidencial</text>
+</svg>

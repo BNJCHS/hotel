@@ -4,13 +4,41 @@
 
 {% block content %}
 <div class="container py-5">
-    <h2 class="mb-4">Seleccionar Fechas y Huéspedes</h2>
+    <!-- Hero Section -->
+    <div class="row mb-5 bg-light rounded p-4 shadow-sm">
+        <div class="col-12 text-center">
+            <h1 class="display-5">Completar Reserva</h1>
+            <p class="lead">Paso 2: Confirmar fechas y datos de huéspedes</p>
+        </div>
+    </div>
 
     {% if habitacion %}
-        <div class="card mb-4 p-3">
-            <h4>Habitación Seleccionada: {{ habitacion.nombre }}</h4>
-            <p>{{ habitacion.descripcion|default:"Sin descripción" }}</p>
-            <p>Precio: ${{ habitacion.precio }}</p>
+        <div class="card mb-4 p-3 shadow-sm">
+            <div class="row">
+                <div class="col-md-4">
+                    {% if habitacion.imagen %}
+                        <img src="{{ habitacion.imagen.url }}" class="img-fluid rounded" alt="{{ habitacion.nombre }}">
+                    {% else %}
+                        {% if habitacion.tipo == 'simple' %}
+                            <img src="/static/img/habitacion_simple.svg" class="img-fluid rounded" alt="Habitación Simple">
+                        {% elif habitacion.tipo == 'doble' %}
+                            <img src="/static/img/habitacion_doble.svg" class="img-fluid rounded" alt="Habitación Doble">
+                        {% elif habitacion.tipo == 'suite' %}
+                            <img src="/static/img/habitacion_suite.svg" class="img-fluid rounded" alt="Suite">
+                        {% elif habitacion.tipo == 'presidencial' %}
+                            <img src="/static/img/habitacion_presidencial.svg" class="img-fluid rounded" alt="Suite Presidencial">
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <h4>Habitación Seleccionada: {{ habitacion.numero }} ({{ habitacion.get_tipo_display }})</h4>
+                    <p>{{ habitacion.descripcion|default:"Sin descripción" }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <p class="fs-5 fw-bold mb-0">Precio: ${{ habitacion.precio }}</p>
+                        <p class="text-success"><i class="bi bi-people-fill"></i> Capacidad: {{ habitacion.capacidad }} personas</p>
+                    </div>
+                </div>
+            </div>
         </div>
     {% endif %}
 
@@ -21,23 +49,25 @@
     <form method="POST">
         {% csrf_token %}
 
-        <!-- Fechas y cantidad de huéspedes -->
+        <!-- Fechas de reserva (solo mostrar, no editar) -->
         <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <label for="fecha_entrada" class="form-label">Fecha de Entrada</label>
-                <input type="date" id="fecha_entrada" name="fecha_entrada" class="form-control" 
-                       value="{{ fecha_entrada|default:'' }}" min="{{ today }}">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Fecha de Entrada</label>
+                <p class="form-control-static">{{ fecha_entrada }}</p>
+                <input type="hidden" name="fecha_entrada" value="{{ fecha_entrada }}">
             </div>
-            <div class="col-md-4">
-                <label for="fecha_salida" class="form-label">Fecha de Salida</label>
-                <input type="date" id="fecha_salida" name="fecha_salida" class="form-control" 
-                       value="{{ fecha_salida|default:'' }}" min="{{ today }}">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Fecha de Salida</label>
+                <p class="form-control-static">{{ fecha_salida }}</p>
+                <input type="hidden" name="fecha_salida" value="{{ fecha_salida }}">
             </div>
-            <div class="col-md-4">
-                <label for="numero_huespedes" class="form-label">Cantidad de Huéspedes</label>
-                <input type="number" id="numero_huespedes" name="numero_huespedes" class="form-control"
-                       value="{{ numero_huespedes|default:1 }}" min="1">
-            </div>
+        </div>
+        
+        <!-- Información de huéspedes -->
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Completando reserva para <strong>{{ numero_huespedes }} huésped{% if numero_huespedes > 1 %}es{% endif %}</strong>
+            <input type="hidden" name="numero_huespedes" value="{{ numero_huespedes }}">
         </div>
 
         {% if formset %}

@@ -17,6 +17,7 @@ class Habitacion(models.Model):
     descripcion = models.TextField(blank=True, null=True)
     imagen = models.ImageField(upload_to='habitaciones/', blank=True, null=True)
     stock = models.PositiveIntegerField(default=0)  # <--- NUEVO
+    capacidad = models.PositiveIntegerField(default=1)  # Capacidad máxima de huéspedes
 
     def __str__(self):
         return f'Habitación {self.numero} ({self.tipo})'

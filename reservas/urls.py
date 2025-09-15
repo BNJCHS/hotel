@@ -9,8 +9,9 @@ urlpatterns = [
     path('cancelar/<int:reserva_id>/', views.cancelar_reserva, name='cancelar_reserva'),
     path('servicio/agregar/', views.agregar_servicio, name='agregar_servicio'),
     path('fechas/', views.seleccionar_fechas, name='seleccionar_fechas'),
+    path('seleccionar-huespedes/', views.seleccionar_huespedes, name='seleccionar_huespedes'),
     path("confirmar/<int:reserva_id>/", views.confirmar_reserva, name="confirmar_reserva"),
-    path('confirmar/<uuid:token>/', views.confirmar_reserva_token, name='confirmar_reserva_token'),
+    path("confirmar/<str:token>/", views.confirmar_reserva_token, name="confirmar_reserva_token"),
     path('habitaciones/reservar/<int:habitacion_id>/', views.reservar_habitacion, name='reservar_habitacion'),
 
 ]

@@ -1,37 +1,80 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
+{% block title %}Hotel Elegante - Bienvenido al Paraíso{% endblock %}
 
-<!-- Hero -->
-<section class="hero text-center py-5">
+{% block content %}
+<!-- Hero Section -->
+<section class="hero position-relative" id="hero">
+  <div class="hero-background">
+     <img src="{% static 'img/hero.jpg' %}" alt="Hotel Elegante" class="hero-image">
+     <div class="hero-overlay position-absolute w-100 h-100 bg-dark opacity-50"></div>
+   </div>
+
+  <div class="container position-relative h-100 d-flex align-items-center">
+    <div class="hero-content text-center text-white py-5">
+      <h1 class="display-4 fw-bold mb-4">Bienvenido al Hotel Elegante</h1>
+      <p class="lead mb-5">Experimenta el lujo y la comodidad en un entorno único</p>
+      <div class="hero-buttons">
+        <a href="{% url 'seleccionar_huespedes' %}" class="btn btn-primary btn-lg px-5 py-3">Reservar Ahora</a>
+        <a href="{% url 'habitaciones_lista' %}" class="btn btn-secondary btn-lg">Ver Habitaciones</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-indicator">
+    <i class="fas fa-chevron-down"></i>
+  </div>
+</section>
+
+<!-- About Section -->
+<section class="about py-5">
   <div class="container">
-    <h1 class="display-4 fw-bold">Bienvenido a La Toscana</h1>
-    <p class="lead">Descubre la elegancia, el confort y la mejor experiencia en hotelería</p>
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-4 mb-lg-0">
+        <div class="about-content pe-lg-4">
+          <div class="section-header mb-4">
+            <h2 class="fw-bold">Sobre Nosotros</h2>
+            <div class="divider my-3"></div>
+          </div>
+          <p class="lead mb-4">El Hotel Elegante es un oasis de lujo y confort en el corazón de la ciudad. Nuestras instalaciones de primera clase y nuestro servicio excepcional garantizan una estancia inolvidable.</p>
+          <p class="mb-4">Desde nuestra fundación, nos hemos dedicado a ofrecer experiencias únicas a nuestros huéspedes, combinando la elegancia clásica con las comodidades modernas.</p>
+          <a href="{% url 'about' %}" class="btn btn-primary">Conoce más</a>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="about-image rounded overflow-hidden shadow-lg">
+          <img src="{% static 'img/about.jpg' %}" alt="Hotel Elegante" class="img-fluid w-100">
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- Habitaciones -->
-<section class="py-5">
+<section class="seccion-habitaciones py-5" id="habitaciones">
   <div class="container">
     <div class="section-header text-center mb-5">
-      <h2 class="fw-bold">Nuestras Habitaciones</h2>
-      <p>Confort, estilo y todo lo que necesitas para una estadía inolvidable</p>
+      <h2 class="fw-bold">Habitaciones Destacadas</h2>
+      <p class="text-muted">Descubre nuestras elegantes y confortables habitaciones</p>
     </div>
     <div class="row g-4">
       {% if habitaciones %}
         {% for habitacion in habitaciones %}
-        <div class="col-md-4">
-          <div class="card h-100">
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 border-0 shadow-sm overflow-hidden">
             {% if habitacion.imagen %}
-            <img src="{{ habitacion.imagen.url }}" class="card-img-top" alt="{{ habitacion.nombre }}">
-            {% endif %}
-            <div class="card-body">
-              <h3 class="card-title h5">{{ habitacion.nombre }}</h3>
-              <p class="card-text">{{ habitacion.descripcion|truncatewords:20 }}</p>
+            <div class="img-placeholder position-relative">
+              <img src="{{ habitacion.imagen.url }}" class="card-img-top img-fluid" alt="{{ habitacion.nombre }}">
+              <div class="position-absolute bottom-0 end-0 p-3">
+                <span class="badge bg-primary">Destacada</span>
+              </div>
             </div>
-            <div class="card-footer text-center">
-              <a href="{% url 'habitacion_detalle' habitacion.id %}" class="btn btn-vino">Ver más</a>
+            {% endif %}
+            <div class="card-body p-4">
+              <h3 class="card-title h5 mb-3">{{ habitacion.nombre }}</h3>
+              <p class="card-text text-muted mb-3">{{ habitacion.descripcion|truncatewords:20 }}</p>
+              <a href="{% url 'habitaciones_lista' %}" class="btn btn-outline-primary w-100">Ver más</a>
             </div>
           </div>
         </div>
@@ -40,84 +83,91 @@
         <p class="text-center">No hay habitaciones disponibles en este momento.</p>
       {% endif %}
     </div>
+    <div class="text-center mt-5">
+      <a href="{% url 'habitaciones_lista' %}" class="btn btn-outline-primary">Ver todas las habitaciones</a>
+    </div>
   </div>
 </section>
 
 <!-- Planes -->
-<section class="py-5 bg-light">
+<section class="seccion-planes py-5 bg-light">
   <div class="container">
     <div class="section-header text-center mb-5">
-      <h2 class="fw-bold">Planes Exclusivos</h2>
-      <p>Disfruta experiencias únicas pensadas para vos</p>
+      <h2 class="fw-bold">Planes Destacados</h2>
+      <p class="text-muted">Descubre nuestros planes especiales diseñados para tu comodidad</p>
     </div>
     <div class="row g-4">
-      {% if planes %}
-        {% for plan in planes %}
-        <div class="col-md-4">
-          <div class="card h-100 text-center">
-            <div class="card-body">
-              <h3 class="card-title h5">{{ plan.nombre }}</h3>
-              <p class="card-text">{{ plan.descripcion|truncatewords:20 }}</p>
-              <span class="fw-bold text-vino">${{ plan.precio }}</span>
+      {% for plan in planes %}
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="icon-placeholder mb-3">
+              <i class="fas fa-suitcase-rolling fa-3x text-primary"></i>
             </div>
-            <div class="card-footer text-center">
-              <a href="{% url 'detalle_plan' plan.id %}" class="btn btn-vino">Ver más</a>
-            </div>
+            <h3 class="card-title h5 mb-3">{{ plan.nombre }}</h3>
+            <p class="card-text text-muted mb-3">{{ plan.descripcion|truncatechars:100 }}</p>
+            <p class="precio fw-bold mb-4">Precio: ${{ plan.precio }}</p>
+            <a href="{% url 'detalle_plan' plan.id %}" class="btn btn-primary">Ver más</a>
           </div>
         </div>
-        {% endfor %}
-      {% else %}
-        <p class="text-center">No hay planes disponibles en este momento.</p>
-      {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-5">
+      <a href="{% url 'planes_y_promociones' %}" class="btn btn-outline-primary">Ver todos los planes</a>
     </div>
   </div>
 </section>
 
 <!-- Promociones -->
-<section class="py-5">
+<section class="seccion-promociones py-5">
   <div class="container">
     <div class="section-header text-center mb-5">
-      <h2 class="fw-bold">Promociones</h2>
-      <p>Aprovechá las mejores ofertas y descuentos</p>
+      <h2 class="fw-bold">Promociones Destacadas</h2>
+      <p class="text-muted">Aprovecha nuestras ofertas especiales por tiempo limitado</p>
     </div>
     <div class="row g-4">
-      {% if promociones %}
-        {% for promo in promociones %}
-        <div class="col-md-4">
-          <div class="card h-100 border-dorado text-center">
-            <div class="card-body">
-              <h3 class="card-title h5">{{ promo.nombre }}</h3>
-              <p class="card-text">{{ promo.descripcion|truncatewords:20 }}</p>
-              <span class="fw-bold text-vino">Válido hasta {{ promo.fecha_fin }}</span>
+      {% for promo in promociones %}
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="icon-placeholder mb-3">
+              <i class="fas fa-tags fa-3x text-secondary"></i>
             </div>
-            <div class="card-footer text-center">
-              <a href="{% url 'promocion_detalle' promo.id %}" class="btn btn-vino">Ver más</a>
-            </div>
+            <h3 class="card-title h5 mb-3">{{ promo.nombre }}</h3>
+            <p class="card-text text-muted mb-3">{{ promo.descripcion|truncatechars:100 }}</p>
+            <p class="descuento fw-bold mb-4 text-danger">Descuento: {{ promo.descuento }}%</p>
+            <a href="{% url 'promocion_detalle' promo.id %}" class="btn btn-secondary">Ver más</a>
           </div>
         </div>
-        {% endfor %}
-      {% else %}
-        <p class="text-center">No hay promociones disponibles en este momento.</p>
-      {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-5">
+      <a href="{% url 'planes_y_promociones' %}" class="btn btn-outline-secondary">Ver todas las promociones</a>
     </div>
   </div>
 </section>
 
 <!-- Servicios -->
-<section class="py-5 bg-light">
+<section class="seccion-servicios py-5 bg-light">
   <div class="container">
     <div class="section-header text-center mb-5">
       <h2 class="fw-bold">Nuestros Servicios</h2>
-      <p>Todo lo que necesitas para una estadía perfecta</p>
+      <p class="text-muted">Disfruta de nuestros servicios exclusivos durante tu estadía</p>
     </div>
     <div class="row g-4">
       {% if servicios %}
         {% for servicio in servicios %}
-        <div class="col-md-3 col-sm-6">
-          <div class="card h-100 text-center p-3">
-            <div class="card-body">
-              <h3 class="h6">{{ servicio.nombre }}</h3>
-              <p class="small">{{ servicio.descripcion|truncatewords:15 }}</p>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+              <div class="icon-placeholder mb-3">
+                <i class="fas fa-concierge-bell fa-3x text-info"></i>
+              </div>
+              <h3 class="card-title h5 mb-3">{{ servicio.nombre }}</h3>
+              <p class="card-text text-muted mb-4">{{ servicio.descripcion|truncatechars:100 }}</p>
+              <a href="{% url 'servicio_detalle' servicio.id %}" class="btn btn-info text-white">Ver más</a>
             </div>
           </div>
         </div>
@@ -128,5 +178,4 @@
     </div>
   </div>
 </section>
-
 {% endblock %}

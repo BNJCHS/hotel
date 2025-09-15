@@ -1,216 +1,123 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Hotel Paradise - Bienvenido al Paraíso{% endblock %}
+{% block title %}Hotel Elegante - Contacto{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero" id="hero">
-    <div class="hero-background">
-        <img src="/placeholder.svg?height=800&width=1200" alt="Hotel Paradise" class="hero-image">
-        <div class="hero-overlay"></div>
-    </div>
-    
-    <div class="hero-content">
-        <h1 class="hero-title">Bienvenido al Paraíso</h1>
-        <p class="hero-subtitle">Experimenta el lujo y la comodidad en un entorno único</p>
-        <div class="hero-buttons">
-            <a href="{% url 'seleccionar_fechas' %}" class="btn btn-primary">Reservar Ahora</a>
-            <a href="#habitaciones" class="btn btn-secondary">Ver Habitaciones</a>
-        </div>
-    </div>
-    
-    <div class="scroll-indicator">
-        <i class="fas fa-chevron-down"></i>
-    </div>
-</section>
-
-<!-- Booking Form Section -->
-<section class="booking-section" id="reservar">
+<!-- Contact Section -->
+<section class="contact-section py-5 bg-light" id="contacto">
     <div class="container">
-        <div class="booking-form-container">
-            <h2>Reserva tu Estancia</h2>
-            <form class="booking-form" id="booking-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="checkin">Fecha de Entrada</label>
-                        <input type="date" id="checkin" name="checkin" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="checkout">Fecha de Salida</label>
-                        <input type="date" id="checkout" name="checkout" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="guests">Huéspedes</label>
-                        <select id="guests" name="guests" required>
-                            <option value="1">1 Huésped</option>
-                            <option value="2">2 Huéspedes</option>
-                            <option value="3">3 Huéspedes</option>
-                            <option value="4">4 Huéspedes</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary">Buscar Disponibilidad</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-</section>
-
-<!-- About Section -->
-<section class="about-section">
-    <div class="container">
-        <div class="about-content">
-            <div class="about-text">
-                <h2>Una Experiencia Inolvidable</h2>
-                <p>Hotel Paradise combina elegancia moderna con hospitalidad excepcional. Nuestras instalaciones de lujo y servicios personalizados garantizan una estancia memorable.</p>
-                <div class="features">
-                    <div class="feature">
-                        <i class="fas fa-star"></i>
-                        <span>Servicio 5 Estrellas</span>
-                    </div>
-                    <div class="feature">
-                        <i class="fas fa-wifi"></i>
-                        <span>WiFi Gratuito</span>
-                    </div>
-                    <div class="feature">
-                        <i class="fas fa-swimming-pool"></i>
-                        <span>Piscina Infinity</span>
-                    </div>
-                    <div class="feature">
-                        <i class="fas fa-spa"></i>
-                        <span>Spa & Wellness</span>
-                    </div>
-                </div>
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="display-4 fw-bold mb-3">Contáctanos</h2>
+                <p class="lead text-muted">Estamos aquí para hacer tu estancia perfecta. No dudes en contactarnos.</p>
             </div>
-            <div class="about-image">
-                <img src="/placeholder.svg?height=500&width=600" alt="Hotel Lobby">
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Rooms Section -->
-<section class="rooms-section" id="habitaciones">
-    <div class="container">
-        <div class="section-header">
-            <h2>Nuestras Habitaciones</h2>
-            <p>Descubre nuestras elegantes habitaciones diseñadas para tu máximo confort</p>
         </div>
         
-        <div class="rooms-grid">
-            <!-- Aquí podrías usar un loop si tuvieras habitaciones desde la base de datos -->
-            <div class="room-card">
-                <div class="room-image">
-                    <img src="/placeholder.svg?height=300&width=400" alt="Habitación Deluxe">
-                    <div class="room-price">$299/noche</div>
-                </div>
-                <div class="room-content">
-                    <h3>Habitación Deluxe</h3>
-                    <p>Espaciosa habitación con vista al mar y todas las comodidades modernas.</p>
-                    <ul class="room-amenities">
-                        <li><i class="fas fa-bed"></i> Cama King Size</li>
-                        <li><i class="fas fa-tv"></i> TV 55" Smart</li>
-                        <li><i class="fas fa-bath"></i> Baño de Mármol</li>
-                    </ul>
-                    <a href="#" class="btn btn-outline">Ver Detalles</a>
-                </div>
-            </div>
-            <!-- Añade más habitaciones según necesites -->
-        </div>
-    </div>
-</section>
-
-<!-- Plans Section -->
-<section class="seccion-planes">
-    <h2>Planes Destacados</h2>
-    <div class="cards-container">
-        {% for plan in planes|slice:":3" %}
-        <div class="card">
-            <div class="icon-placeholder">
-                <i class="fas fa-suitcase-rolling fa-4x"></i>
-            </div>
-            <h3>{{ plan.nombre }}</h3>
-            <p>{{ plan.descripcion|truncatechars:100 }}</p>
-            <p class="precio">Precio: ${{ plan.precio }}</p>
-            <a href="{% url 'plan_detalle' plan.id %}" class="btn">Ver más</a>
-        </div>
-        {% endfor %}
-    </div>
-    <a href="{% url 'planes_list' %}" class="btn btn-outline mt-3">Ver todos los planes</a>
-</section>
-
-<!-- Promotions Section -->
-<section class="seccion-promociones">
-    <h2>Promociones Destacadas</h2>
-    <div class="cards-container">
-        {% for promo in promociones|slice:":3" %}
-        <div class="card">
-            <div class="icon-placeholder">
-                <i class="fas fa-tags fa-4x"></i>
-            </div>
-            <h3>{{ promo.nombre }}</h3>
-            <p>{{ promo.descripcion|truncatechars:100 }}</p>
-            <p class="descuento">Descuento: {{ promo.descuento }}%</p>
-            <a href="{% url 'promocion_detalle' promo.id %}" class="btn">Ver más</a>
-        </div>
-        {% endfor %}
-    </div>
-    <a href="{% url 'promociones_list' %}" class="btn btn-outline mt-3">Ver todas las promociones</a>
-</section>
-
-<!-- Contact Section -->
-<section class="contact-section" id="contacto">
-    <div class="container">
-        <div class="contact-content">
-            <div class="contact-info">
-                <h2>Contáctanos</h2>
-                <p>Estamos aquí para hacer tu estancia perfecta. No dudes en contactarnos.</p>
-                
-                <div class="contact-details">
-                    <div class="contact-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <div>
-                            <h4>Dirección</h4>
-                            <p>Av. Principal 123, Ciudad Paraíso<br>CP 12345, País</p>
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="contact-info p-4 bg-white rounded shadow-sm">
+                    <div class="contact-details">
+                        <div class="contact-item d-flex align-items-center mb-4">
+                            <div class="icon-container me-3 bg-primary text-white rounded-circle p-3">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold">Dirección</h4>
+                                <p class="text-muted mb-0">Av. Principal 123, Ciudad Paraíso<br>CP 12345, País</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="contact-item">
-                        <i class="fas fa-phone"></i>
-                        <div>
-                            <h4>Teléfono</h4>
-                            <p>+1 (555) 123-4567<br>+1 (555) 123-4568</p>
+                        
+                        <div class="contact-item d-flex align-items-center mb-4">
+                            <div class="icon-container me-3 bg-primary text-white rounded-circle p-3">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold">Teléfono</h4>
+                                <p class="text-muted mb-0">+1 (555) 123-4567<br>+1 (555) 123-4568</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="contact-item">
-                        <i class="fas fa-envelope"></i>
-                        <div>
-                            <h4>Email</h4>
-                            <p>info@hotelparadise.com<br>reservas@hotelparadise.com</p>
+                        
+                        <div class="contact-item d-flex align-items-center mb-4">
+                            <div class="icon-container me-3 bg-primary text-white rounded-circle p-3">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold">Email</h4>
+                                <p class="text-muted mb-0">info@hotelelegante.com<br>reservas@hotelelegante.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="social-media mt-4">
+                            <h4 class="fw-bold mb-3">Síguenos</h4>
+                            <div class="d-flex">
+                                <a href="#" class="me-2 btn btn-outline-primary rounded-circle">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="me-2 btn btn-outline-primary rounded-circle">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="me-2 btn btn-outline-primary rounded-circle">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-primary rounded-circle">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="contact-form-container">
-                <form class="contact-form">
-                    <div class="form-group">
-                        <input type="text" placeholder="Nombre completo" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" placeholder="Email" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="tel" placeholder="Teléfono">
-                    </div>
-                    <div class="form-group">
-                        <textarea placeholder="Mensaje" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
-                </form>
+            <div class="col-lg-7">
+                <div class="contact-form-container bg-white p-4 rounded shadow-sm">
+                    <h3 class="fw-bold mb-4">Envíanos un mensaje</h3>
+                    <form class="contact-form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="nombre" placeholder="Nombre completo" required>
+                                    <label for="nombre">Nombre completo</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="email" class="form-control" id="email" placeholder="Email" required>
+                                    <label for="email">Email</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="tel" class="form-control" id="telefono" placeholder="Teléfono">
+                            <label for="telefono">Teléfono</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="asunto">
+                                <option selected disabled>Selecciona una opción</option>
+                                <option value="reserva">Consulta sobre reservas</option>
+                                <option value="informacion">Información general</option>
+                                <option value="comentario">Comentarios y sugerencias</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                            <label for="asunto">Asunto</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" placeholder="Mensaje" id="mensaje" style="height: 150px" required></textarea>
+                            <label for="mensaje">Mensaje</label>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Enviar Mensaje</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="map-container rounded overflow-hidden shadow-sm">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.952912260219!2d3.375295414770757!3d6.5276316452784755!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwMzEnMzkuNSJOIDPCsDIyJzMxLjEiRQ!5e0!3m2!1sen!2sng!4v1627913085492!5m2!1sen!2sng" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
             </div>
         </div>
     </div>

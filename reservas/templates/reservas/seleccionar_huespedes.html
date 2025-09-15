@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Seleccionar Número de Huéspedes{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row mb-5 bg-light rounded p-4 shadow-sm">
+        <div class="col-12 text-center">
+            <h1 class="display-4">Reserva tu Estadía</h1>
+            <p class="lead">Comienza tu reserva indicando cuántas personas se hospedarán</p>
+        </div>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Paso 1: Número de Huéspedes</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{% url 'seleccionar_huespedes' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="numero_huespedes" class="form-label fw-bold">¿Cuántas personas se hospedarán?</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-people-fill"></i></span>
+                                <input type="number" id="numero_huespedes" name="numero_huespedes" class="form-control form-control-lg"
+                                    value="{{ numero_huespedes|default:1 }}" min="1" max="10">
+                            </div>
+                            <div class="form-text">Seleccione el número total de personas que se hospedarán</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="fecha_entrada" class="form-label fw-bold">Fecha de Entrada</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+                                <input type="date" id="fecha_entrada" name="fecha_entrada" class="form-control form-control-lg" 
+                                    value="{{ fecha_entrada|default:'' }}" min="{{ today }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="fecha_salida" class="form-label fw-bold">Fecha de Salida</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar-x"></i></span>
+                                <input type="date" id="fecha_salida" name="fecha_salida" class="form-control form-control-lg" 
+                                    value="{{ fecha_salida|default:'' }}" min="{{ today }}" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Buscar Habitaciones Disponibles</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('fecha_entrada').setAttribute('min', today);
+    document.getElementById('fecha_salida').setAttribute('min', today);
+
+    // Validar que la fecha de salida sea posterior a la de entrada
+    document.getElementById('fecha_entrada').addEventListener('change', function() {
+        const fechaEntrada = this.value;
+        document.getElementById('fecha_salida').setAttribute('min', fechaEntrada);
+        
+        // Si la fecha de salida es anterior a la nueva fecha de entrada, actualizarla
+        const fechaSalida = document.getElementById('fecha_salida').value;
+        if (fechaSalida && fechaSalida < fechaEntrada) {
+            document.getElementById('fecha_salida').value = fechaEntrada;
+        }
+    });
+</script>
+{% endblock %}

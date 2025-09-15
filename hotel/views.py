@@ -14,13 +14,36 @@ from decimal import Decimal
 from administracion.models import Servicio
 
 def lista_habitaciones(request):
-    habitaciones = Habitacion.objects.all()  # Todas las habitaciones
+    # Obtener parámetros de la sesión
+    numero_huespedes = request.session.get('numero_huespedes', None)
+    fecha_entrada = request.session.get('fecha_entrada', None)
+    fecha_salida = request.session.get('fecha_salida', None)
+    
+    # Si no hay número de huéspedes, redirigir a la selección de huéspedes
+    if not numero_huespedes:
+        return redirect('seleccionar_huespedes')
+    
+    # Filtrar habitaciones por capacidad y verificar disponibilidad para las fechas seleccionadas
+    habitaciones = Habitacion.objects.filter(disponible=True, capacidad__gte=numero_huespedes)
+    
     context = {
-        'habitaciones': habitaciones
+        'habitaciones': habitaciones,
+        'numero_huespedes': numero_huespedes,
+        'fecha_entrada': fecha_entrada,
+        'fecha_salida': fecha_salida
     }
     return render(request, 'lista_habitaciones.html', context)
 def habitacion_detalle(request, id):
     habitacion = get_object_or_404(Habitacion, id=id)
+    
+    # Obtener número de huéspedes de la sesión
+    numero_huespedes = request.session.get('numero_huespedes', None)
+    
+    # Verificar si la habitación tiene capacidad suficiente
+    if numero_huespedes and habitacion.capacidad < numero_huespedes:
+        messages.error(request, f'Esta habitación solo tiene capacidad para {habitacion.capacidad} personas.')
+        return redirect('lista_habitaciones')
+    
     context = {
         'habitacion': habitacion
     }
@@ -33,6 +56,16 @@ def seleccionar_habitacion(request, habitacion_id):
 
 
 def index(request):
+    # Limpiar la sesión para iniciar un nuevo proceso de reserva
+    if 'numero_huespedes' in request.session:
+        del request.session['numero_huespedes']
+    if 'fecha_entrada' in request.session:
+        del request.session['fecha_entrada']
+    if 'fecha_salida' in request.session:
+        del request.session['fecha_salida']
+    if 'habitacion_id' in request.session:
+        del request.session['habitacion_id']
+    
     # Traemos los primeros 3 planes y promociones
     planes = Plan.objects.all()[:3]
     promociones = Promocion.objects.all()[:3]
@@ -231,6 +264,10 @@ def detalle_plan(request, plan_id):
 def promocion_detalle(request, promocion_id):
     promocion = get_object_or_404(Promocion, id=promocion_id)
     return render(request, 'promocion_detalle.html', {'promocion': promocion})
+
+def servicio_detalle(request, servicio_id):
+    servicio = get_object_or_404(Servicio, id=servicio_id)
+    return render(request, 'servicio_detalle.html', {'servicio': servicio})
 
 @login_required
 def planes_y_promociones(request):

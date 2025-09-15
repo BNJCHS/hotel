@@ -23,47 +23,105 @@ from administracion.models import Plan, Promocion
 
 
 @login_required
+def seleccionar_huespedes(request):
+    today = datetime.now().date().strftime('%Y-%m-%d')
+    
+    if request.method == 'POST':
+        numero_huespedes = int(request.POST.get('numero_huespedes', 1))
+        fecha_entrada = request.POST.get('fecha_entrada')
+        fecha_salida = request.POST.get('fecha_salida')
+        
+        # Validar fechas
+        if fecha_entrada and fecha_salida:
+            fecha_entrada_obj = datetime.strptime(fecha_entrada, '%Y-%m-%d').date()
+            fecha_salida_obj = datetime.strptime(fecha_salida, '%Y-%m-%d').date()
+            
+            if fecha_entrada_obj < datetime.now().date():
+                return render(request, 'reservas/seleccionar_huespedes.html', {
+                    'error': 'La fecha de entrada no puede ser anterior a hoy',
+                    'today': today,
+                    'numero_huespedes': numero_huespedes
+                })
+            
+            if fecha_salida_obj <= fecha_entrada_obj:
+                return render(request, 'reservas/seleccionar_huespedes.html', {
+                    'error': 'La fecha de salida debe ser posterior a la fecha de entrada',
+                    'today': today,
+                    'numero_huespedes': numero_huespedes,
+                    'fecha_entrada': fecha_entrada
+                })
+        
+        # Guardar en sesión
+        request.session['numero_huespedes'] = numero_huespedes
+        request.session['fecha_entrada'] = fecha_entrada
+        request.session['fecha_salida'] = fecha_salida
+        
+        # Redirigir a lista de habitaciones
+        return redirect('habitaciones_lista')
+    
+    # Obtener valores de sesión si existen
+    numero_huespedes = request.session.get('numero_huespedes', 1)
+    fecha_entrada = request.session.get('fecha_entrada', '')
+    fecha_salida = request.session.get('fecha_salida', '')
+    
+    return render(request, 'reservas/seleccionar_huespedes.html', {
+        'today': today,
+        'numero_huespedes': numero_huespedes,
+        'fecha_entrada': fecha_entrada,
+        'fecha_salida': fecha_salida
+    })
+
+@login_required
 def reservar_habitacion(request, habitacion_id):
     habitacion = get_object_or_404(Habitacion, id=habitacion_id)
+    
+    # Verificar si hay número de huéspedes en la sesión
+    numero_huespedes = request.session.get('numero_huespedes')
+    if not numero_huespedes:
+        return redirect('seleccionar_huespedes')
+    
+    # Verificar si la habitación tiene capacidad suficiente
+    if habitacion.capacidad < numero_huespedes:
+        messages.error(request, f'Esta habitación solo tiene capacidad para {habitacion.capacidad} personas.')
+        return redirect('habitaciones_lista')
+    
     request.session['habitacion_id'] = habitacion.id  # Guardamos la habitación en sesión
     return redirect('seleccionar_fechas')
 
 @login_required
 def seleccionar_fechas(request):
     today = date.today().isoformat()
-    HuespedFormSet = modelformset_factory(Huesped, form=HuespedForm, extra=0, can_delete=False)
-
+    
+    # Verificar si hay número de huéspedes en la sesión
+    numero_huespedes = request.session.get('numero_huespedes')
+    fecha_entrada = request.session.get('fecha_entrada')
+    fecha_salida = request.session.get('fecha_salida')
+    
+    if not numero_huespedes or not fecha_entrada or not fecha_salida:
+        return redirect('seleccionar_huespedes')  # Si no hay datos de huéspedes, volvemos
+    
     habitacion_id = request.session.get('habitacion_id')
     if not habitacion_id:
-        return redirect('list_habitaciones')  # Si no hay habitación seleccionada, volvemos
+        return redirect('habitaciones_lista')  # Si no hay habitación seleccionada, volvemos
 
     habitacion = Habitacion.objects.get(id=habitacion_id)
+    
+    # Verificar si la habitación tiene capacidad suficiente
+    if habitacion.capacidad < numero_huespedes:
+        messages.error(request, f'Esta habitación solo tiene capacidad para {habitacion.capacidad} personas.')
+        return redirect('habitaciones_lista')
 
     if request.method == 'POST':
-        fecha_entrada = request.POST.get('fecha_entrada')
-        fecha_salida = request.POST.get('fecha_salida')
-        numero_huespedes = int(request.POST.get('numero_huespedes', 0))
-
-        if not fecha_entrada or not fecha_salida or numero_huespedes < 1:
-            return render(request, 'reservas/seleccionar_fechas.html', {
-                'error': 'Todos los campos son obligatorios.', 
-                'today': today,
-                'habitacion': habitacion
-            })
-
-        request.session['fecha_entrada'] = fecha_entrada
-        request.session['fecha_salida'] = fecha_salida
-        request.session['numero_huespedes'] = numero_huespedes
-
         # Formset de huéspedes
+        HuespedFormSetExtra = modelformset_factory(Huesped, form=HuespedForm, extra=numero_huespedes, can_delete=False)
+        
         if 'huespedes_submitted' in request.POST:
-            formset = HuespedFormSet(request.POST, queryset=Huesped.objects.none())
+            formset = HuespedFormSetExtra(request.POST, queryset=Huesped.objects.none())
             if formset.is_valid():
                 huespedes_data = formset.cleaned_data
                 request.session['huespedes'] = huespedes_data
                 return redirect('seleccionar_servicio')
         else:
-            HuespedFormSetExtra = modelformset_factory(Huesped, form=HuespedForm, extra=numero_huespedes, can_delete=False)
             formset = HuespedFormSetExtra(queryset=Huesped.objects.none())
 
         return render(request, 'reservas/seleccionar_fechas.html', {
@@ -75,7 +133,15 @@ def seleccionar_fechas(request):
             'habitacion': habitacion
         })
 
+    # Crear formset para los huéspedes
+    HuespedFormSetExtra = modelformset_factory(Huesped, form=HuespedForm, extra=numero_huespedes, can_delete=False)
+    formset = HuespedFormSetExtra(queryset=Huesped.objects.none())
+    
     return render(request, 'reservas/seleccionar_fechas.html', {
+        'formset': formset,
+        'fecha_entrada': fecha_entrada,
+        'fecha_salida': fecha_salida,
+        'numero_huespedes': numero_huespedes,
         'today': today,
         'habitacion': habitacion
     })
@@ -135,20 +201,53 @@ def agregar_al_carrito(request, habitacion_id):
 def seleccionar_servicio(request):
     habitacion_id = request.session.get('habitacion_id')
     if not habitacion_id:
-        return redirect('lista_habitaciones')
+        return redirect('habitaciones_lista')
 
     habitacion = get_object_or_404(Habitacion, id=habitacion_id)
     servicios = Servicio.objects.all()
+    
+    # Obtener datos de la sesión
+    fecha_entrada = request.session.get('fecha_entrada')
+    fecha_salida = request.session.get('fecha_salida')
+    numero_huespedes = request.session.get('numero_huespedes')
+    
+    if not fecha_entrada or not fecha_salida or not numero_huespedes:
+        return redirect('seleccionar_huespedes')
 
     if request.method == 'POST':
         servicios_seleccionados = request.POST.getlist('servicios')  # IDs de servicios
         metodo_pago = request.POST.get('metodo_pago', 'efectivo')
 
-        # Guardamos en la sesión, todavía NO creamos la reserva
-        request.session['servicios_seleccionados'] = servicios_seleccionados
-        request.session['metodo_pago'] = metodo_pago
+        # Crear la reserva
+        reserva = Reserva.objects.create(
+            habitacion=habitacion,
+            usuario=request.user,
+            check_in=fecha_entrada,
+            check_out=fecha_salida,
+            metodo_pago=metodo_pago,
+            token=get_random_string(64),
+            cantidad_huespedes=numero_huespedes
+        )
+        
+        # Agregar servicios a la reserva
+        if servicios_seleccionados:
+            servicios_obj = Servicio.objects.filter(id__in=servicios_seleccionados)
+            reserva.servicios.add(*servicios_obj)
+        
+        # Calcular precio
+        noches = (datetime.strptime(fecha_salida, '%Y-%m-%d').date() - 
+                 datetime.strptime(fecha_entrada, '%Y-%m-%d').date()).days or 1
+        precio_habitacion = habitacion.precio * noches
+        precio_servicios = sum(servicio.precio for servicio in reserva.servicios.all())
+        subtotal = precio_habitacion + precio_servicios
+        impuestos = subtotal * Decimal("0.18")
+        precio_total = subtotal + impuestos
+        
+        reserva.monto = precio_total
+        reserva.save()
 
-        return redirect('confirmar_reserva')
+        # Redirigir a la página de confirmación con el ID de la reserva
+        return redirect('confirmar_reserva', reserva_id=reserva.id)
 
     return render(request, 'reservas/seleccionar_servicio.html', {
         'habitacion': habitacion,

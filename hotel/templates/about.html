@@ -5,116 +5,143 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="page-hero">
+<section class="hero position-relative">
     <div class="hero-background">
-        <img src="/placeholder.svg?height=400&width=1200" alt="Hotel Elegante" class="hero-image">
-        <div class="hero-overlay"></div>
+        <img src="{% static 'img/hero.jpg.svg' %}" alt="Hotel Elegante" class="hero-image">
+        <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
     </div>
-    <div class="container">
-        <div class="page-hero-content">
-            <h1>Sobre Nosotros</h1>
-            <p>Conoce la historia y filosofía detrás de Hotel Elegante</p>
+    <div class="container position-relative">
+        <div class="hero-content text-center text-white py-5">
+            <h1 class="display-4 fw-bold mb-3">Sobre Nosotros</h1>
+            <p class="lead">Conoce la historia y filosofía detrás de Hotel Elegante</p>
         </div>
     </div>
 </section>
 
 <!-- Historia Section -->
-<section class="about-section">
+<section class="about py-5">
     <div class="container">
-        <div class="about-content">
-            <div class="about-text">
-                <h2>Nuestra Historia</h2>
-                <p>Desde 1985, Hotel Elegante ha sido sinónimo de lujo y hospitalidad excepcional. Fundado por la familia Martínez, nuestro hotel ha evolucionado para convertirse en uno de los destinos más prestigiosos de la ciudad.</p>
-                
-                <p>Con más de 35 años de experiencia en la industria hotelera, hemos perfeccionado el arte de brindar experiencias inolvidables a nuestros huéspedes. Cada detalle ha sido cuidadosamente diseñado para superar las expectativas más exigentes.</p>
-                
-                <p>Nuestro compromiso con la excelencia se refleja en cada aspecto de nuestro servicio, desde nuestras elegantes habitaciones hasta nuestra cocina gourmet y servicios de spa de clase mundial.</p>
+        <div class="section-header text-center mb-5">
+            <h2 class="fw-bold">Nuestra Historia</h2>
+            <p class="text-muted">Más de 35 años de excelencia en hospitalidad</p>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="about-content">
+                    <p>Desde 1985, Hotel Elegante ha sido sinónimo de lujo y hospitalidad excepcional. Fundado por la familia Martínez, nuestro hotel ha evolucionado para convertirse en uno de los destinos más prestigiosos de la ciudad.</p>
+                    
+                    <p>Con más de 35 años de experiencia en la industria hotelera, hemos perfeccionado el arte de brindar experiencias inolvidables a nuestros huéspedes. Cada detalle ha sido cuidadosamente diseñado para superar las expectativas más exigentes.</p>
+                    
+                    <p>Nuestro compromiso con la excelencia se refleja en cada aspecto de nuestro servicio, desde nuestras elegantes habitaciones hasta nuestra cocina gourmet y servicios de spa de clase mundial.</p>
+                </div>
             </div>
-            <div class="about-image">
-                <img src="/placeholder.svg?height=500&width=600" alt="Hotel Elegante Exterior">
+            <div class="col-lg-6">
+                <div class="about-image rounded overflow-hidden shadow-lg">
+                    <img src="{% static 'img/about.jpg.svg' %}" alt="Hotel Elegante Exterior" class="img-fluid">
+                </div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Valores Section -->
-<section class="values-section">
+<section class="about py-5 bg-light">
     <div class="container">
-        <div class="section-header">
-            <h2>Nuestros Valores</h2>
-            <p>Los principios que guían cada aspecto de nuestro servicio</p>
+        <div class="section-header text-center mb-5">
+            <h2 class="fw-bold">Nuestros Valores</h2>
+            <p class="text-muted">Los principios que guían nuestra hospitalidad</p>
         </div>
-        
-        <div class="values-grid">
-            <div class="value-item">
-                <div class="value-icon">
-                    <i class="fas fa-star"></i>
+        <div class="row align-items-center">
+            <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
+                <div class="about-content">
+                    <div class="values-list">
+                        <div class="mb-4">
+                            <h3 class="h5 fw-bold">Excelencia</h3>
+                            <p>Nos esforzamos por superar las expectativas en cada interacción con nuestros huéspedes.</p>
+                        </div>
+                        <div class="mb-4">
+                            <h3 class="h5 fw-bold">Personalización</h3>
+                            <p>Adaptamos nuestros servicios para satisfacer las necesidades individuales de cada huésped.</p>
+                        </div>
+                        <div class="mb-4">
+                            <h3 class="h5 fw-bold">Sostenibilidad</h3>
+                            <p>Estamos comprometidos con prácticas sostenibles que respetan el medio ambiente.</p>
+                        </div>
+                        <div class="mb-4">
+                            <h3 class="h5 fw-bold">Innovación</h3>
+                            <p>Constantemente buscamos nuevas formas de mejorar la experiencia de nuestros huéspedes.</p>
+                        </div>
+                    </div>
                 </div>
-                <h3>Excelencia</h3>
-                <p>Nos esforzamos por superar las expectativas en cada interacción con nuestros huéspedes.</p>
             </div>
-            
-            <div class="value-item">
-                <div class="value-icon">
-                    <i class="fas fa-handshake"></i>
+            <div class="col-lg-6 order-lg-1">
+                <div class="about-image rounded overflow-hidden shadow-lg">
+                    <img src="{% static 'img/about.jpg.svg' %}" alt="Hotel Elegante Valores" class="img-fluid">
                 </div>
-                <h3>Hospitalidad</h3>
-                <p>Tratamos a cada huésped como parte de nuestra familia, con calidez y respeto genuino.</p>
-            </div>
-            
-            <div class="value-item">
-                <div class="value-icon">
-                    <i class="fas fa-leaf"></i>
-                </div>
-                <h3>Sostenibilidad</h3>
-                <p>Comprometidos con prácticas responsables que protegen nuestro medio ambiente.</p>
-            </div>
-            
-            <div class="value-item">
-                <div class="value-icon">
-                    <i class="fas fa-gem"></i>
-                </div>
-                <h3>Lujo Auténtico</h3>
-                <p>Ofrecemos experiencias de lujo genuinas que crean recuerdos duraderos.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Equipo Section -->
-<section class="team-section">
+<section class="team py-5 bg-white">
     <div class="container">
-        <div class="section-header">
-            <h2>Nuestro Equipo</h2>
-            <p>Profesionales dedicados a hacer de tu estancia una experiencia excepcional</p>
+        <div class="section-header text-center mb-5">
+            <h2 class="fw-bold">Nuestro Equipo</h2>
+            <p class="text-muted">Profesionales dedicados a hacer de su estancia una experiencia inolvidable</p>
         </div>
         
-        <div class="team-grid">
-            <div class="team-member">
-                <div class="member-photo">
-                    <img src="/placeholder.svg?height=300&width=300" alt="Carlos Martínez">
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="team-member card h-100 shadow-sm">
+                    <div class="card-img-top overflow-hidden">
+                        <img src="{% static 'img/team1.jpg.svg' %}" alt="Carlos Martínez" class="img-fluid">
+                    </div>
+                    <div class="card-body text-center">
+                        <h3 class="h5 fw-bold">Carlos Martínez</h3>
+                        <p class="text-muted mb-2">Director General</p>
+                        <p class="card-text">Con más de 20 años de experiencia en la industria hotelera, Carlos lidera nuestro equipo con pasión y visión estratégica.</p>
+                    </div>
                 </div>
-                <h3>Carlos Martínez</h3>
-                <p class="member-role">Director General</p>
-                <p>Con más de 20 años de experiencia en hotelería de lujo, Carlos lidera nuestro equipo con pasión y dedicación.</p>
             </div>
             
-            <div class="team-member">
-                <div class="member-photo">
-                    <img src="/placeholder.svg?height=300&width=300" alt="Ana García">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="team-member card h-100 shadow-sm">
+                    <div class="card-img-top overflow-hidden">
+                        <img src="{% static 'img/team2.jpg.svg' %}" alt="Laura Fernández" class="img-fluid">
+                    </div>
+                    <div class="card-body text-center">
+                        <h3 class="h5 fw-bold">Laura Fernández</h3>
+                        <p class="text-muted mb-2">Directora de Operaciones</p>
+                        <p class="card-text">Laura supervisa todas las operaciones diarias del hotel, asegurando que cada detalle cumpla con nuestros estándares de excelencia.</p>
+                    </div>
                 </div>
-                <h3>Ana García</h3>
-                <p class="member-role">Gerente de Operaciones</p>
-                <p>Ana se asegura de que cada aspecto de tu estancia sea perfecto, desde el check-in hasta el check-out.</p>
             </div>
             
-            <div class="team-member">
-                <div class="member-photo">
-                    <img src="/placeholder.svg?height=300&width=300" alt="Miguel Rodríguez">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="team-member card h-100 shadow-sm">
+                    <div class="card-img-top overflow-hidden">
+                        <img src="{% static 'img/team3.jpg.svg' %}" alt="Ana García" class="img-fluid">
+                    </div>
+                    <div class="card-body text-center">
+                        <h3 class="h5 fw-bold">Ana García</h3>
+                        <p class="text-muted mb-2">Chef Ejecutiva</p>
+                        <p class="card-text">Ana aporta creatividad y pasión a nuestra cocina, creando experiencias gastronómicas memorables para nuestros huéspedes.</p>
+                    </div>
                 </div>
-                <h3>Miguel Rodríguez</h3>
-                <p class="member-role">Chef Ejecutivo</p>
-                <p>Miguel crea experiencias culinarias extraordinarias que deleitan a nuestros huéspedes más exigentes.</p>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="team-member card h-100 shadow-sm">
+                    <div class="card-img-top overflow-hidden">
+                        <img src="{% static 'img/team4.jpg.svg' %}" alt="Miguel Rodríguez" class="img-fluid">
+                    </div>
+                    <div class="card-body text-center">
+                        <h3 class="h5 fw-bold">Miguel Rodríguez</h3>
+                        <p class="text-muted mb-2">Director de Experiencia del Cliente</p>
+                        <p class="card-text">Miguel se asegura de que cada interacción con nuestros huéspedes sea excepcional y personalizada.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
