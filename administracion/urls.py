@@ -36,4 +36,12 @@ urlpatterns = [
     path("huespedes/eliminar/<int:pk>/", views.huespedes_delete, name="huespedes_delete"),
 
     path('ver-reservas/', views.ver_reservas, name='ver_reservas'),
+        # acciones sobre reservas (confirmar / rechazar)
+    path('reservas/confirmar/<int:reserva_id>/', views.confirmar_reserva_admin, name='confirmar_reserva_admin'),
+    path('reservas/rechazar/<int:reserva_id>/', views.rechazar_reserva_admin, name='rechazar_reserva_admin'),
+
+    # listado y control de huéspedes activos
+    path('huespedes-activos/', views.huespedes_activos, name='huespedes_activos'),
+    path('huespedes-activos/finalizar/<int:activo_id>/', views.finalizar_huesped_activo, name='finalizar_huesped_activo'),
+
 ]

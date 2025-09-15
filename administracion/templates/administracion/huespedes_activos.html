@@ -1,0 +1,38 @@
+{% extends 'administracion/base_admin.html' %}
+{% block title %}Huéspedes activos{% endblock %}
+
+{% block content %}
+<h2>Huéspedes activos en el hotel</h2>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Huésped</th>
+      <th>DNI</th>
+      <th>Habitación</th>
+      <th>Check-in</th>
+      <th>Check-out</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for activo in activos %}
+      <tr>
+        <td>{{ activo.huesped.nombre }} {{ activo.huesped.apellido }}</td>
+        <td>{{ activo.huesped.dni }}</td>
+        <td>{{ activo.habitacion.numero if activo.habitacion else '-' }}</td>
+        <td>{{ activo.fecha_checkin }}</td>
+        <td>{{ activo.fecha_checkout }}</td>
+        <td>
+          <form method="post" action="{% url 'finalizar_huesped_activo' activo.id %}">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-warning" type="submit">Checkout</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">No hay huéspedes activos</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

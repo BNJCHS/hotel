@@ -91,3 +91,26 @@ class Huesped(models.Model):
 
     def __str__(self):
         return f"{self.nombre} {self.apellido}"
+
+class HuespedActivo(models.Model):
+    """
+    Representa a un huésped que está actualmente en el hotel.
+    Se crea cuando una reserva se confirma (una entrada por cada Huesped
+    ligado a esa reserva).
+    """
+    huesped = models.OneToOneField('Huesped', on_delete=models.CASCADE, related_name='activo')
+    reserva = models.ForeignKey('Reserva', on_delete=models.CASCADE, related_name='huespedes_activos')
+    habitacion = models.ForeignKey('habitaciones.Habitacion', on_delete=models.SET_NULL, null=True, blank=True)
+    fecha_checkin = models.DateField(null=True, blank=True)
+    fecha_checkout = models.DateField(null=True, blank=True)
+    activo = models.BooleanField(default=True)
+    creado = models.DateTimeField(auto_now_add=True)
+
+    def finalizar(self, fecha=None):
+        """Marcar checkout (se puede llamar desde la vista cuando hace checkout)."""
+        self.activo = False
+        self.fecha_checkout = fecha or timezone.now().date()
+        self.save()
+
+    def __str__(self):
+        return f"{self.huesped} — Hab: {self.habitacion or '-'}"

@@ -8,6 +8,16 @@ from .forms import EmpleadoForm, PlanForm, PromocionForm, ServicioForm, HuespedF
 from reservas.models import Huesped 
 
 from django.db.models import Sum
+# imports relacionados con reservas/huespedes
+from reservas.models import Reserva, Huesped as ReservaHuesped, HuespedActivo
+
+# imports de la app administracion
+from .models import Empleado, Plan, Promocion, Servicio  # NOTAR: no importamos Huesped de administracion para evitar choque de nombres
+from .forms import EmpleadoForm, PlanForm, PromocionForm, ServicioForm, HuespedForm
+
+# para control de accesos en las vistas
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_POST
 
 def dashboard(request):
     total_reservas = Reserva.objects.count()
@@ -242,3 +252,83 @@ def ver_reservas(request):
                               .prefetch_related('servicios') \
                               .order_by('-fecha_reserva')
     return render(request, 'administracion/ver_reservas.html', {'reservas': reservas})
+
+@staff_member_required
+@require_POST
+def confirmar_reserva_admin(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+    if reserva.confirmada:
+        messages.info(request, "La reserva ya está confirmada.")
+        return redirect('administracion/ver_reservas')
+
+    reserva.confirmada = True
+    reserva.save()
+
+    # Creamos HuespedActivo para cada Huesped asociado a la reserva
+    huespedes = reserva.huespedes.all()  # related_name definido en reservas.models.Huesped
+    creados = 0
+    for h in huespedes:
+        # get_or_create evita duplicados si ya se creó antes
+        obj, creado = HuespedActivo.objects.get_or_create(
+            huesped=h,
+            reserva=reserva,
+            defaults={
+                'habitacion': reserva.habitacion,
+                'fecha_checkin': getattr(reserva, 'check_in', timezone.now().date()),
+                'fecha_checkout': getattr(reserva, 'check_out', None)
+            }
+        )
+        if creado:
+            creados += 1
+
+    # OPCIONAL: marcar la habitación como no disponible
+    habit = reserva.habitacion
+    if hasattr(habit, 'disponible'):
+        habit.disponible = False
+        habit.save()
+
+    messages.success(request, f"Reserva confirmada. {creados} huésped(es) activado(s).")
+    return redirect('administracion/ver_reservas')
+
+
+@staff_member_required
+@require_POST
+def rechazar_reserva_admin(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+    if reserva.confirmada:
+        messages.error(request, "No se puede rechazar una reserva ya confirmada.")
+    else:
+        # opción A) eliminar la reserva:
+        reserva.delete()
+        messages.success(request, "Reserva rechazada y eliminada.")
+        # opción B) podrías preferir marcar un campo 'rechazada' en lugar de borrarla
+    return redirect('administracion/ver_reservas')
+
+
+@staff_member_required
+def huespedes_activos(request):
+    hoy = timezone.now().date()
+    activos_qs = HuespedActivo.objects.filter(
+        activo=True
+    ).filter(
+        Q(fecha_checkin__lte=hoy) | Q(fecha_checkin__isnull=True),
+        Q(fecha_checkout__gte=hoy) | Q(fecha_checkout__isnull=True)
+    ).select_related('huesped', 'reserva', 'habitacion')
+
+    return render(request, 'administracion/huespedes_activos.html', {'activos': activos_qs})
+
+
+@staff_member_required
+@require_POST
+def finalizar_huesped_activo(request, activo_id):
+    ha = get_object_or_404(HuespedActivo, id=activo_id)
+    ha.finalizar()
+    # Si no hay otros huéspedes activos en esa habitación, marcar disponible
+    habit = ha.habitacion
+    if habit:
+        otras = HuespedActivo.objects.filter(habitacion=habit, activo=True).exclude(id=ha.id).exists()
+        if not otras and hasattr(habit, 'disponible'):
+            habit.disponible = True
+            habit.save()
+    messages.success(request, "Huésped finalizado (checkout).")
+    return redirect('administracion/huespedes_activos')
