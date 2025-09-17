@@ -29,7 +29,13 @@ def profile(request):
     Vista del perfil del usuario
     """
     user = request.user
-    profile = user.profile
+    
+    # Verificar si el usuario tiene perfil, si no, crearlo
+    try:
+        profile = user.profile
+    except:
+        from .models import Profile
+        profile = Profile.objects.create(user=user)
     
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
@@ -52,8 +58,12 @@ def profile(request):
         form = ProfileForm(instance=profile)
     
     # Obtener reservas del usuario
-    from reservas.models import Reserva
-    reservations = Reserva.objects.filter(usuario=request.user).order_by('-fecha_creacion')[:5]
+    try:
+        from reservas.models import Reserva
+        reservations = Reserva.objects.filter(usuario=request.user).order_by('-fecha_reserva')[:5]
+    except Exception as e:
+        # Si hay algún error (tabla no existe, etc.), simplemente no mostramos reservas
+        reservations = []
     
     context = {
         'page_title': 'Mi Perfil - Hotel Elegante',

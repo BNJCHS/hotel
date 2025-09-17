@@ -4,33 +4,33 @@
 
 {% block content %}
 <div class="profile-page">
-    <!-- Agregando hero section elegante para el perfil -->
-    <div class="profile-hero">
-        <div class="profile-hero-overlay"></div>
-        <div class="container">
-            <div class="profile-hero-content">
-                <div class="profile-avatar-large">
+    <!-- Hero section elegante y lujoso para el perfil -->
+    <div class="profile-hero" style="background-image: url('/static/img/hotel-luxury-bg.jpg'); background-size: cover; background-position: center; position: relative;">
+        <div class="profile-hero-overlay" style="background: linear-gradient(to right, rgba(32, 32, 32, 0.8), rgba(64, 64, 64, 0.6)); position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+        <div class="container" style="position: relative; z-index: 2; padding: 60px 0;">
+            <div class="profile-hero-content" style="display: flex; align-items: center; color: #fff;">
+                <div class="profile-avatar-large" style="position: relative; margin-right: 30px;">
                     {% if user.profile.avatar %}
-                        <img src="{{ user.profile.avatar.url }}" alt="Foto de perfil">
+                        <img src="{{ user.profile.avatar.url }}" alt="Foto de perfil" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #d4af37;">
                     {% else %}
-                        <div class="avatar-placeholder-large">
+                        <div class="avatar-placeholder-large" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #d4af37, #f5cc7f); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; color: #fff; border: 4px solid #fff;">
                             {{ user.first_name|first|default:user.username|first|upper }}{{ user.last_name|first|upper }}
                         </div>
                     {% endif %}
-                    <div class="avatar-edit-overlay" onclick="document.getElementById('avatar').click()">
+                    <div class="avatar-edit-overlay" onclick="document.getElementById('avatar').click()" style="position: absolute; bottom: 0; right: 0; background: #d4af37; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #fff;">
                         <i class="fas fa-camera"></i>
                     </div>
                 </div>
                 <div class="profile-hero-info">
-                    <h1 class="profile-name">{{ user.get_full_name|default:user.username }}</h1>
-                    <p class="profile-email">{{ user.email }}</p>
-                    <div class="profile-badges">
-                        <span class="badge-member">
-                            <i class="fas fa-crown"></i>
+                    <h1 class="profile-name" style="font-size: 2.5rem; margin-bottom: 5px; font-family: 'Playfair Display', serif; color: #fff;">{{ user.get_full_name|default:user.username }}</h1>
+                    <p class="profile-email" style="font-size: 1.1rem; margin-bottom: 15px; color: #e0e0e0;">{{ user.email }}</p>
+                    <div class="profile-badges" style="display: flex; gap: 15px;">
+                        <span class="badge-member" style="background: rgba(212, 175, 55, 0.2); padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; border: 1px solid #d4af37;">
+                            <i class="fas fa-crown" style="color: #d4af37; margin-right: 8px;"></i>
                             Miembro desde {{ user.date_joined|date:"F Y" }}
                         </span>
-                        <span class="badge-status">
-                            <i class="fas fa-circle text-success"></i>
+                        <span class="badge-status" style="background: rgba(40, 167, 69, 0.2); padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; border: 1px solid #28a745;">
+                            <i class="fas fa-circle text-success" style="color: #28a745; margin-right: 8px; font-size: 10px;"></i>
                             Activo
                         </span>
                     </div>
@@ -39,41 +39,47 @@
         </div>
     </div>
 
-    <div class="container profile-content">
+    <div class="container profile-content" style="padding: 40px 0;">
         <div class="row">
-            <!-- Sidebar de navegación del perfil -->
+            <!-- Sidebar de navegación del perfil con estilo lujoso -->
             <div class="col-lg-3 mb-4">
-                <div class="profile-sidebar">
-                    <div class="sidebar-menu">
-                        <a href="#personal-info" class="sidebar-item active" data-section="personal-info">
-                            <i class="fas fa-user"></i>
+                <div class="profile-sidebar" style="background: #fff; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f0f0f0;">
+                    <div class="sidebar-header" style="background: linear-gradient(135deg, #d4af37, #f5cc7f); padding: 20px; text-align: center; color: #fff;">
+                        <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 1.5rem;">Mi Cuenta</h3>
+                    </div>
+                    <div class="sidebar-menu" style="padding: 15px 0;">
+                        <a href="#personal-info" class="sidebar-item active" data-section="personal-info" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; border-left: 4px solid #d4af37; background: rgba(212, 175, 55, 0.1); margin-bottom: 5px; transition: all 0.3s ease;">
+                            <i class="fas fa-user" style="margin-right: 10px; color: #d4af37; width: 20px; text-align: center;"></i>
                             <span>Información Personal</span>
                         </a>
-                        <a href="#reservations" class="sidebar-item" data-section="reservations">
-                            <i class="fas fa-bed"></i>
+                        <a href="#reservations" class="sidebar-item" data-section="reservations" style="display: flex; align-items: center; padding: 12px 20px; color: #555; text-decoration: none; border-left: 4px solid transparent; margin-bottom: 5px; transition: all 0.3s ease;">
+                            <i class="fas fa-bed" style="margin-right: 10px; width: 20px; text-align: center;"></i>
                             <span>Mis Reservas</span>
                         </a>
-                        <a href="#settings" class="sidebar-item" data-section="settings">
-                            <i class="fas fa-cog"></i>
+                        <a href="#settings" class="sidebar-item" data-section="settings" style="display: flex; align-items: center; padding: 12px 20px; color: #555; text-decoration: none; border-left: 4px solid transparent; margin-bottom: 5px; transition: all 0.3s ease;">
+                            <i class="fas fa-cog" style="margin-right: 10px; width: 20px; text-align: center;"></i>
                             <span>Configuración</span>
                         </a>
-                        <a href="#preferences" class="sidebar-item" data-section="preferences">
-                            <i class="fas fa-heart"></i>
+                        <a href="#preferences" class="sidebar-item" data-section="preferences" style="display: flex; align-items: center; padding: 12px 20px; color: #555; text-decoration: none; border-left: 4px solid transparent; margin-bottom: 5px; transition: all 0.3s ease;">
+                            <i class="fas fa-heart" style="margin-right: 10px; width: 20px; text-align: center;"></i>
                             <span>Preferencias</span>
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Contenido principal con secciones mejoradas -->
+            <!-- Contenido principal con secciones mejoradas y estilo lujoso -->
             <div class="col-lg-9">
                 <!-- Información Personal -->
-                <div class="profile-section active" id="personal-info">
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h2><i class="fas fa-user-edit"></i> Información Personal</h2>
-                            <button class="btn-edit" onclick="toggleEditMode()">
-                                <i class="fas fa-edit"></i> Editar
+                <div class="profile-section active" id="personal-info" style="display: block;">
+                    <div class="section-card" style="background: #fff; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f0f0f0; margin-bottom: 30px;">
+                        <div class="section-header" style="padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to right, #f8f9fa, #fff);">
+                            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #333; display: flex; align-items: center;">
+                                <i class="fas fa-user-edit" style="margin-right: 10px; color: #d4af37;"></i> 
+                                Información Personal
+                            </h2>
+                            <button class="btn-edit" onclick="toggleEditMode()" style="background: #d4af37; color: #fff; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; transition: all 0.3s ease;">
+                                <i class="fas fa-edit" style="margin-right: 5px;"></i> Editar
                             </button>
                         </div>
                         
@@ -81,67 +87,85 @@
                             {% csrf_token %}
                             <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;">
                             
-                            <div class="form-grid">
+                            <div class="form-grid" style="padding: 25px;">
                                 <form method="post" enctype="multipart/form-data">
                                     {% csrf_token %}
-                                    <div class="form-group">
-                                        <label for="id_first_name">
-                                            <i class="fas fa-user"></i>
-                                            Nombre
-                                        </label>
-                                        {{ form.first_name }}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group" style="margin-bottom: 20px;">
+                                                <label for="id_first_name" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
+                                                    <i class="fas fa-user" style="color: #d4af37; margin-right: 8px;"></i>
+                                                    Nombre
+                                                </label>
+                                                <input type="text" name="first_name" id="id_first_name" value="{{ form.first_name.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group" style="margin-bottom: 20px;">
+                                                <label for="id_last_name" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
+                                                    <i class="fas fa-user" style="color: #d4af37; margin-right: 8px;"></i>
+                                                    Apellido
+                                                </label>
+                                                <input type="text" name="last_name" id="id_last_name" value="{{ form.last_name.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="id_last_name">
-                                            <i class="fas fa-user"></i>
-                                            Apellido
-                                        </label>
-                                        {{ form.last_name }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="id_email">
-                                            <i class="fas fa-envelope"></i>
+                                    <div class="form-group" style="margin-bottom: 20px;">
+                                        <label for="id_email" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
+                                            <i class="fas fa-envelope" style="color: #d4af37; margin-right: 8px;"></i>
                                             Email
                                         </label>
-                                        {{ form.email }}
+                                        <input type="email" name="email" id="id_email" value="{{ form.email.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
                                     </div>
-                                    <div class="form-group">
-                                        <label for="id_phone">
-                                            <i class="fas fa-phone"></i>
-                                            Teléfono
-                                        </label>
-                                        {{ form.phone }}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group" style="margin-bottom: 20px;">
+                                                <label for="id_phone" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
+                                                    <i class="fas fa-phone" style="color: #d4af37; margin-right: 8px;"></i>
+                                                    Teléfono
+                                                </label>
+                                                <input type="text" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group" style="margin-bottom: 20px;">
+                                                <label for="id_country" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
+                                                    <i class="fas fa-globe" style="color: #d4af37; margin-right: 8px;"></i>
+                                                    País
+                                                </label>
+                                                <input type="text" name="country" id="id_country" value="{{ form.country.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="id_address">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                            Dirección
-                                        </label>
-                                        {{ form.address }}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group" style="margin-bottom: 20px;">
+                                                <label for="id_city" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
+                                                    <i class="fas fa-city" style="color: #d4af37; margin-right: 8px;"></i>
+                                                    Ciudad
+                                                </label>
+                                                <input type="text" name="city" id="id_city" value="{{ form.city.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group" style="margin-bottom: 20px;">
+                                                <label for="id_address" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
+                                                    <i class="fas fa-map-marker-alt" style="color: #d4af37; margin-right: 8px;"></i>
+                                                    Dirección
+                                                </label>
+                                                <input type="text" name="address" id="id_address" value="{{ form.address.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="id_city">
-                                            <i class="fas fa-city"></i>
-                                            Ciudad
-                                        </label>
-                                        {{ form.city }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="id_country">
-                                            <i class="fas fa-globe"></i>
-                                            País
-                                        </label>
-                                        {{ form.country }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="id_avatar">
-                                            <i class="fas fa-image"></i>
+                                    <div class="form-group" style="margin-bottom: 20px;">
+                                        <label for="id_avatar" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
+                                            <i class="fas fa-image" style="color: #d4af37; margin-right: 8px;"></i>
                                             Foto de perfil
                                         </label>
-                                        {{ form.avatar }}
+                                        <input type="file" name="avatar" id="id_avatar" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
                                     </div>
                                     <div class="form-group mt-4">
-                                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #d4af37, #f5cc7f); border: none; padding: 12px 30px; border-radius: 5px; color: #fff; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);">Guardar cambios</button>
                                     </div>
                                 </form>
                             </div>

@@ -4,45 +4,46 @@
 {% block title %}Iniciar Sesión - Hotel Elegante{% endblock %}
 
 {% block content %}
-<section class="login-hero">
-    <div class="login-container">
-        <div class="login-card">
-            <div class="login-header">
-                <div class="login-logo">
-                    <i class="fas fa-hotel"></i>
-                    <h2>Hotel Elegante</h2>
+<section class="login-hero" style="background-image: url('/static/img/hotel-luxury-bg.jpg'); background-size: cover; background-position: center; min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative;">
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(32, 32, 32, 0.8), rgba(64, 64, 64, 0.6));"></div>
+    <div class="login-container" style="width: 100%; max-width: 450px; padding: 0 20px; position: relative; z-index: 10;">
+        <div class="login-card" style="background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; border: 1px solid #f0f0f0;">
+            <div class="login-header" style="padding: 30px; text-align: center; background: linear-gradient(135deg, #d4af37, #f5cc7f); color: #fff;">
+                <div class="login-logo" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-hotel" style="font-size: 2.5rem; margin-right: 15px; color: #fff;"></i>
+                    <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 2rem;">Hotel Elegante</h2>
                 </div>
-                <h3>Iniciar Sesión</h3>
-                <p>Accede a tu cuenta para gestionar tus reservas</p>
+                <h3 style="margin: 0 0 10px; font-family: 'Playfair Display', serif; font-size: 1.5rem;">Iniciar Sesión</h3>
+                <p style="margin: 0; font-size: 1rem; opacity: 0.9;">Accede a tu cuenta para gestionar tus reservas</p>
             </div>
             
-            <form class="login-form" method="post">
+            <form class="login-form" method="post" style="padding: 30px;">
                 {% csrf_token %}
                 
-                <!-- Usando campos del formulario Django -->
+                <!-- Usando campos del formulario Django con estilo mejorado -->
                 {% for field in form %}
-                    <div class="form-group">
-                        <label for="{{ field.id_for_label }}">
+                    <div class="form-group" style="margin-bottom: 25px; position: relative;">
+                        <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
                             {% if field.name == 'username' %}
-                                <i class="fas fa-user"></i>
+                                <i class="fas fa-user" style="color: #d4af37; margin-right: 8px;"></i>
                                 Usuario o Email
                             {% elif field.name == 'password' %}
-                                <i class="fas fa-lock"></i>
+                                <i class="fas fa-lock" style="color: #d4af37; margin-right: 8px;"></i>
                                 Contraseña
                             {% else %}
                                 {{ field.label }}
                             {% endif %}
                         </label>
-                        {{ field }}
+                        {{ field|attr:"class:form-control"|attr:"style:border-radius: 5px; border: 1px solid #e0e0e0; padding: 12px 15px; width: 100%; transition: all 0.3s ease;" }}
                         {% if field.name == 'password' %}
-                            <span class="password-toggle" onclick="togglePassword()">
+                            <span class="password-toggle" onclick="togglePassword()" style="position: absolute; right: 15px; top: 42px; cursor: pointer; color: #777;">
                                 <i class="fas fa-eye" id="password-icon"></i>
                             </span>
                         {% endif %}
                         {% if field.errors %}
-                            <div class="field-errors">
+                            <div class="field-errors" style="margin-top: 5px; color: #dc3545;">
                                 {% for error in field.errors %}
-                                    <span class="error-message">{{ error }}</span>
+                                    <span class="error-message" style="font-size: 0.85rem;">{{ error }}</span>
                                 {% endfor %}
                             </div>
                         {% endif %}
@@ -51,46 +52,47 @@
                 
                 <!-- Agregando manejo de errores generales -->
                 {% if form.non_field_errors %}
-                    <div class="form-errors">
+                    <div class="form-errors" style="margin-bottom: 20px; padding: 10px 15px; background: rgba(220, 53, 69, 0.1); border-radius: 5px; border-left: 3px solid #dc3545;">
                         {% for error in form.non_field_errors %}
-                            <p class="error-message">{{ error }}</p>
+                            <p class="error-message" style="margin: 0; color: #dc3545; font-size: 0.9rem;">{{ error }}</p>
                         {% endfor %}
                     </div>
                 {% endif %}
                 
-                <div class="form-options">
-                    <label class="checkbox-container">
-                        <input type="checkbox" name="remember_me">
-                        <span class="checkmark"></span>
-                        Recordarme
+                <div class="form-options" style="display: flex; justify-content: space-between; margin-bottom: 25px; align-items: center;">
+                    <label class="checkbox-container" style="display: flex; align-items: center; cursor: pointer; user-select: none;">
+                        <input type="checkbox" name="remember_me" style="margin-right: 8px;">
+                        <span style="font-size: 0.9rem; color: #555;">Recordarme</span>
                     </label>
                     <!-- Cambiando enlace de recuperación por URL funcional -->
-                    <a href="{% url 'password_reset' %}" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                    <a href="{% url 'password_reset' %}" class="forgot-password" style="color: #d4af37; text-decoration: none; font-size: 0.9rem; transition: all 0.3s ease;">¿Olvidaste tu contraseña?</a>
                 </div>
                 
-                <button type="submit" class="login-btn">
-                    <i class="fas fa-sign-in-alt"></i>
+                <button type="submit" class="login-btn" style="width: 100%; background: linear-gradient(135deg, #d4af37, #f5cc7f); border: none; padding: 12px; border-radius: 5px; color: #fff; font-weight: 500; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);">
+                    <i class="fas fa-sign-in-alt" style="margin-right: 10px;"></i>
                     Iniciar Sesión
                 </button>
                 
-                <div class="login-divider">
-                    <span>o</span>
+                <div class="login-divider" style="display: flex; align-items: center; margin: 20px 0;">
+                    <div style="flex-grow: 1; height: 1px; background: #e0e0e0;"></div>
+                    <span style="padding: 0 15px; color: #777; font-size: 0.9rem;">o</span>
+                    <div style="flex-grow: 1; height: 1px; background: #e0e0e0;"></div>
                 </div>
                 
-                <div class="social-login">
-                    <button type="button" class="social-btn google-btn">
-                        <i class="fab fa-google"></i>
+                <div class="social-login" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
+                    <button type="button" class="social-btn google-btn" style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #e0e0e0; background: #fff; color: #555; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
+                        <i class="fab fa-google" style="margin-right: 10px; color: #DB4437;"></i>
                         Continuar con Google
                     </button>
-                    <button type="button" class="social-btn facebook-btn">
-                        <i class="fab fa-facebook-f"></i>
+                    <button type="button" class="social-btn facebook-btn" style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #e0e0e0; background: #fff; color: #555; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
+                        <i class="fab fa-facebook-f" style="margin-right: 10px; color: #4267B2;"></i>
                         Continuar con Facebook
                     </button>
                 </div>
                 
-                <div class="login-footer">
+                <div class="login-footer" style="text-align: center; padding-top: 15px; border-top: 1px solid #f0f0f0;">
                     <!-- Enlace dinámico a registro -->
-                    <p>¿No tienes una cuenta? <a href="{% url 'register' %}" class="register-link">Regístrate aquí</a></p>
+                    <p style="margin: 0; color: #555; font-size: 0.95rem;">¿No tienes una cuenta? <a href="{% url 'register' %}" class="register-link" style="color: #d4af37; text-decoration: none; font-weight: 500; transition: all 0.3s ease;">Regístrate aquí</a></p>
                 </div>
             </form>
         </div>
