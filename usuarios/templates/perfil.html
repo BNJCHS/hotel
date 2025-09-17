@@ -82,34 +82,68 @@
                             <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;">
                             
                             <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="first_name">
-                                        <i class="fas fa-user"></i>
-                                        Nombre
-                                    </label>
-                                    <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" readonly class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <label for="last_name">
-                                        <i class="fas fa-user"></i>
-                                        Apellido
-                                    </label>
-                                    <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}" readonly class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <label for="email">
-                                        <i class="fas fa-envelope"></i>
-                                        Email
-                                    </label>
-                                    <input type="email" id="email" name="email" value="{{ user.email }}" readonly class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <label for="phone">
-                                        <i class="fas fa-phone"></i>
-                                        Teléfono
-                                    </label>
-                                    <input type="tel" id="phone" name="phone" value="{{ user.profile.phone|default:'' }}" readonly class="form-control">
-                                </div>
+                                <form method="post" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="id_first_name">
+                                            <i class="fas fa-user"></i>
+                                            Nombre
+                                        </label>
+                                        {{ form.first_name }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_last_name">
+                                            <i class="fas fa-user"></i>
+                                            Apellido
+                                        </label>
+                                        {{ form.last_name }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_email">
+                                            <i class="fas fa-envelope"></i>
+                                            Email
+                                        </label>
+                                        {{ form.email }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_phone">
+                                            <i class="fas fa-phone"></i>
+                                            Teléfono
+                                        </label>
+                                        {{ form.phone }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_address">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            Dirección
+                                        </label>
+                                        {{ form.address }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_city">
+                                            <i class="fas fa-city"></i>
+                                            Ciudad
+                                        </label>
+                                        {{ form.city }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_country">
+                                            <i class="fas fa-globe"></i>
+                                            País
+                                        </label>
+                                        {{ form.country }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_avatar">
+                                            <i class="fas fa-image"></i>
+                                            Foto de perfil
+                                        </label>
+                                        {{ form.avatar }}
+                                    </div>
+                                    <div class="form-group mt-4">
+                                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                                    </div>
+                                </form>
                             </div>
                             
                             <div class="form-group">

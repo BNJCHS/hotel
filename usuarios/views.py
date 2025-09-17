@@ -1,7 +1,7 @@
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login,logout
-from .forms import RegistroForm
+from .forms import RegistroForm, ProfileForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
@@ -28,28 +28,38 @@ def profile(request):
     """
     Vista del perfil del usuario
     """
-    if request.method == 'POST':
-        # Procesar actualización del perfil
-        user = request.user
-        user.first_name = request.POST.get('first_name', '').strip()
-        user.last_name = request.POST.get('last_name', '').strip()
-        user.email = request.POST.get('email', '').strip()
-        user.save()
-        context = {
-            'success': 'Perfil actualizado correctamente',
-            'page_title': 'Mi Perfil - Hotel Elegante',
-            'reservations': [],  # En una app real, obtener reservas del usuario
-        }
-        return render(request, 'perfil.html', context)
+    user = request.user
+    profile = user.profile
     
-    # Obtener reservas del usuario (simulado)
-    # En una app real: reservations = Reservation.objects.filter(user=request.user).order_by('-created_at')[:5]
-    reservations = []
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            # Actualizar datos del usuario
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.email = form.cleaned_data['email']
+            user.save()
+            
+            # Guardar el perfil
+            profile_form = form.save(commit=False)
+            if 'avatar' in request.FILES:
+                profile_form.avatar = request.FILES['avatar']
+            profile_form.save()
+            
+            messages.success(request, 'Perfil actualizado correctamente')
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=profile)
+    
+    # Obtener reservas del usuario
+    from reservas.models import Reserva
+    reservations = Reserva.objects.filter(usuario=request.user).order_by('-fecha_creacion')[:5]
     
     context = {
         'page_title': 'Mi Perfil - Hotel Elegante',
         'meta_description': 'Gestiona tu perfil, revisa tus reservas y configura tu cuenta en Hotel Elegante.',
         'reservations': reservations,
+        'form': form,
     }
     return render(request, 'perfil.html', context)
 
