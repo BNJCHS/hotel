@@ -44,8 +44,7 @@ INSTALLED_APPS = [
     'usuarios',
     'habitaciones',
     'reservas',
-
-
+    'chatbot',
 ]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

@@ -174,6 +174,100 @@
             adjustBodyPadding();
         });
     </script>
+    <script>
+      // Widget de Chat sencillo
+      (function() {
+        const widget = document.createElement('div');
+        widget.id = 'hotel-chatbot';
+        widget.style.position = 'fixed';
+        widget.style.bottom = '20px';
+        widget.style.right = '20px';
+        widget.style.width = '320px';
+        widget.style.maxHeight = '60vh';
+        widget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
+        widget.style.borderRadius = '12px';
+        widget.style.overflow = 'hidden';
+        widget.style.background = '#fff';
+        widget.innerHTML = `
+          <div style="background:#2c3e50;color:#fff;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-weight:600">Asistente Hotel</span>
+            </div>
+            <button id="cbt-min" style="background:transparent;border:0;color:#fff;font-size:18px;line-height:1;">_</button>
+          </div>
+          <div id="cbt-body" style="display:flex;flex-direction:column;height:320px;">
+            <div id="cbt-messages" style="flex:1;padding:12px;overflow:auto;background:#f7f7f7;"></div>
+            <div style="display:flex;gap:8px;padding:10px;border-top:1px solid #eee;background:#fff;">
+              <input id="cbt-input" type="text" placeholder="Escribe tu mensaje..." style="flex:1;padding:8px 10px;border:1px solid #ddd;border-radius:8px;" />
+              <button id="cbt-send" class="btn btn-hotel-gold" style="padding:8px 12px;border-radius:8px;border:0;background:#d4af37;color:#fff;">Enviar</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(widget);
+
+        const messages = widget.querySelector('#cbt-messages');
+        const input = widget.querySelector('#cbt-input');
+        const sendBtn = widget.querySelector('#cbt-send');
+        const body = widget.querySelector('#cbt-body');
+        const minBtn = widget.querySelector('#cbt-min');
+
+        function addMessage(text, who) {
+          const bubble = document.createElement('div');
+          bubble.style.margin = '6px 0';
+          bubble.style.maxWidth = '85%';
+          bubble.style.padding = '8px 10px';
+          bubble.style.borderRadius = '10px';
+          bubble.style.whiteSpace = 'pre-wrap';
+          bubble.style.wordBreak = 'break-word';
+          if (who === 'user') {
+            bubble.style.alignSelf = 'flex-end';
+            bubble.style.background = '#d4af37';
+            bubble.style.color = '#fff';
+          } else {
+            bubble.style.alignSelf = 'flex-start';
+            bubble.style.background = '#fff';
+            bubble.style.border = '1px solid #eee';
+          }
+          bubble.textContent = text;
+          messages.appendChild(bubble);
+          messages.scrollTop = messages.scrollHeight;
+        }
+
+        async function sendMessage() {
+          const text = input.value.trim();
+          if (!text) return;
+          addMessage(text, 'user');
+          input.value = '';
+          try {
+            const resp = await fetch('/chatbot/chat/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/)||[])[1]
+              },
+              body: JSON.stringify({ message: text })
+            });
+            const data = await resp.json();
+            addMessage(data.message || 'Hubo un problema, intenta de nuevo.', 'bot');
+          } catch(e) {
+            addMessage('Error de conexión', 'bot');
+          }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+        minBtn.addEventListener('click', () => {
+          if (body.style.display === 'none') {
+            body.style.display = 'flex';
+          } else {
+            body.style.display = 'none';
+          }
+        });
+
+        // Mensaje inicial
+        addMessage('¡Hola! Soy el asistente del Hotel Elegante. Puedo responder dudas y ayudarte a reservar. Por ejemplo: "Quiero una suite del 2024-12-10 al 2024-12-12"', 'bot');
+      })();
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
