@@ -1,0 +1,104 @@
+{% extends 'administracion/base_admin.html' %}
+
+{% block title %}Detalle de Usuario - Administración{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Detalle de Usuario</h1>
+    <a href="{% url 'admin:usuarios_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver a la lista
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Información de Cuenta</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    {% if usuario.profile.avatar %}
+                        <img src="{{ usuario.profile.avatar.url }}" alt="Avatar" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 150px; height: 150px;">
+                            <span class="text-white display-4">{{ usuario.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    <h4 class="mt-3">{{ usuario.get_full_name|default:usuario.username }}</h4>
+                    <p class="text-muted">@{{ usuario.username }}</p>
+                </div>
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="fw-bold">Estado:</span>
+                        {% if usuario.is_active %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="fw-bold">Tipo de usuario:</span>
+                        {% if usuario.is_staff %}
+                            <span class="badge bg-primary">Staff</span>
+                        {% else %}
+                            <span class="badge bg-info">Cliente</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="fw-bold">Fecha de registro:</span>
+                        <span>{{ usuario.date_joined|date:"d/m/Y" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="fw-bold">Último acceso:</span>
+                        <span>{{ usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Información Personal</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small">Nombre completo</p>
+                        <p class="fw-bold">{{ usuario.get_full_name|default:"-" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small">Email</p>
+                        <p class="fw-bold">{{ usuario.email|default:"-" }}</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small">Teléfono</p>
+                        <p class="fw-bold">{{ usuario.profile.phone|default:"-" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small">Dirección</p>
+                        <p class="fw-bold">{{ usuario.profile.address|default:"-" }}</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small">Ciudad</p>
+                        <p class="fw-bold">{{ usuario.profile.city|default:"-" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small">País</p>
+                        <p class="fw-bold">{{ usuario.profile.country|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

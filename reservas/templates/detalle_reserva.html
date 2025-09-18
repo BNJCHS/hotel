@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle de Reserva{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section" style="background-image: url('{% static 'img/hotel-bg.jpg' %}');">
+    <div class="hero-content">
+        <h1>Detalle de Reserva</h1>
+        <p>Información completa de su reserva</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card" style="border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f0f0f0;">
+                <!-- Encabezado de la tarjeta -->
+                <div class="card-header" style="background: linear-gradient(to right, #f8f9fa, #fff); border-bottom: 1px solid #f0f0f0; padding: 20px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #333;">
+                            <i class="fas fa-receipt" style="color: #d4af37; margin-right: 10px;"></i> Reserva #{{ reservation.id }}
+                        </h2>
+                        <div class="reservation-status" style="padding: 8px 15px; border-radius: 20px; font-weight: 500; background: {% if reservation.status == 'confirmed' %}rgba(40, 167, 69, 0.9){% elif reservation.status == 'pending' %}rgba(255, 193, 7, 0.9){% elif reservation.status == 'cancelled' %}rgba(220, 53, 69, 0.9){% else %}rgba(108, 117, 125, 0.9){% endif %}; color: #fff;">
+                            {{ reservation.get_status_display }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cuerpo de la tarjeta -->
+                <div class="card-body" style="padding: 30px;">
+                    <!-- Información de la habitación -->
+                    <div class="room-info mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-bed" style="font-size: 1.5rem; color: #d4af37; margin-right: 15px;"></i>
+                            <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #333;">Habitación {{ reservation.room.numero }}</h3>
+                        </div>
+                        <div class="room-image mb-3" style="border-radius: 8px; overflow: hidden; height: 200px;">
+                            {% if reservation.room.imagen %}
+                                <img src="{{ reservation.room.imagen.url }}" alt="Habitación {{ reservation.room.numero }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'img/placeholder-room.jpg' %}" alt="Habitación {{ reservation.room.numero }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% endif %}
+                        </div>
+                        <div class="room-details" style="background: #f9f9f9; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p style="margin-bottom: 8px;"><i class="fas fa-user-friends" style="color: #d4af37; width: 20px; margin-right: 8px;"></i> <strong>Capacidad:</strong> {{ reservation.room.capacidad }} personas</p>
+                                    <p style="margin-bottom: 8px;"><i class="fas fa-ruler-combined" style="color: #d4af37; width: 20px; margin-right: 8px;"></i> <strong>Tamaño:</strong> {{ reservation.room.tamano }} m²</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p style="margin-bottom: 8px;"><i class="fas fa-bed" style="color: #d4af37; width: 20px; margin-right: 8px;"></i> <strong>Tipo:</strong> {{ reservation.room.get_tipo_display }}</p>
+                                    <p style="margin-bottom: 8px;"><i class="fas fa-dollar-sign" style="color: #d4af37; width: 20px; margin-right: 8px;"></i> <strong>Precio por noche:</strong> ${{ reservation.room.precio_por_noche }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detalles de la reserva -->
+                    <div class="reservation-details mb-4">
+                        <h4 style="font-family: 'Playfair Display', serif; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">Detalles de la Reserva</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p style="margin-bottom: 12px;"><i class="fas fa-calendar-check" style="color: #d4af37; width: 20px; margin-right: 8px;"></i> <strong>Check-in:</strong> {{ reservation.checkin|date:"d/m/Y" }}</p>
+                                <p style="margin-bottom: 12px;"><i class="fas fa-calendar-times" style="color: #d4af37; width: 20px; margin-right: 8px;"></i> <strong>Check-out:</strong> {{ reservation.checkout|date:"d/m/Y" }}</p>
+                                <p style="margin-bottom: 12px;"><i class="fas fa-moon" style="color: #d4af37; width: 20px; margin-right: 8px;"></i> <strong>Noches:</strong> {{ reservation.nights }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p style="margin-bottom: 12px;"><i class="fas fa-users" style="color: #d4af37; width: 20px; margin-right: 8px;"></i> <strong>Huéspedes:</strong> {{ reservation.guests }}</p>
+                                <p style="margin-bottom: 12px;"><i class="fas fa-dollar-sign" style="color: #d4af37; width: 20px; margin-right: 8px;"></i> <strong>Precio total:</strong> ${{ reservation.total_price }}</p>
+                                <p style="margin-bottom: 12px;"><i class="fas fa-clock" style="color: #d4af37; width: 20px; margin-right: 8px;"></i> <strong>Fecha de reserva:</strong> {{ reservation.created_at|date:"d/m/Y H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Huéspedes -->
+                    <div class="guests-info mb-4">
+                        <h4 style="font-family: 'Playfair Display', serif; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">Huéspedes</h4>
+                        {% if reservation.guests_info %}
+                            <div class="table-responsive">
+                                <table class="table table-hover" style="border-radius: 8px; overflow: hidden;">
+                                    <thead style="background-color: #f8f9fa;">
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Nombre</th>
+                                            <th scope="col">Documento</th>
+                                            <th scope="col">Edad</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for guest in reservation.guests_info %}
+                                        <tr>
+                                            <th scope="row">{{ forloop.counter }}</th>
+                                            <td>{{ guest.nombre }} {{ guest.apellido }}</td>
+                                            <td>{{ guest.documento }}</td>
+                                            <td>{{ guest.edad }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info" role="alert" style="border-left: 4px solid #d4af37; background-color: rgba(212, 175, 55, 0.05);">
+                                <i class="fas fa-info-circle" style="color: #d4af37;"></i> Los datos de los huéspedes se registrarán al momento del check-in.
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Acciones -->
+                    <div class="reservation-actions">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'usuariosperfil' %}" class="btn btn-outline-secondary" style="display: flex; align-items: center;">
+                                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Volver al Perfil
+                            </a>
+                            
+                            {% if reservation.status == 'confirmed' %}
+                            <button class="btn btn-outline-danger" style="background: transparent; color: #dc3545; border: 1px solid #dc3545; padding: 8px 15px; border-radius: 5px; display: flex; align-items: center;">
+                                <i class="fas fa-times" style="margin-right: 8px;"></i> Cancelar Reserva
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -30,6 +30,7 @@ class Reserva(models.Model):
 
     fecha_reserva = models.DateTimeField(auto_now_add=True)
     confirmada = models.BooleanField(default=False)
+    activada = models.BooleanField(default=False)
     metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, blank=True, null=True)
     token = models.CharField(max_length=64, default=uuid.uuid4, editable=False, unique=True)
     monto = models.DecimalField(max_digits=10, decimal_places=2, default=0)

@@ -1,7 +1,13 @@
 from django.urls import path
 from . import views
 
+app_name = 'admin'
+
 urlpatterns = [
+    # Usuarios
+    path("usuarios/", views.usuarios_list, name="usuarios_list"),
+    path("usuarios/<int:user_id>/", views.usuario_detail, name="usuario_detail"),
+    path('reservas/activar/<int:reserva_id>/', views.activar_reserva, name='activar_reserva'),
     # Dashboard en /admin/
     path("", views.dashboard, name="dashboard"),
 

@@ -14,12 +14,35 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from django.conf import settings
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from .models import Huesped
 from .forms import HuespedForm
 from django.forms import modelformset_factory
 from administracion.models import Plan, Promocion
+
+@login_required
+def detalle_reserva(request, reserva_id):
+    """Vista para mostrar el detalle de una reserva específica"""
+    reservation = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
+    
+    # Calcular el número de noches
+    if not hasattr(reservation, 'nights'):
+        checkin_date = reservation.checkin
+        checkout_date = reservation.checkout
+        nights = (checkout_date - checkin_date).days
+        reservation.nights = nights
+    
+    # Obtener información de huéspedes si existe
+    guests_info = Huesped.objects.filter(reserva=reservation)
+    if guests_info:
+        reservation.guests_info = guests_info
+    
+    context = {
+        'reservation': reservation,
+    }
+    
+    return render(request, 'detalle_reserva.html', context)
 
 
 @login_required

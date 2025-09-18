@@ -3,7 +3,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#f8f5f0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>{% block title %}Hotel Elegante - Experiencia Única{% endblock %}</title>
     <meta name="description" content="{% block description %}Hotel Elegante ofrece una experiencia única con servicios de lujo y comodidades excepcionales{% endblock %}">
     
@@ -91,7 +94,7 @@
     </main>
 
     <!-- Refactorizando footer con clases Bootstrap -->
-    <footer class="bg-hotel-navy text-white py-5">
+    <footer class="bg-black text-white py-5">
         <div class="container">
             <div class="row g-4">
                 <!-- Hotel Info -->
@@ -144,7 +147,33 @@
 
     <!-- Agregando Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% load static %}{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- Script para mejorar experiencia móvil -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cerrar menú móvil al hacer clic en un enlace
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 992) {
+                        bootstrap.Collapse.getInstance(navbarCollapse)?.hide();
+                    }
+                });
+            });
+            
+            // Ajustar padding-top del body según altura del header
+            function adjustBodyPadding() {
+                const headerHeight = document.getElementById('header').offsetHeight;
+                document.body.style.paddingTop = headerHeight + 'px';
+            }
+            
+            window.addEventListener('resize', adjustBodyPadding);
+            adjustBodyPadding();
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

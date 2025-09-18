@@ -33,12 +33,12 @@
         </td>
         <td>
           {% if not reserva.confirmada %}
-            <form method="post" action="{% url 'confirmar_reserva_admin' reserva.id %}" style="display:inline;">
+            <form method="post" action="{% url 'admin:confirmar_reserva_admin' reserva.id %}" style="display:inline;">
               {% csrf_token %}
               <button class="btn btn-sm btn-success" type="submit">Confirmar</button>
             </form>
 
-            <form method="post" action="{% url 'rechazar_reserva_admin' reserva.id %}" style="display:inline; margin-left:5px;">
+            <form method="post" action="{% url 'admin:rechazar_reserva_admin' reserva.id %}" style="display:inline; margin-left:5px;">
               {% csrf_token %}
               <button class="btn btn-sm btn-danger" type="submit"
                       onclick="return confirm('¿Seguro que querés rechazar la reserva?')">

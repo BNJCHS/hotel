@@ -14,6 +14,47 @@
 }
 
 /* ===============================
+   📱 Optimizaciones para móviles
+   =============================== */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (max-width: 768px) {
+  h1 { font-size: 1.8rem !important; }
+  h2 { font-size: 1.5rem !important; }
+  h3 { font-size: 1.3rem !important; }
+  .container { padding-left: 15px; padding-right: 15px; }
+  .py-5 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+  .my-5 { margin-top: 2rem !important; margin-bottom: 2rem !important; }
+  
+  /* Mejoras para navegación móvil */
+  .navbar-collapse {
+    background-color: var(--beige);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  .navbar-nav .nav-link {
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  
+  /* Mejoras para cards y contenedores */
+  .card {
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Ajustes para formularios */
+  .form-control, .form-select {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+}
+
+/* ===============================
    🔘 Botones
    =============================== */
 .btn-vino,

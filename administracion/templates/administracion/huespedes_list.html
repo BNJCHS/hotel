@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-2">
   <h2 class="mb-0">Huéspedes</h2>
-  <a href="{% url 'huespedes_create' %}" class="btn btn-success">Nuevo huésped</a>
+  <a href="{% url 'admin:huespedes_create' %}" class="btn btn-success">Nuevo huésped</a>
 </div>
 
 {% include "administracion/_list_toolbar.html" %}
@@ -27,8 +27,8 @@
         {% if h.telefono %}<br>{{ h.telefono }}{% endif %}
       </td>
       <td class="text-end">
-        <a href="{% url 'huespedes_edit' h.id %}" class="btn btn-sm btn-warning">Editar</a>
-        <a href="{% url 'huespedes_delete' h.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+        <a href="{% url 'admin:huespedes_edit' h.id %}" class="btn btn-sm btn-warning">Editar</a>
+        <a href="{% url 'admin:huespedes_delete' h.id %}" class="btn btn-sm btn-danger">Eliminar</a>
       </td>
     </tr>
     {% empty %}

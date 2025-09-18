@@ -24,7 +24,7 @@
         <td>{{ activo.fecha_checkin }}</td>
         <td>{{ activo.fecha_checkout }}</td>
         <td>
-          <form method="post" action="{% url 'finalizar_huesped_activo' activo.id %}">
+          <form method="post" action="{% url 'admin:finalizar_huesped_activo' activo.id %}">
             {% csrf_token %}
             <button class="btn btn-sm btn-warning" type="submit">Checkout</button>
           </form>

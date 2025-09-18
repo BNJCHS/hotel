@@ -192,66 +192,68 @@
 
                 <!-- Mis Reservas -->
                 <div class="profile-section" id="reservations">
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h2><i class="fas fa-bed"></i> Mis Reservas</h2>
-                            <a href="{% url 'habitaciones_lista' %}" class="btn btn-outline-primary">
-                                <i class="fas fa-plus"></i> Nueva Reserva
+                    <div class="section-card" style="background: #fff; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f0f0f0; margin-bottom: 30px;">
+                        <div class="section-header" style="padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to right, #f8f9fa, #fff);">
+                            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #333; display: flex; align-items: center;">
+                                <i class="fas fa-bed" style="margin-right: 10px; color: #d4af37;"></i> Mis Reservas
+                            </h2>
+                            <a href="{% url 'habitaciones_lista' %}" class="btn btn-outline-primary" style="background: transparent; color: #d4af37; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 5px; transition: all 0.3s ease; display: flex; align-items: center; text-decoration: none;">
+                                <i class="fas fa-plus" style="margin-right: 5px;"></i> Nueva Reserva
                             </a>
                         </div>
                         
-                        <div class="reservations-container">
+                        <div class="reservations-container" style="padding: 20px;">
                             {% if reservations %}
                                 {% for reservation in reservations %}
-                                <div class="reservation-card-elegant">
-                                    <div class="reservation-image">
-                                        <img src="/placeholder.svg?height=120&width=200" alt="Habitación">
-                                        <div class="reservation-status-badge status-{{ reservation.status }}">
+                                <div class="reservation-card-elegant" style="display: flex; background: #fff; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.03); margin-bottom: 20px; overflow: hidden; border: 1px solid #f0f0f0; transition: all 0.3s ease;">
+                                    <div class="reservation-image" style="position: relative; width: 200px; min-width: 200px; height: 120px; overflow: hidden;">
+                                        <img src="/placeholder.svg?height=120&width=200" alt="Habitación" style="width: 100%; height: 100%; object-fit: cover;">
+                                        <div class="reservation-status-badge status-{{ reservation.status }}" style="position: absolute; top: 10px; left: 10px; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; background: {% if reservation.status == 'confirmed' %}rgba(40, 167, 69, 0.9){% elif reservation.status == 'pending' %}rgba(255, 193, 7, 0.9){% elif reservation.status == 'cancelled' %}rgba(220, 53, 69, 0.9){% else %}rgba(108, 117, 125, 0.9){% endif %}; color: #fff;">
                                             {{ reservation.get_status_display }}
                                         </div>
                                     </div>
-                                    <div class="reservation-details">
-                                        <h3>Habitación {{ reservation.room.numero }}</h3>
-                                        <div class="reservation-info-grid">
-                                            <div class="info-item">
-                                                <i class="fas fa-calendar-check"></i>
-                                                <span>Check-in: {{ reservation.checkin|date:"d/m/Y" }}</span>
+                                    <div class="reservation-details" style="flex-grow: 1; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center;">
+                                        <h3 style="margin: 0 0 10px 0; font-family: 'Playfair Display', serif; font-size: 1.3rem; color: #333;">Habitación {{ reservation.room.numero }}</h3>
+                                        <div class="reservation-info-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                            <div class="info-item" style="display: flex; align-items: center;">
+                                                <i class="fas fa-calendar-check" style="color: #d4af37; margin-right: 8px; width: 16px; text-align: center;"></i>
+                                                <span style="font-size: 0.9rem; color: #555;">Check-in: {{ reservation.checkin|date:"d/m/Y" }}</span>
                                             </div>
-                                            <div class="info-item">
-                                                <i class="fas fa-calendar-times"></i>
-                                                <span>Check-out: {{ reservation.checkout|date:"d/m/Y" }}</span>
+                                            <div class="info-item" style="display: flex; align-items: center;">
+                                                <i class="fas fa-calendar-times" style="color: #d4af37; margin-right: 8px; width: 16px; text-align: center;"></i>
+                                                <span style="font-size: 0.9rem; color: #555;">Check-out: {{ reservation.checkout|date:"d/m/Y" }}</span>
                                             </div>
-                                            <div class="info-item">
-                                                <i class="fas fa-users"></i>
-                                                <span>{{ reservation.guests }} huésped{{ reservation.guests|pluralize:"es" }}</span>
+                                            <div class="info-item" style="display: flex; align-items: center;">
+                                                <i class="fas fa-users" style="color: #d4af37; margin-right: 8px; width: 16px; text-align: center;"></i>
+                                                <span style="font-size: 0.9rem; color: #555;">{{ reservation.guests }} huésped{{ reservation.guests|pluralize:"es" }}</span>
                                             </div>
-                                            <div class="info-item">
-                                                <i class="fas fa-dollar-sign"></i>
-                                                <span>${{ reservation.total_price }}</span>
+                                            <div class="info-item" style="display: flex; align-items: center;">
+                                                <i class="fas fa-dollar-sign" style="color: #d4af37; margin-right: 8px; width: 16px; text-align: center;"></i>
+                                                <span style="font-size: 0.9rem; color: #555;">${{ reservation.total_price }}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="reservation-actions">
-                                        <a href="{% url 'detalle_reserva' reservation.id %}" class="btn btn-outline-primary btn-sm">
-                                            <i class="fas fa-eye"></i> Ver Detalles
+                                    <div class="reservation-actions" style="display: flex; flex-direction: column; justify-content: center; padding: 15px; border-left: 1px solid #f0f0f0; min-width: 120px;">
+                                        <a href="{% url 'detalle_reserva' reservation.id %}" class="btn btn-outline-primary btn-sm" style="background: transparent; color: #d4af37; border: 1px solid #d4af37; padding: 6px 12px; border-radius: 4px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 0.85rem; transition: all 0.3s ease;">
+                                            <i class="fas fa-eye" style="margin-right: 5px;"></i> Ver Detalles
                                         </a>
                                         {% if reservation.status == 'confirmed' %}
-                                        <button class="btn btn-outline-danger btn-sm">
-                                            <i class="fas fa-times"></i> Cancelar
+                                        <button class="btn btn-outline-danger btn-sm" style="background: transparent; color: #dc3545; border: 1px solid #dc3545; padding: 6px 12px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease;">
+                                            <i class="fas fa-times" style="margin-right: 5px;"></i> Cancelar
                                         </button>
                                         {% endif %}
                                     </div>
                                 </div>
                                 {% endfor %}
                             {% else %}
-                                <div class="no-reservations-elegant">
-                                    <div class="no-reservations-icon">
-                                        <i class="fas fa-bed"></i>
+                                <div class="no-reservations-elegant" style="text-align: center; padding: 40px 20px; background: linear-gradient(to bottom, rgba(212, 175, 55, 0.05), rgba(212, 175, 55, 0.01)); border-radius: 8px; border: 1px dashed rgba(212, 175, 55, 0.3);">
+                                    <div class="no-reservations-icon" style="margin-bottom: 20px;">
+                                        <i class="fas fa-bed" style="font-size: 3rem; color: #d4af37; opacity: 0.7;"></i>
                                     </div>
-                                    <h3>No tienes reservas aún</h3>
-                                    <p>Descubre nuestras elegantes habitaciones y haz tu primera reserva</p>
-                                    <a href="{% url 'habitaciones_lista' %}" class="btn btn-primary">
-                                        <i class="fas fa-search"></i> Explorar Habitaciones
+                                    <h3 style="margin: 0 0 10px 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #333;">No tienes reservas aún</h3>
+                                    <p style="margin-bottom: 20px; color: #666; font-size: 1rem;">Descubre nuestras elegantes habitaciones y haz tu primera reserva</p>
+                                    <a href="{% url 'habitaciones_lista' %}" class="btn btn-primary" style="background: linear-gradient(135deg, #d4af37, #f5cc7f); border: none; padding: 10px 20px; border-radius: 5px; color: #fff; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);">
+                                        <i class="fas fa-search" style="margin-right: 8px;"></i> Explorar Habitaciones
                                     </a>
                                 </div>
                             {% endif %}
@@ -261,38 +263,40 @@
 
                 <!-- Configuración -->
                 <div class="profile-section" id="settings">
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h2><i class="fas fa-cog"></i> Configuración de Cuenta</h2>
+                    <div class="section-card" style="background: #fff; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f0f0f0; margin-bottom: 30px;">
+                        <div class="section-header" style="padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to right, #f8f9fa, #fff);">
+                            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #333; display: flex; align-items: center;">
+                                <i class="fas fa-cog" style="margin-right: 10px; color: #d4af37;"></i> Configuración de Cuenta
+                            </h2>
                         </div>
                         
-                        <div class="settings-grid">
-                            <div class="setting-card">
-                                <div class="setting-icon">
-                                    <i class="fas fa-lock"></i>
+                        <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px;">
+                            <div class="setting-card" style="background: #fff; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.03); padding: 20px; border: 1px solid #f0f0f0; display: flex; align-items: center; transition: all 0.3s ease;">
+                                <div class="setting-icon" style="background: rgba(212, 175, 55, 0.1); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                    <i class="fas fa-lock" style="color: #d4af37; font-size: 1.2rem;"></i>
                                 </div>
-                                <div class="setting-content">
-                                    <h3>Cambiar Contraseña</h3>
-                                    <p>Actualiza tu contraseña para mantener tu cuenta segura</p>
+                                <div class="setting-content" style="flex-grow: 1;">
+                                    <h3 style="margin: 0 0 5px 0; font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #333;">Cambiar Contraseña</h3>
+                                    <p style="margin: 0; color: #666; font-size: 0.9rem;">Actualiza tu contraseña para mantener tu cuenta segura</p>
                                 </div>
                                 <div class="setting-action">
-                                    <a href="{% url 'password_change' %}" class="btn btn-outline-primary">
-                                        <i class="fas fa-key"></i> Cambiar
+                                    <a href="{% url 'password_change' %}" class="btn btn-outline-primary" style="background: transparent; color: #d4af37; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 5px; transition: all 0.3s ease; display: flex; align-items: center; text-decoration: none;">
+                                        <i class="fas fa-key" style="margin-right: 5px;"></i> Cambiar
                                     </a>
                                 </div>
                             </div>
                             
-                            <div class="setting-card">
-                                <div class="setting-icon">
-                                    <i class="fas fa-bell"></i>
+                            <div class="setting-card" style="background: #fff; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.03); padding: 20px; border: 1px solid #f0f0f0; display: flex; align-items: center; transition: all 0.3s ease;">
+                                <div class="setting-icon" style="background: rgba(212, 175, 55, 0.1); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                    <i class="fas fa-bell" style="color: #d4af37; font-size: 1.2rem;"></i>
                                 </div>
-                                <div class="setting-content">
-                                    <h3>Notificaciones</h3>
-                                    <p>Configura cómo quieres recibir nuestras comunicaciones</p>
+                                <div class="setting-content" style="flex-grow: 1;">
+                                    <h3 style="margin: 0 0 5px 0; font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #333;">Notificaciones</h3>
+                                    <p style="margin: 0; color: #666; font-size: 0.9rem;">Configura cómo quieres recibir nuestras comunicaciones</p>
                                 </div>
                                 <div class="setting-action">
-                                    <button class="btn btn-outline-primary" onclick="toggleNotifications()">
-                                        <i class="fas fa-cog"></i> Configurar
+                                    <button class="btn btn-outline-primary" onclick="toggleNotifications()" style="background: transparent; color: #d4af37; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 5px; transition: all 0.3s ease; display: flex; align-items: center; cursor: pointer;">
+                                        <i class="fas fa-cog" style="margin-right: 5px;"></i> Configurar
                                     </button>
                                 </div>
                             </div>

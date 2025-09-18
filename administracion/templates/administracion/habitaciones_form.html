@@ -9,7 +9,7 @@
     {{ form.as_p }}  {# Aquí Django genera todos los campos correctamente #}
 
     <button type="submit" class="btn btn-success">Guardar</button>
-    <a href="{% url 'habitaciones_list' %}" class="btn btn-secondary">Cancelar</a>
+    <a href="{% url 'habitaciones:habitaciones_list' %}" class="btn btn-secondary">Cancelar</a>
 </form>
 
 {% if form.errors %}

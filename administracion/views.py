@@ -5,19 +5,83 @@ from django.db.models import Q
 from reservas.models import Reserva
 from .models import Empleado, Plan, Promocion, Servicio, Huesped
 from .forms import EmpleadoForm, PlanForm, PromocionForm, ServicioForm, HuespedForm
-from reservas.models import Huesped 
+from reservas.models import Huesped as ReservaHuesped
+from django.http import JsonResponse
 
 from django.db.models import Sum
 # imports relacionados con reservas/huespedes
-from reservas.models import Reserva, Huesped as ReservaHuesped, HuespedActivo
+from reservas.models import Reserva, HuespedActivo
 
 # imports de la app administracion
 from .models import Empleado, Plan, Promocion, Servicio  # NOTAR: no importamos Huesped de administracion para evitar choque de nombres
 from .forms import EmpleadoForm, PlanForm, PromocionForm, ServicioForm, HuespedForm
 
+# imports para gestión de usuarios
+from django.contrib.auth.models import User
+from usuarios.models import Profile
+
 # para control de accesos en las vistas
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.http import require_POST
+def usuarios_list(request):
+    """Vista para listar todos los usuarios registrados"""
+    usuarios = User.objects.all().order_by('-date_joined')
+    
+    # Búsqueda de usuarios
+    query = request.GET.get('q')
+    if query:
+        usuarios = usuarios.filter(
+            Q(username__icontains=query) | 
+            Q(email__icontains=query) | 
+            Q(first_name__icontains=query) | 
+            Q(last_name__icontains=query)
+        )
+    
+    # Paginación
+    paginator = Paginator(usuarios, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'administracion/usuarios_list.html', {
+        'page_obj': page_obj,
+        'query': query
+    })
+
+
+def usuario_detail(request, user_id):
+    """Vista para ver el detalle de un usuario"""
+    usuario = get_object_or_404(User, id=user_id)
+    
+    return render(request, 'administracion/usuario_detail.html', {
+        'usuario': usuario
+    })
+
+@require_POST
+def activar_reserva(request, reserva_id):
+    """Activa una reserva y carga los huéspedes registrados por el usuario"""
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+    
+    # Activar la reserva (solo desde administración)
+    reserva.activada = True
+    reserva.save()
+    
+    # Cargar huéspedes desde la información guardada por el usuario
+    huespedes = ReservaHuesped.objects.filter(reserva=reserva)
+    
+    # Crear huéspedes activos en el sistema
+    for huesped in huespedes:
+        HuespedActivo.objects.create(
+            reserva=reserva,
+            nombre=huesped.nombre,
+            apellido=huesped.apellido,
+            documento=huesped.documento,
+            edad=huesped.edad,
+            telefono=huesped.telefono if hasattr(huesped, 'telefono') else '',
+            email=huesped.email if hasattr(huesped, 'email') else ''
+        )
+    
+    messages.success(request, f'Reserva #{reserva_id} activada correctamente. {len(huespedes)} huéspedes registrados.')
+    return JsonResponse({'status': 'success', 'message': 'Reserva activada correctamente'})
 
 def dashboard(request):
     total_reservas = Reserva.objects.count()
