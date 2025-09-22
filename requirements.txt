@@ -3,3 +3,5 @@ mysqlclient>=2.2
 python-dotenv
 Pillow
 openai>=1.0.0
+whitenoise>=6.7.0
+django-widget-tweaks>=1.5.0

@@ -1,37 +1,39 @@
-{% extends "administracion/base_admin.html" %}
-{% block title %}Habitaciones{% endblock %}
-{% block page_title %}Gestión de Habitaciones{% endblock %}
-
+{% extends 'administracion/base_admin.html' %}
 {% block content %}
-<a href="{% url 'habitaciones_create' %}" class="btn btn-primary mb-3">➕ Nueva Habitación</a>
+<div class="container mt-4">
+    <h1>Listado de Habitaciones</h1>
+    <a href="{% url 'habitaciones:habitaciones_create' %}" class="btn btn-primary mb-3">➕ Nuevo Tipo de Habitación</a>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Tipo</th>
-            <th>Precio</th>
-            <th>Stock</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for h in habitaciones %}
-        <tr>
-            <td>{{ h.id }}</td>
-            <td>{{ h.tipo }}</td>
-            <td>${{ h.precio }}</td>
-            <td>{{ h.stock }}</td>
-            <td>
-                <a href="{% url 'habitaciones_edit' h.id %}" class="btn btn-warning btn-sm">✏️</a>
-                <a href="{% url 'habitaciones_delete' h.id %}" class="btn btn-danger btn-sm">🗑️</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5" class="text-center">No hay habitaciones cargadas</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Número</th>
+                <th>Tipo</th>
+                <th>Precio</th>
+                <th>Disponible</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in habitaciones %}
+            <tr>
+                <td>{{ h.id }}</td>
+                <td>{{ h.numero }}</td>
+                <td>{{ h.tipo }}</td>
+                <td>${{ h.precio }}</td>
+                <td>{{ h.disponible|yesno:"Sí,No" }}</td>
+                <td>
+                    <a href="{% url 'habitaciones:habitaciones_edit' h.id %}" class="btn btn-warning btn-sm">✏️</a>
+                    <a href="{% url 'habitaciones:habitaciones_delete' h.id %}" class="btn btn-danger btn-sm">🗑️</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No hay habitaciones registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

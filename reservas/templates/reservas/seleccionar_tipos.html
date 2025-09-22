@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Seleccionar tipos de habitación{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="mb-4">Elige tipos de habitación</h2>
+  <p>Fechas: <strong>{{ fecha_entrada }}</strong> a <strong>{{ fecha_salida }}</strong> — Huéspedes: <strong>{{ numero_huespedes }}</strong></p>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="row g-4">
+      {% for t in tipos %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          {% if t.imagen %}
+          <img src="{{ t.imagen.url }}" class="card-img-top" alt="{{ t.get_tipo_display }}">
+          {% else %}
+          <img src="/placeholder.svg?height=200&width=300" class="card-img-top" alt="{{ t.get_tipo_display }}">
+          {% endif %}
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title mb-1">{{ t.get_tipo_display }}</h5>
+            <p class="text-muted mb-2">Capacidad: {{ t.capacidad }} /noche</p>
+            <p class="mb-2">Precio: <strong>${{ t.precio }}</strong> por noche</p>
+            <p class="mb-3">Stock disponible en fechas: <strong>{{ t.stock_disponible }}</strong></p>
+            <div class="mt-auto">
+              <label class="form-label">Cantidad</label>
+              <input type="number" min="0" max="{{ t.stock_disponible }}" name="cantidad_{{ t.id }}" value="0" class="form-control" />
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="text-end mt-4">
+      <a href="{% url 'seleccionar_huespedes' %}" class="btn btn-outline-secondary">Volver</a>
+      <button type="submit" class="btn btn-primary">Continuar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

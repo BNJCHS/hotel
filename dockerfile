@@ -20,7 +20,8 @@ COPY . /code/
 
 # Copiar script y darle permisos
 COPY wait_for_db.sh /wait_for_db.sh
-RUN chmod +x /wait_for_db.sh
+# Normalizar EOL por si el archivo tiene CRLF (Windows)
+RUN sed -i 's/\r$//' /wait_for_db.sh && chmod +x /wait_for_db.sh
 
 # Entrada: esperar a DB
 ENTRYPOINT ["/wait_for_db.sh"]

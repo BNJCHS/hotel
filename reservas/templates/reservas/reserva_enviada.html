@@ -12,6 +12,12 @@
                 Hemos enviado un correo de confirmación a:
                 <strong>{{ email }}</strong>
             </p>
+            {% if simulate_payments %}
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-receipt me-2"></i>
+                Pago simulado generado. ID de transacción: <strong>{{ sim_tx_id }}</strong> (estado: {{ sim_tx_status }})
+            </div>
+            {% endif %}
             <p class="card-text">
                 Haz clic en el enlace del correo para confirmar tu reserva.
             </p>

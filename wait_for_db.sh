@@ -1,13 +1,18 @@
 #!/bin/sh
 set -e
 
-host="${DB_HOST:-db}"
-port="${DB_PORT:-3306}"
+HOST="${DB_HOST:-db}"
+PORT="${DB_PORT:-3306}"
 
-echo "Esperando a la base de datos en $host:$port..."
-until nc -z "$host" "$port"; do
+echo "Waiting for database at $HOST:$PORT..."
+until nc -z "$HOST" "$PORT"; do
+  echo "DB not ready, sleeping..."
   sleep 2
 done
 
-echo "Base de datos disponible, iniciando Django..."
+echo "Database is up! Running migrations and collectstatic..."
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput || true
+
+echo "Starting application..."
 exec "$@"

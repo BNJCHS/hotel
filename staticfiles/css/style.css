@@ -1,0 +1,397 @@
+/* ===============================
+   🎨 Paleta de colores personalizada
+   =============================== */
+:root {
+  --vino: #6E0B14;
+  --beige: #F5F5DC;
+  --negro: #1A1A1A;
+  --dorado: #C9A635;
+  --texto: #2A2A2A;
+
+  /* Overrides Bootstrap */
+  --bs-primary: var(--vino);
+  --bs-secondary: var(--dorado);
+}
+
+/* ===============================
+   📱 Optimizaciones para móviles
+   =============================== */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (max-width: 768px) {
+  h1 { font-size: 1.8rem !important; }
+  h2 { font-size: 1.5rem !important; }
+  h3 { font-size: 1.3rem !important; }
+  .container { padding-left: 15px; padding-right: 15px; }
+  .py-5 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+  .my-5 { margin-top: 2rem !important; margin-bottom: 2rem !important; }
+  
+  /* Mejoras para navegación móvil */
+  .navbar-collapse {
+    background-color: var(--beige);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  .navbar-nav .nav-link {
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  
+  /* Mejoras para cards y contenedores */
+  .card {
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Ajustes para formularios */
+  .form-control, .form-select {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+}
+
+/* ===============================
+   🔘 Botones
+   =============================== */
+.btn-vino,
+.btn.btn-primary {
+  background-color: var(--vino) !important;
+  color: var(--beige) !important;
+  border: none;
+  transition: all 0.3s ease;
+}
+.btn-vino:hover,
+.btn.btn-primary:hover {
+  background-color: #58080f !important;
+  color: var(--beige) !important;
+}
+
+.btn-beige {
+  background-color: var(--beige);
+  color: var(--vino);
+  border: 1px solid var(--vino);
+  transition: all 0.3s ease;
+}
+.btn-beige:hover {
+  background-color: #e2d7b5;
+  color: var(--vino);
+}
+
+/* ===============================
+   🧭 Navbar
+   =============================== */
+.navbar {
+  background-color: var(--negro) !important;
+}
+.navbar .navbar-brand {
+  color: var(--dorado) !important;
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.navbar .nav-link {
+  color: var(--beige) !important;
+  transition: color 0.3s ease;
+}
+.navbar .nav-link:hover {
+  color: var(--dorado) !important;
+}
+
+/* ===============================
+   🏨 Hero Section
+   =============================== */
+.hero {
+  background-color: var(--negro);
+  color: var(--beige);
+  padding: 0;
+  position: relative;
+  text-align: center;
+  height: 80vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-overlay {
+  background: linear-gradient(rgba(26, 26, 26, 0.7), rgba(26, 26, 26, 0.5));
+  z-index: 2;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.hero h1 {
+  color: var(--beige);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-family: "Playfair Display", serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 1.5rem;
+}
+
+.hero p {
+  color: var(--beige);
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  margin-bottom: 2.5rem;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero .btn {
+  margin: 0 0.5rem 0.5rem;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ===============================
+   📌 Secciones
+   =============================== */
+.section-header h2 {
+  color: var(--vino);
+  font-family: "Playfair Display", serif;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+.section-header h2::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  background-color: var(--dorado);
+  margin: 0.75rem auto 1rem;
+}
+.section-header p {
+  color: var(--texto);
+  font-size: 1.1rem;
+  max-width: 700px;
+  margin: 0 auto 1.5rem;
+}
+
+/* Sección de Planes */
+.seccion-planes {
+  background-color: var(--beige);
+  padding: 5rem 0;
+}
+.seccion-planes .card {
+  background-color: #fff;
+}
+.seccion-planes .icon-placeholder {
+  color: var(--vino);
+}
+.seccion-planes .precio {
+  color: var(--vino);
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* Sección de Promociones */
+.seccion-promociones {
+  background-color: #fff;
+  padding: 5rem 0;
+}
+.seccion-promociones .icon-placeholder {
+  color: var(--dorado);
+}
+.seccion-promociones .descuento {
+  color: #d9534f;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* Sección de Servicios */
+.seccion-servicios {
+  background-color: var(--beige);
+  padding: 5rem 0;
+}
+.seccion-servicios .icon-placeholder {
+  color: var(--dorado);
+}
+
+/* ===============================
+   🃏 Cards
+   =============================== */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+.card h3 {
+  color: var(--vino);
+  font-family: "Playfair Display", serif;
+}
+.card p {
+  color: var(--texto);
+}
+
+/* ===============================
+   🏠 About Section
+   =============================== */
+.about {
+  padding: 5rem 0;
+  background-color: #fff;
+}
+
+.about .section-header h2 {
+  text-align: left;
+}
+
+.about .section-header h2::after {
+  margin-left: 0;
+}
+
+.about .divider {
+  width: 80px;
+  height: 3px;
+  background-color: var(--dorado);
+  margin: 1rem 0 2rem;
+}
+
+.about-content {
+  padding-right: 2rem;
+}
+
+.about-image {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* ===============================
+   📱 Responsividad
+   =============================== */
+@media (max-width: 991.98px) {
+  .about-content {
+    padding-right: 0;
+    margin-bottom: 2rem;
+  }
+  
+  .hero {
+    height: 70vh;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .hero {
+    height: 60vh;
+  }
+  
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+  
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .seccion-planes,
+  .seccion-promociones,
+  .seccion-servicios,
+  .about {
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .hero {
+    height: 50vh;
+    min-height: 450px;
+  }
+  
+  .hero-content {
+    padding: 1rem;
+  }
+  
+  .hero h1 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+  }
+  
+  .hero p {
+    font-size: 1rem;
+  }
+  
+  .hero .btn {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* ===============================
+   📩 Contacto
+   =============================== */
+.contact-section {
+  background-color: var(--beige);
+  padding: 4rem 2rem;
+}
+.contact-section h2 {
+  color: var(--vino);
+}
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+.contact-form button {
+  background-color: var(--vino);
+  color: var(--beige);
+}
+
+/* ===============================
+   ⚫ Footer
+   =============================== */
+.footer {
+  background-color: var(--negro);
+  color: var(--beige);
+  text-align: center;
+  padding: 2rem 0;
+  font-size: 0.95rem;
+}
+.footer a {
+  color: var(--dorado);
+  text-decoration: none;
+}
+.footer a:hover {
+  color: var(--beige);
+}
