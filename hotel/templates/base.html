@@ -175,5 +175,146 @@
         });
     </script>
     {% block extra_js %}{% endblock %}
+
+    <!-- Chatbot Widget -->
+    <div id="chatbot-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+        <div id="chatbot-toggle" style="background:#0d6efd;color:#fff;padding:12px 16px;border-radius:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.15);">
+            Chat 💬
+        </div>
+        <div id="chatbot-panel" style="display:none;width:320px;height:420px;background:#fff;border-radius:12px;box-shadow:0 12px 24px rgba(0,0,0,.2);overflow:hidden;margin-top:8px;">
+            <div style="background:#0d6efd;color:#fff;padding:10px 12px;font-weight:600;">Asistente del Hotel</div>
+            <div id="chatbot-messages" style="height:320px;overflow:auto;padding:12px;background:#f7f7f9;"></div>
+            <div style="display:flex;gap:6px;padding:10px;background:#fff;border-top:1px solid #eee;">
+                <input id="chatbot-input" type="text" placeholder="Escribe un mensaje..." style="flex:1;border:1px solid #ddd;border-radius:8px;padding:8px;">
+                <button id="chatbot-send" class="btn btn-primary">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const toggle = document.getElementById('chatbot-toggle');
+            const panel = document.getElementById('chatbot-panel');
+            const messages = document.getElementById('chatbot-messages');
+            const input = document.getElementById('chatbot-input');
+            const sendBtn = document.getElementById('chatbot-send');
+
+            toggle.addEventListener('click', ()=>{
+                panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+            });
+
+            function addMsg(text, who='bot'){
+                const el = document.createElement('div');
+                el.style.margin = '6px 0';
+                el.style.display = 'flex';
+                el.style.justifyContent = who==='bot' ? 'flex-start' : 'flex-end';
+                const bubble = document.createElement('div');
+                bubble.style.maxWidth = '78%';
+                bubble.style.padding = '8px 10px';
+                bubble.style.borderRadius = '10px';
+                bubble.style.fontSize = '14px';
+                bubble.style.whiteSpace = 'pre-wrap';
+                bubble.style.wordWrap = 'break-word';
+                bubble.textContent = text;
+                if(who==='bot'){
+                    bubble.style.background = '#eef2ff';
+                    bubble.style.color = '#111827';
+                } else {
+                    bubble.style.background = '#0d6efd';
+                    bubble.style.color = '#fff';
+                }
+                el.appendChild(bubble);
+                messages.appendChild(el);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function clearOptions(){
+                messages.querySelectorAll('.chatbot-options').forEach(el=>el.remove());
+            }
+
+            function renderOptions(opts){
+                clearOptions();
+                const wrap = document.createElement('div');
+                wrap.className = 'chatbot-options';
+                wrap.style.margin = '8px 0';
+                const title = document.createElement('div');
+                title.textContent = 'Opciones disponibles:';
+                title.style.fontWeight = '600';
+                title.style.marginBottom = '6px';
+                wrap.appendChild(title);
+                (opts||[]).forEach(n=>{
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn btn-sm btn-outline-primary me-2 mb-2';
+                    btn.textContent = 'Habitación ' + n;
+                    btn.addEventListener('click', ()=> sendText(String(n)));
+                    wrap.appendChild(btn);
+                });
+                const other = document.createElement('button');
+                other.type = 'button';
+                other.className = 'btn btn-sm btn-outline-secondary mb-2';
+                other.textContent = 'Otra opción';
+                other.addEventListener('click', ()=> sendText('otra'));
+                wrap.appendChild(other);
+                messages.appendChild(wrap);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function getCsrfToken(){
+                const m = document.cookie.match(/csrftoken=([^;]+)/); return m?m[1]:'';
+            }
+
+            function handleResponse(data){
+                addMsg(data.message || 'Ok', 'bot');
+                if (data && data.stage === 'confirm' && Array.isArray(data.options) && data.options.length){
+                    renderOptions(data.options);
+                } else {
+                    clearOptions();
+                }
+                if (data && data.stage === 'done' && data.reserva && data.reserva.id){
+                    const info = document.createElement('div');
+                    info.style.margin = '6px 0 12px';
+                    const link = document.createElement('a');
+                    link.href = '/reservas/detalle/' + data.reserva.id + '/';
+                    link.className = 'btn btn-success btn-sm';
+                    link.textContent = 'Ver detalles de tu reserva';
+                    info.appendChild(link);
+                    messages.appendChild(info);
+                    messages.scrollTop = messages.scrollHeight;
+                }
+            }
+
+            function sendText(text){
+                if(!text) return;
+                addMsg(text, 'user');
+                fetch('{% url "chatbot:chat" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({message: text})
+                })
+                .then(r => r.json())
+                .then(handleResponse)
+                .catch(err => {
+                    addMsg('Error al contactar al bot', 'bot');
+                });
+            }
+
+            function send(){
+                const text = input.value.trim();
+                if(!text) return;
+                input.value = '';
+                sendText(text);
+            }
+
+            sendBtn.addEventListener('click', send);
+            input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ send(); }});
+
+            // Mensaje inicial
+            setTimeout(()=> addMsg('¡Hola! Soy tu asistente. Puedo ayudarte a reservar paso a paso: dime fechas (YYYY-MM-DD a YYYY-MM-DD), tipo (simple/doble/suite/presidencial) y cantidad de huéspedes. Luego te mostraré opciones para confirmar.', 'bot'), 400);
+        })();
+    </script>
 </body>
 </html>

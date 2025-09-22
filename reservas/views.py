@@ -23,25 +23,55 @@ from administracion.models import Plan, Promocion
 
 @login_required
 def detalle_reserva(request, reserva_id):
-    """Vista para mostrar el detalle de una reserva específica"""
+    """Vista para mostrar el detalle de una reserva específica y permitir agregar más habitaciones para las mismas fechas."""
     reservation = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
-    
+
+    # Aliases para que el template actual funcione aunque el modelo use otros nombres
+    reservation.room = reservation.habitacion
+    reservation.checkin = reservation.check_in
+    reservation.checkout = reservation.check_out
+    reservation.guests = reservation.cantidad_huespedes
+    reservation.total_price = reservation.monto
+    reservation.status = 'confirmed' if reservation.confirmada else 'pending'
+
     # Calcular el número de noches
-    if not hasattr(reservation, 'nights'):
-        checkin_date = reservation.checkin
-        checkout_date = reservation.checkout
-        nights = (checkout_date - checkin_date).days
-        reservation.nights = nights
-    
+    try:
+        if reservation.check_in and reservation.check_out:
+            nights = (reservation.check_out - reservation.check_in).days or 1
+        else:
+            nights = 1
+    except Exception:
+        nights = 1
+    reservation.nights = nights
+
     # Obtener información de huéspedes si existe
     guests_info = Huesped.objects.filter(reserva=reservation)
     if guests_info:
         reservation.guests_info = guests_info
-    
+
+    # Calcular habitaciones disponibles para agregar en las mismas fechas y capacidad
+    available_rooms = []
+    if reservation.checkin and reservation.checkout:
+        candidate_qs = Habitacion.objects.filter(
+            disponible=True,
+            capacidad__gte=reservation.guests
+        ).exclude(id=reservation.habitacion_id)
+
+        for hab in candidate_qs:
+            # verificar solapamiento con otras reservas de esa habitación
+            overlapping = Reserva.objects.filter(
+                habitacion=hab,
+                check_in__lt=reservation.checkout,
+                check_out__gt=reservation.checkin,
+            ).exists()
+            if not overlapping:
+                available_rooms.append(hab)
+
     context = {
         'reservation': reservation,
+        'available_rooms': available_rooms,
     }
-    
+
     return render(request, 'detalle_reserva.html', context)
 
 
@@ -68,10 +98,9 @@ def seleccionar_huespedes(request):
             
             if fecha_salida_obj <= fecha_entrada_obj:
                 return render(request, 'reservas/seleccionar_huespedes.html', {
-                    'error': 'La fecha de salida debe ser posterior a la fecha de entrada',
+                    'error': 'La fecha de salida debe ser posterior a la de entrada',
                     'today': today,
-                    'numero_huespedes': numero_huespedes,
-                    'fecha_entrada': fecha_entrada
+                    'numero_huespedes': numero_huespedes
                 })
         
         # Guardar en sesión
@@ -79,20 +108,12 @@ def seleccionar_huespedes(request):
         request.session['fecha_entrada'] = fecha_entrada
         request.session['fecha_salida'] = fecha_salida
         
-        # Redirigir a lista de habitaciones
         return redirect('habitaciones_lista')
-    
-    # Obtener valores de sesión si existen
-    numero_huespedes = request.session.get('numero_huespedes', 1)
-    fecha_entrada = request.session.get('fecha_entrada', '')
-    fecha_salida = request.session.get('fecha_salida', '')
     
     return render(request, 'reservas/seleccionar_huespedes.html', {
         'today': today,
-        'numero_huespedes': numero_huespedes,
-        'fecha_entrada': fecha_entrada,
-        'fecha_salida': fecha_salida
     })
+
 
 @login_required
 def reservar_habitacion(request, habitacion_id):
@@ -110,6 +131,7 @@ def reservar_habitacion(request, habitacion_id):
     
     request.session['habitacion_id'] = habitacion.id  # Guardamos la habitación en sesión
     return redirect('seleccionar_fechas')
+
 
 @login_required
 def seleccionar_fechas(request):
@@ -363,3 +385,108 @@ def cancelar_reserva(request, reserva_id):
     reserva.delete()
     messages.success(request, "La reserva fue cancelada exitosamente.")
     return redirect('mis_reservas')
+
+
+# ===============================
+# Agregar múltiples habitaciones a partir de una reserva existente
+# ===============================
+@login_required
+def agregar_reservas_multiples(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+    # Acepta tanto JSON como formulario
+    habitaciones_ids = []
+    try:
+        if request.content_type == 'application/json':
+            payload = json.loads(request.body or '{}')
+            reserva_id = payload.get('reserva_id')
+            habitaciones_ids = payload.get('habitaciones_ids', [])
+            copiar_servicios = bool(payload.get('copiar_servicios', True))
+        else:
+            reserva_id = request.POST.get('reserva_id')
+            habitaciones_ids = request.POST.getlist('habitaciones_ids')
+            copiar_servicios = request.POST.get('copiar_servicios', '1') in ('1', 'true', 'on', 'True')
+    except Exception:
+        return JsonResponse({'success': False, 'error': 'Entrada inválida'}, status=400)
+
+    base_reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
+
+    # Validaciones básicas
+    if not habitaciones_ids:
+        return JsonResponse({'success': False, 'error': 'Debe seleccionar al menos una habitación.'}, status=400)
+
+    created_ids = []
+    errors = []
+
+    for hid in habitaciones_ids:
+        try:
+            hid_int = int(hid)
+        except (TypeError, ValueError):
+            errors.append(f"ID inválido: {hid}")
+            continue
+
+        if hid_int == base_reserva.habitacion_id:
+            errors.append(f"La habitación {hid_int} ya está reservada en la reserva base.")
+            continue
+
+        hab = Habitacion.objects.filter(id=hid_int, disponible=True, capacidad__gte=base_reserva.cantidad_huespedes).first()
+        if not hab:
+            errors.append(f"Habitación no válida o sin capacidad: {hid_int}")
+            continue
+
+        # Chequear solapamiento con otras reservas
+        overlap = Reserva.objects.filter(
+            habitacion=hab,
+            check_in__lt=base_reserva.check_out,
+            check_out__gt=base_reserva.check_in,
+        ).exists()
+        if overlap:
+            errors.append(f"La habitación {hab.numero} no está disponible en esas fechas.")
+            continue
+
+        nueva = Reserva.objects.create(
+            usuario=request.user,
+            habitacion=hab,
+            check_in=base_reserva.check_in,
+            check_out=base_reserva.check_out,
+            metodo_pago=base_reserva.metodo_pago,
+            plan=base_reserva.plan,
+            promocion=base_reserva.promocion,
+            cantidad_huespedes=base_reserva.cantidad_huespedes,
+            confirmada=False,
+        )
+
+        # Copiar servicios
+        if copiar_servicios:
+            servicios_copiar = list(base_reserva.servicios.all())
+            if servicios_copiar:
+                nueva.servicios.add(*servicios_copiar)
+
+        # Calcular monto
+        nights = (base_reserva.check_out - base_reserva.check_in).days or 1
+        precio_habitacion = hab.precio * nights
+        precio_servicios = sum(s.precio for s in nueva.servicios.all())
+        subtotal = precio_habitacion + precio_servicios
+        if base_reserva.plan:
+            subtotal += base_reserva.plan.precio
+        if base_reserva.promocion:
+            descuento = (subtotal * base_reserva.promocion.descuento) / 100
+            subtotal -= descuento
+        impuestos = subtotal * Decimal('0.18')
+        total = subtotal + impuestos
+        nueva.monto = total
+        nueva.save()
+
+        created_ids.append(nueva.id)
+
+    # Si viene desde formulario HTML, redirigimos con mensajes
+    if request.content_type != 'application/json':
+        if created_ids:
+            messages.success(request, f"Se crearon {len(created_ids)} reservas adicionales.")
+        if errors:
+            for e in errors:
+                messages.warning(request, e)
+        return redirect('mis_reservas')
+
+    return JsonResponse({'success': True, 'creadas': created_ids, 'errores': errors, 'redirect_url': reverse('mis_reservas')}, status=200)

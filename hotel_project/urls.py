@@ -21,7 +21,8 @@ urlpatterns = [
     path('usuarios/', include('usuarios.urls')),
     path('habitaciones/', include('habitaciones.urls')),
     path('admin/',include('administracion.urls', namespace='admin')),
-    path('reservas/', include('reservas.urls')),  
+    path('reservas/', include('reservas.urls')),
+    path('chatbot/', include('chatbot.urls', namespace='chatbot')),
 
 
 ]
