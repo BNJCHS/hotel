@@ -14,6 +14,8 @@
             <h2 class="text-2xl font-semibold mb-2">{{ plan.nombre }}</h2>
             {% if plan.imagen %}
                 <img src="{{ plan.imagen.url }}" alt="{{ plan.nombre }}" class="w-full max-w-md mb-2 rounded-lg">
+            {% else %}
+                <img src="{% static 'img/pool_aerea_unsplash.jpg' %}" alt="{{ plan.nombre }}" class="w-full max-w-md mb-2 rounded-lg">
             {% endif %}
             <p class="mb-2"><strong>Habitación incluida:</strong> {{ plan.habitacion.numero }}</p>
             <p class="mb-2"><strong>Precio:</strong> ${{ plan.precio }}</p>
@@ -43,6 +45,8 @@
             <h2 class="text-2xl font-semibold mb-2">{{ promo.nombre }}</h2>
             {% if promo.imagen %}
                 <img src="{{ promo.imagen.url }}" alt="{{ promo.nombre }}" class="w-full max-w-md mb-2 rounded-lg">
+            {% else %}
+                <img src="{% static 'img/restaurante_pexels_1.jpg' %}" alt="{{ promo.nombre }}" class="w-full max-w-md mb-2 rounded-lg">
             {% endif %}
             <p class="mb-2"><strong>Descuento:</strong> {{ promo.descuento }}%</p>
             <p class="mb-2"><strong>Descripción:</strong> {{ promo.descripcion|truncatewords:20 }}</p>

@@ -9,6 +9,8 @@
 
     {% if promocion.imagen %}
         <img src="{{ promocion.imagen.url }}" alt="{{ promocion.nombre }}" class="w-full max-w-xl mb-4 rounded-lg shadow-md">
+    {% else %}
+        <img src="{% static 'img/pool_dia_unsplash.jpg' %}" alt="{{ promocion.nombre }}" class="w-full max-w-xl mb-4 rounded-lg shadow-md">
     {% endif %}
 
     <div class="bg-white p-6 rounded-lg shadow-md">

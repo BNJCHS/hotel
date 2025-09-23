@@ -163,15 +163,6 @@
                     }
                 });
             });
-            
-            // Ajustar padding-top del body según altura del header
-            function adjustBodyPadding() {
-                const headerHeight = document.getElementById('header').offsetHeight;
-                document.body.style.paddingTop = headerHeight + 'px';
-            }
-            
-            window.addEventListener('resize', adjustBodyPadding);
-            adjustBodyPadding();
         });
     </script>
     {% block extra_js %}{% endblock %}
@@ -230,6 +221,7 @@
 
             function clearOptions(){
                 messages.querySelectorAll('.chatbot-options').forEach(el=>el.remove());
+                messages.querySelectorAll('.chatbot-quick').forEach(el=>el.remove());
             }
 
             function renderOptions(opts){
@@ -260,60 +252,43 @@
                 messages.scrollTop = messages.scrollHeight;
             }
 
-            function getCsrfToken(){
-                const m = document.cookie.match(/csrftoken=([^;]+)/); return m?m[1]:'';
-            }
+            function renderGreetingOptions(){
+                clearOptions();
+                const wrap = document.createElement('div');
+                wrap.className = 'chatbot-quick';
+                wrap.style.margin = '8px 0';
+                const tip = document.createElement('div');
+                tip.textContent = 'Temas sugeridos:';
+                tip.style.fontWeight = '600';
+                tip.style.marginBottom = '6px';
+                wrap.appendChild(tip);
 
-            function handleResponse(data){
-                addMsg(data.message || 'Ok', 'bot');
-                if (data && data.stage === 'confirm' && Array.isArray(data.options) && data.options.length){
-                    renderOptions(data.options);
-                } else {
-                    clearOptions();
-                }
-                if (data && data.stage === 'done' && data.reserva && data.reserva.id){
-                    const info = document.createElement('div');
-                    info.style.margin = '6px 0 12px';
-                    const link = document.createElement('a');
-                    link.href = '/reservas/detalle/' + data.reserva.id + '/';
-                    link.className = 'btn btn-success btn-sm';
-                    link.textContent = 'Ver detalles de tu reserva';
-                    info.appendChild(link);
-                    messages.appendChild(info);
-                    messages.scrollTop = messages.scrollHeight;
-                }
-            }
+                const temas = [
+                    {label: 'Horarios check‑in/out', text: '¿Cuáles son los horarios de check-in y check-out?'},
+                    {label: 'Servicios', text: '¿Qué servicios ofrece el hotel?'},
+                    {label: 'Ubicación/Contacto', text: '¿Dónde está el hotel y cómo contacto?'},
+                    {label: 'Desayuno', text: '¿Incluye desayuno?'},
+                    {label: 'Estacionamiento', text: '¿Hay estacionamiento?'}
+                ];
 
-            function sendText(text){
-                if(!text) return;
-                addMsg(text, 'user');
-                fetch('{% url "chatbot:chat" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type':'application/json',
-                        'X-CSRFToken': getCsrfToken()
-                    },
-                    body: JSON.stringify({message: text})
-                })
-                .then(r => r.json())
-                .then(handleResponse)
-                .catch(err => {
-                    addMsg('Error al contactar al bot', 'bot');
+                temas.forEach(t=>{
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn btn-sm btn-outline-primary me-2 mb-2';
+                    btn.textContent = t.label;
+                    btn.addEventListener('click', ()=> sendText(t.text));
+                    wrap.appendChild(btn);
                 });
-            }
 
-            function send(){
-                const text = input.value.trim();
-                if(!text) return;
-                input.value = '';
-                sendText(text);
+                messages.appendChild(wrap);
+                messages.scrollTop = messages.scrollHeight;
             }
-
-            sendBtn.addEventListener('click', send);
-            input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ send(); }});
 
             // Mensaje inicial
-            setTimeout(()=> addMsg('¡Hola! Soy tu asistente. Puedo ayudarte a reservar paso a paso: dime fechas (YYYY-MM-DD a YYYY-MM-DD), tipo (simple/doble/suite/presidencial) y cantidad de huéspedes. Luego te mostraré opciones para confirmar.', 'bot'), 400);
+            setTimeout(()=> {
+                addMsg('¡Hola! ¿Qué te gustaría saber del hotel? Puedo responder preguntas sobre servicios, horarios de check‑in/out, ubicación/contacto, desayuno y estacionamiento.', 'bot');
+                renderGreetingOptions();
+            }, 400);
         })();
     </script>
 </body>

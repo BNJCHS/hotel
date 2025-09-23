@@ -322,3 +322,14 @@ def reservar_promocion(request, promocion_id):
 
     # Redirigir a confirmar la reserva con el ID
     return redirect("confirmar_reserva", reserva_id=reserva.id)
+
+
+def instalaciones(request):
+    """
+    Página con información detallada sobre las instalaciones del hotel.
+    """
+    context = {
+        'page_title': 'Instalaciones - Hotel',
+        'meta_description': 'Conoce en detalle nuestras instalaciones: estacionamiento, piscinas, gimnasio, spa y más.'
+    }
+    return render(request, 'instalaciones.html', context)

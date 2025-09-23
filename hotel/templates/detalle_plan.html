@@ -5,8 +5,11 @@
 {% block content %}
 <div class="container py-5">
     <div class="card shadow-sm mb-4">
+        {% load static %}
         {% if plan.imagen %}
             <img src="{{ plan.imagen.url }}" class="card-img-top" alt="{{ plan.nombre }}">
+        {% else %}
+            <img src="{% static 'img/restaurante_pexels_1.jpg' %}" class="card-img-top" alt="{{ plan.nombre }}">
         {% endif %}
         <div class="card-body">
             <h3 class="card-title">{{ plan.nombre }}</h3>

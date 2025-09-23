@@ -8,7 +8,7 @@
 <section class="hero position-relative" id="hero">
   <div class="hero-background">
 
-    <img src="{% static 'img/hero.jpg' %}" alt="Hotel Elegante" class="hero-image">
+    <img src="{% static 'img/lobby_escalera_unsplash.jpg' %}" alt="Hotel Elegante" class="hero-image">
     <div class="hero-overlay position-absolute w-100 h-100 bg-dark opacity-50"></div>
   </div>
 
@@ -45,7 +45,7 @@
       </div>
       <div class="col-lg-6">
         <div class="about-image rounded overflow-hidden shadow-lg">
-          <img src="{% static 'img/about.jpg' %}" alt="Hotel Elegante" class="img-fluid w-100">
+          <img src="{% static 'img/pool_dia_unsplash.jpg' %}" alt="Hotel Elegante" class="img-fluid w-100">
         </div>
       </div>
     </div>
@@ -67,6 +67,13 @@
             {% if habitacion.imagen %}
             <div class="img-placeholder position-relative">
               <img src="{{ habitacion.imagen.url }}" class="card-img-top img-fluid" alt="{{ habitacion.nombre }}">
+              <div class="position-absolute bottom-0 end-0 p-3">
+                <span class="badge bg-primary">Destacada</span>
+              </div>
+            </div>
+            {% else %}
+            <div class="img-placeholder position-relative">
+              <img src="{% static 'img/habitacion_pexels_1.jpg' %}" class="card-img-top img-fluid" alt="{{ habitacion.nombre }}">
               <div class="position-absolute bottom-0 end-0 p-3">
                 <span class="badge bg-primary">Destacada</span>
               </div>
@@ -176,6 +183,83 @@
       {% else %}
         <p class="text-center">No hay servicios cargados en este momento.</p>
       {% endif %}
+    </div>
+  </div>
+</section>
+<!-- Instalaciones -->
+<section class="seccion-instalaciones py-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2 class="fw-bold">Instalaciones del Hotel</h2>
+      <p class="text-muted">Conoce nuestras instalaciones pensadas para tu comodidad y disfrute</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="icon-placeholder mb-3">
+              <i class="fas fa-parking fa-3x text-primary"></i>
+            </div>
+            <h3 class="card-title h5 mb-3">Estacionamiento</h3>
+            <p class="card-text text-muted mb-3">Estacionamiento cubierto y al aire libre, disponible las 24 horas con vigilancia.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="icon-placeholder mb-3">
+              <i class="fas fa-swimmer fa-3x text-info"></i>
+            </div>
+            <h3 class="card-title h5 mb-3">Piscinas</h3>
+            <p class="card-text text-muted mb-3">Piscina principal y área de relax con solárium, toallas y servicio de bar.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="icon-placeholder mb-3">
+              <i class="fas fa-map-marker-alt fa-3x text-danger"></i>
+            </div>
+            <h3 class="card-title h5 mb-3">Ubicación</h3>
+            <p class="card-text text-muted mb-3">En el corazón de la ciudad, cerca de atracciones, comercios y transporte público.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="icon-placeholder mb-3">
+              <i class="fas fa-dumbbell fa-3x text-success"></i>
+            </div>
+            <h3 class="card-title h5 mb-3">Gimnasio</h3>
+            <p class="card-text text-muted mb-3">Gimnasio equipado con máquinas modernas, abierto todos los días.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="icon-placeholder mb-3">
+              <i class="fas fa-spa fa-3x text-warning"></i>
+            </div>
+            <h3 class="card-title h5 mb-3">Spa</h3>
+            <p class="card-text text-muted mb-3">Zona de spa con sauna, masajes y tratamientos de bienestar.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="icon-placeholder mb-3">
+              <i class="fas fa-utensils fa-3x text-secondary"></i>
+            </div>
+            <h3 class="card-title h5 mb-3">Restaurante</h3>
+            <p class="card-text text-muted mb-3">Restaurante con cocina internacional y opciones para dietas especiales.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

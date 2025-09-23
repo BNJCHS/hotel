@@ -6,8 +6,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
-from habitaciones.models import Habitacion
+from django.db.models import Q
+from habitaciones.models import Habitacion, TipoHabitacion
 from reservas.models import Reserva
+from administracion.models import Servicio, Plan, Promocion
 
 # OpenAI SDK v1.x (import seguro)
 try:
@@ -145,8 +147,14 @@ def extract_intent_and_entities(message):
         tipos_detectados = parse_room_types(message)
         tipo = tipos_detectados[0] if tipos_detectados else parse_room_type(message)
         cant = parse_guests(message)
+        lower_msg = message.lower()
+        # Detectar intención de reservar por palabras clave aunque falten datos
+        reservar_kw = any(k in lower_msg for k in [
+            'reserv', 'book', 'quiero reservar', 'hacer una reserva', 'necesito reservar'
+        ])
+        intent_val = "reservar" if (ci and co and (tipo or cant)) or reservar_kw else "consulta"
         data = {
-            "intent": "reservar" if (ci and co and (tipo or cant)) else "consulta",
+            "intent": intent_val,
             "nombre": None,
             "tipo_habitacion": tipo,
             "fechas": {"check_in": ci.isoformat(), "check_out": co.isoformat()} if ci and co else None,
@@ -200,21 +208,132 @@ Responde SOLO el JSON sin texto extra.
 # Acepta múltiples tipos
 
 def find_available_rooms_by_dates(tipos=None, capacidad_min=1, check_in=None, check_out=None, limit=3):
-    qs = Habitacion.objects.filter(capacidad__gte=capacidad_min)
+    qs = Habitacion.objects.filter(
+        disponible=True,
+        en_mantenimiento=False,
+        tipo_habitacion__activo=True,
+        tipo_habitacion__capacidad__gte=capacidad_min,
+    )
     if tipos:
-        qs = qs.filter(tipo__in=tipos)
-    # excluir habitaciones con reservas que se superpongan
-    overlapping = {
-        'reserva__check_in__lt': check_out,
-        'reserva__check_out__gt': check_in,
-    }
-    qs = qs.exclude(**overlapping)
-    # Además, si hay un flag "disponible", respetarlo como disponibilidad general
-    qs = qs.filter(disponible=True)
-    return list(qs.order_by('precio', 'numero')[:limit])
+        normalized = []
+        for t in tipos:
+            if not t:
+                continue
+            tnorm = str(t).strip().lower()
+            if tnorm in ['simple', 'doble', 'suite', 'presidencial']:
+                normalized.append(tnorm.capitalize())
+            else:
+                normalized.append(t)
+        qs = qs.filter(tipo_habitacion__nombre__in=normalized)
+
+    if check_in and check_out:
+        overlapping_ids = list(
+            Reserva.objects.filter(
+                habitacion_asignada__in=qs.values_list('id', flat=True),
+                check_in__lt=check_out,
+                check_out__gt=check_in,
+                estado__in=['confirmada', 'activa']
+            ).values_list('habitacion_asignada_id', flat=True)
+        )
+        qs = qs.exclude(id__in=overlapping_ids)
+
+    rooms = qs.order_by('tipo_habitacion__precio', 'numero')[:limit]
+    return list(rooms)
 
 
 # -------------------- Vista principal con flujo paso a paso --------------------
+
+# -------------------- Q&A sobre el hotel --------------------
+
+def _list_servicios():
+    try:
+        nombres = list(Servicio.objects.values_list('nombre', flat=True))
+        return [n for n in nombres if n]
+    except Exception:
+        return []
+
+
+def answer_hotel_question(message: str) -> str | None:
+    """Responde preguntas frecuentes sobre el hotel con reglas simples y datos del sitio.
+    Devuelve None si no encuentra una respuesta clara.
+    """
+    if not message:
+        return None
+    txt = message.lower()
+
+    # Comunes de reserva: redirigir a flujo
+    if any(k in txt for k in ["precio", "coste", "cuanto cuesta", "tarifa", "valor"]):
+        return (
+            "Los precios varían según fechas, tipo de habitación y disponibilidad. "
+            "Si quieres, te ayudo a consultarlo: dime tus fechas (YYYY-MM-DD a YYYY-MM-DD), "
+            "el tipo (simple/doble/suite/presidencial) y la cantidad de huéspedes."
+        )
+
+    # Check-in / Check-out
+    if any(k in txt for k in ["check-in", "check in", "entrada", "ingreso", "llegada"]) and not any(k in txt for k in ["check-out", "check out", "salida"]):
+        return "El check-in es a partir de las 15:00."
+    if any(k in txt for k in ["check-out", "check out", "salida"]) and not any(k in txt for k in ["check-in", "check in", "entrada", "ingreso", "llegada"]):
+        return "El check-out es hasta las 11:00."
+    if any(k in txt for k in ["check-in", "check in", "entrada"]) and any(k in txt for k in ["check-out", "check out", "salida"]):
+        return "El check-in es a partir de las 15:00 y el check-out hasta las 11:00."
+
+    # Ubicación / contacto
+    if any(k in txt for k in ["direccion", "dirección", "donde estan", "dónde están", "ubicacion", "ubicación", "como llegar", "cómo llegar", "telefono", "teléfono", "contacto"]):
+        return (
+            "Puedes encontrar nuestra dirección, mapa y datos de contacto en la página de Contacto: "
+            "/contacto/. Si deseas, puedo ayudarte con una reserva ahora mismo."
+        )
+
+    # Servicios y amenidades
+    if any(k in txt for k in ["servicios", "amenidades", "amenities", "que ofrecen", "qué ofrecen"]):
+        servicios = _list_servicios()
+        if servicios:
+            listado = ", ".join(servicios[:15]) + ("…" if len(servicios) > 15 else "")
+            return f"Ofrecemos: {listado}. ¿Te gustaría reservar o conocer disponibilidad?"
+        return "Contamos con Wi‑Fi gratuito, desayuno disponible, estacionamiento sujeto a disponibilidad y piscina. ¿Te ayudo a reservar?"
+
+    # Wi‑Fi
+    if any(k in txt for k in ["wifi", "wi-fi", "wi fi"]):
+        return "Sí, ofrecemos Wi‑Fi gratuito en todo el hotel."
+
+    # Desayuno
+    if "desayuno" in txt:
+        return "El desayuno está disponible. En algunas tarifas puede estar incluido y en otras tiene costo adicional."
+
+    # Estacionamiento
+    if any(k in txt for k in ["estacionamiento", "parking", "aparcamiento"]):
+        servicios = _list_servicios()
+        if any("estacion" in s.lower() or "parking" in s.lower() for s in servicios):
+            return "Disponemos de estacionamiento (sujeto a disponibilidad)."
+        return "Contamos con estacionamiento sujeto a disponibilidad."
+
+    # Piscina / Spa / Gimnasio
+    if any(k in txt for k in ["piscina", "pileta"]):
+        return "Sí, contamos con piscina. Los horarios pueden variar según la temporada."
+    if any(k in txt for k in ["spa", "masajes"]):
+        return "Disponemos de spa con servicios bajo reserva. ¿Te gustaría agendar durante tu estadía?"
+    if any(k in txt for k in ["gimnasio", "gym", "fitness"]):
+        return "Tenemos gimnasio disponible para huéspedes."
+
+    # Mascotas
+    if any(k in txt for k in ["mascotas", "pet", "perros", "gatos"]):
+        return "La admisión de mascotas está sujeta a disponibilidad y condiciones. Consulta con recepción para más detalles."
+
+    # Políticas de cancelación
+    if any(k in txt for k in ["cancel", "cancelar", "cancelación", "politica", "política"]):
+        return "Manejamos políticas flexibles según la tarifa. Si reservas aquí, te indicaremos las condiciones antes de confirmar."
+
+    # Horarios generales
+    if any(k in txt for k in ["horario", "a que hora", "a qué hora", "cuando abren", "cuándo abren"]):
+        return "Nuestros horarios varían según el servicio. ¿Sobre qué servicio te gustaría saber el horario? (recepción, piscina, spa, restaurante)"
+
+    # Niños / Cunas
+    if any(k in txt for k in ["niños", "ninos", "cuna", "familia", "menores"]):
+        return "Recibimos familias y contamos con opciones para niños según disponibilidad. Podemos preparar cunas bajo solicitud."
+
+    # Default sin coincidencia
+    return None
+
 
 @csrf_exempt
 @require_POST
@@ -231,9 +350,76 @@ def chat(request):
         state = get_state(request)
         data = state['data']
 
+        # Saludo/greeting explícito: ofrecer menú inicial
+        lower_msg = message.strip().lower()
+        greeting_words = ["hola", "buenas", "buen día", "buen dia", "buenas tardes", "buenas noches", "hey", "holi"]
+        if any(lower_msg == g or lower_msg.startswith(g+" ") for g in greeting_words):
+            return JsonResponse({
+                "success": True,
+                "stage": "greeting",
+                "message": "¡Hola! ¿Qué te gustaría saber del hotel? Puedo responder preguntas sobre servicios, horarios de check‑in/out, ubicación/contacto, desayuno y estacionamiento.",
+            })
+
+        # MODO SOLO Q&A: responder preguntas y, si es genérico, pedir especificar el tema
+        answer = answer_hotel_question(message)
+        if answer:
+            return JsonResponse({
+                "success": True,
+                "stage": "answer",
+                "message": answer,
+            })
+        # Consulta genérica: invitar a especificar
+        consulta_generica_largas = ['tengo una consulta', 'tengo una pregunta', 'tengo una duda']
+        consulta_generica_palabras = ['consulta', 'pregunta', 'duda']
+        if (
+            any(p in lower_msg for p in consulta_generica_largas) or
+            any(
+                lower_msg == w or lower_msg.startswith(w + ' ') or lower_msg.endswith(' ' + w) or (' ' + w + ' ') in lower_msg
+                for w in consulta_generica_palabras
+            )
+        ):
+            return JsonResponse({
+                "success": True,
+                "stage": "greeting",
+                "message": "Claro, ¿sobre qué te gustaría saber del hotel? Por ejemplo: horarios de check‑in/out, servicios, ubicación/contacto, desayuno o estacionamiento.",
+            })
+
+        # Si no se reconoce la pregunta, pedir reformular
+        return JsonResponse({
+            "success": True,
+            "stage": "greeting",
+            "message": "No estoy seguro de haber entendido. ¿Podrías especificar tu consulta? Por ejemplo: horarios de check‑in/out, servicios, ubicación/contacto, desayuno o estacionamiento.",
+        })
+
         # Extraer entidades del mensaje
         extracted = extract_intent_and_entities(message)
         intent = extracted.get('intent', 'otro')
+
+        # Q&A del hotel si es una consulta
+        if intent == 'consulta':
+            answer = answer_hotel_question(message)
+            if answer:
+                # No alteramos el estado del flujo de reserva
+                return JsonResponse({
+                    "success": True,
+                    "stage": "answer",
+                    "message": answer,
+                })
+            # Si es una consulta genérica sin tema, pedir que especifique
+            consulta_generica_largas = ['tengo una consulta', 'tengo una pregunta', 'tengo una duda']
+            consulta_generica_palabras = ['consulta', 'pregunta', 'duda']
+            if (
+                any(p in lower_msg for p in consulta_generica_largas) or
+                any(
+                    lower_msg == w or lower_msg.startswith(w + ' ') or lower_msg.endswith(' ' + w) or (' ' + w + ' ') in lower_msg
+                    for w in consulta_generica_palabras
+                )
+            ):
+                return JsonResponse({
+                    "success": True,
+                    "stage": "greeting",
+                    "message": "Claro, ¿sobre qué te gustaría saber del hotel? Por ejemplo: horarios de check‑in/out, servicios, ubicación/contacto, desayuno o estacionamiento.",
+                })
 
         # Rellenar datos faltantes en el estado con lo que venga del mensaje
         if not data.get('tipo') and extracted.get('tipo_habitacion'):
@@ -272,8 +458,8 @@ def chat(request):
 
         # Si el usuario elige una habitación explícitamente
         choice = parse_room_choice(message)
-        if choice:
-            data['eleccion'] = choice
+        if choice is not None:
+            data['eleccion'] = str(choice)
 
         # Determinar siguiente paso según estado y datos
         missing = []
@@ -375,14 +561,13 @@ def chat(request):
 
                 reserva = Reserva.objects.create(
                     usuario=user,
-                    habitacion=room,
+                    tipo_habitacion=room.tipo_habitacion,
+                    habitacion_asignada=room,
                     check_in=check_in,
                     check_out=check_out,
                     cantidad_huespedes=int(data['cantidad_huespedes']),
-                    confirmada=True,
+                    estado='confirmada',
                 )
-
-                # No cambiar room.disponible aquí; usamos disponibilidad por fechas.
 
                 # Resetear estado tras crear
                 reset_state(request)
@@ -390,11 +575,11 @@ def chat(request):
                 return JsonResponse({
                     "success": True,
                     "stage": "done",
-                    "message": f"Reserva confirmada para la habitación {room.numero} ({room.tipo}) del {check_in} al {check_out}.",
+                    "message": f"Reserva confirmada para la habitación {room.numero} ({room.tipo_habitacion.nombre}) del {check_in} al {check_out}.",
                     "reserva": {
                         "id": reserva.id,
                         "habitacion": room.numero,
-                        "tipo": room.tipo,
+                        "tipo": room.tipo_habitacion.nombre,
                         "check_in": reserva.check_in.isoformat() if reserva.check_in else None,
                         "check_out": reserva.check_out.isoformat() if reserva.check_out else None,
                         "cantidad_huespedes": reserva.cantidad_huespedes,
