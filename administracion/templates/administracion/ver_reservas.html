@@ -12,7 +12,7 @@
       <th>Habitación</th>
       <th>Check-in</th>
       <th>Check-out</th>
-      <th>Confirmada</th>
+      <th>Estado</th>
       <th>Acciones</th>
     </tr>
   </thead>
@@ -20,25 +20,29 @@
     {% for reserva in reservas %}
       <tr>
         <td>{{ reserva.id }}</td>
-        <td>{{ reserva.cliente }}</td>
-        <td>{{ reserva.habitacion.numero }}</td>
+        <td>{{ reserva.usuario.get_full_name|default:reserva.usuario.username }}</td>
+        <td>{{ reserva.tipo_habitacion.nombre }} ({{ reserva.cantidad_habitaciones }} hab.)</td>
         <td>{{ reserva.check_in }}</td>
         <td>{{ reserva.check_out }}</td>
         <td>
-          {% if reserva.confirmada %}
-            <span class="badge bg-success">Sí</span>
+          {% if reserva.estado == 'activa' %}
+            <span class="badge bg-success">Activa</span>
+          {% elif reserva.estado == 'confirmada' %}
+            <span class="badge bg-info">Confirmada</span>
+          {% elif reserva.estado == 'cancelada' %}
+            <span class="badge bg-danger">Cancelada</span>
           {% else %}
-            <span class="badge bg-warning">No</span>
+            <span class="badge bg-warning">Pendiente</span>
           {% endif %}
         </td>
         <td>
-          {% if not reserva.confirmada %}
-            <form method="post" action="{% url 'admin:confirmar_reserva_admin' reserva.id %}" style="display:inline;">
+          {% if reserva.estado == 'pendiente' %}
+            <form method="post" action="{% url 'administracion:confirmar_reserva_admin' reserva.id %}" style="display:inline;">
               {% csrf_token %}
               <button class="btn btn-sm btn-success" type="submit">Confirmar</button>
             </form>
 
-            <form method="post" action="{% url 'admin:rechazar_reserva_admin' reserva.id %}" style="display:inline; margin-left:5px;">
+            <form method="post" action="{% url 'administracion:rechazar_reserva_admin' reserva.id %}" style="display:inline; margin-left:5px;">
               {% csrf_token %}
               <button class="btn btn-sm btn-danger" type="submit"
                       onclick="return confirm('¿Seguro que querés rechazar la reserva?')">

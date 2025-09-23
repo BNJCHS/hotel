@@ -2,6 +2,10 @@
 
 {% block title %}Seleccionar Servicios{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/progress-bar.css">
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-5" style="background: linear-gradient(135deg, var(--hotel-beige) 0%, var(--hotel-cream) 100%);">
     <div class="container">
@@ -10,18 +14,24 @@
         <div class="row mb-5">
             <div class="col-12">
                 <div class="progress-container">
+                    <div class="progress-bar-fill" style="width: 66%;"></div>
                     <div class="progress-step completed">
-                        <div class="step-number">1</div>
+                        <div class="step-circle">
+                            <span class="step-number">1</span>
+                            <i class="fas fa-check step-icon"></i>
+                        </div>
                         <div class="step-label">Habitación</div>
                     </div>
-                    <div class="progress-line completed"></div>
                     <div class="progress-step active">
-                        <div class="step-number">2</div>
+                        <div class="step-circle">
+                            <span class="step-number">2</span>
+                        </div>
                         <div class="step-label">Servicios</div>
                     </div>
-                    <div class="progress-line"></div>
                     <div class="progress-step">
-                        <div class="step-number">3</div>
+                        <div class="step-circle">
+                            <span class="step-number">3</span>
+                        </div>
                         <div class="step-label">Confirmación</div>
                     </div>
                 </div>
@@ -43,25 +53,29 @@
                     <div class="card-body p-4">
                         <div class="row align-items-center">
                             <div class="col-md-2">
-                                <img src="/placeholder.svg?height=100&width=150" class="img-fluid rounded" alt="Habitación">
+                                {% if reserva.tipo_habitacion.imagen %}
+                                    <img src="{{ reserva.tipo_habitacion.imagen.url }}" class="img-fluid rounded" alt="{{ reserva.tipo_habitacion.nombre }}">
+                                {% else %}
+                                    <img src="/placeholder.svg?height=100&width=150" class="img-fluid rounded" alt="Habitación">
+                                {% endif %}
                             </div>
                             <div class="col-md-6">
-                                <h5 class="mb-2">Habitación {{ habitacion.numero }} - {{ habitacion.tipo|title }}</h5>
+                                <h5 class="mb-2">{{ reserva.tipo_habitacion.nombre }} {% if reserva.cantidad_habitaciones > 1 %}({{ reserva.cantidad_habitaciones }} habitaciones){% endif %}</h5>
                                 <div class="row g-2 text-muted">
                                     <div class="col-6">
                                         <i class="fas fa-calendar-check me-1"></i>
-                                        {{ fecha_entrada|date:"d/m/Y" }} - {{ fecha_salida|date:"d/m/Y" }}
+                                        {{ reserva.check_in|date:"d/m/Y" }} - {{ reserva.check_out|date:"d/m/Y" }}
                                     </div>
                                     <div class="col-6">
                                         <i class="fas fa-users me-1"></i>
-                                        {{ numero_huespedes }} huésped{{ numero_huespedes|pluralize:"es" }}
+                                        {{ reserva.cantidad_huespedes }} huésped{{ reserva.cantidad_huespedes|pluralize:"es" }}
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4 text-end">
                                 <div class="price-summary">
                                     <small class="text-muted d-block">Precio base</small>
-                                    <h4 class="text-primary mb-0">${{ precio_base }}</h4>
+                                    <h4 class="text-primary mb-0">${{ reserva.monto }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -198,6 +212,24 @@
 document.addEventListener("DOMContentLoaded", function() {
     const serviciosSeleccionados = new Map();
     const inputsServicios = document.getElementById("inputs-servicios");
+    
+    // Cargar servicios ya seleccionados si existen
+    {% if servicios_seleccionados_json %}
+    try {
+        const serviciosPreseleccionados = JSON.parse('{{ servicios_seleccionados_json|safe }}');
+        serviciosPreseleccionados.forEach(servicio => {
+            serviciosSeleccionados.set(servicio.id.toString(), {
+                id: servicio.id.toString(),
+                nombre: servicio.nombre,
+                precio: servicio.precio
+            });
+        });
+        // Actualizar UI con los servicios preseleccionados
+        actualizarUI();
+    } catch (e) {
+        console.error("Error al cargar servicios preseleccionados:", e);
+    }
+    {% endif %}
 
     function actualizarUI() {
         const contenedor = document.getElementById("servicios-seleccionados");
@@ -214,7 +246,15 @@ document.addEventListener("DOMContentLoaded", function() {
             serviciosSeleccionados.forEach(s => {
                 const div = document.createElement("div");
                 div.className = "d-flex justify-content-between align-items-center mb-2";
-                div.innerHTML = `<span>${s.nombre}</span><span>$${s.precio}</span>`;
+                div.innerHTML = `
+                    <span>${s.nombre}</span>
+                    <div>
+                        <span class="me-3">$${s.precio}</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger quitar-servicio" data-id="${s.id}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
                 contenedor.appendChild(div);
 
                 const input = document.createElement("input");
@@ -239,6 +279,19 @@ document.addEventListener("DOMContentLoaded", function() {
                 actualizarUI();
             }
         });
+    });
+    
+    // Delegación de eventos para los botones de quitar servicio
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.quitar-servicio')) {
+            const button = e.target.closest('.quitar-servicio');
+            const id = button.dataset.id;
+            
+            if (serviciosSeleccionados.has(id)) {
+                serviciosSeleccionados.delete(id);
+                actualizarUI();
+            }
+        }
     });
 });
 </script>

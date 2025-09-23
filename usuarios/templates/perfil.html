@@ -1,320 +1,439 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Mi Perfil - Hotel Elegante{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 <div class="profile-page">
-    <!-- Hero section elegante y lujoso para el perfil -->
-    <div class="profile-hero" style="background-image: url('/static/img/hotel-luxury-bg.jpg'); background-size: cover; background-position: center; position: relative;">
-        <div class="profile-hero-overlay" style="background: linear-gradient(to right, rgba(32, 32, 32, 0.8), rgba(64, 64, 64, 0.6)); position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
-        <div class="container" style="position: relative; z-index: 2; padding: 60px 0;">
-            <div class="profile-hero-content" style="display: flex; align-items: center; color: #fff;">
-                <div class="profile-avatar-large" style="position: relative; margin-right: 30px;">
-                    {% if user.profile.avatar %}
-                        <img src="{{ user.profile.avatar.url }}" alt="Foto de perfil" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #d4af37;">
-                    {% else %}
-                        <div class="avatar-placeholder-large" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #d4af37, #f5cc7f); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; color: #fff; border: 4px solid #fff;">
-                            {{ user.first_name|first|default:user.username|first|upper }}{{ user.last_name|first|upper }}
+    <!-- Hero Section Mejorado -->
+    <div class="profile-hero">
+        <div class="container">
+            <div class="profile-hero-content">
+                <!-- Avatar y Información Principal -->
+                <div class="profile-avatar-container">
+                    <div class="profile-avatar-large">
+                        {% if user.profile.avatar %}
+                            <img src="{{ user.profile.avatar.url }}" alt="Foto de perfil">
+                        {% else %}
+                            <div class="avatar-placeholder-large">
+                                {{ user.first_name|first|default:user.username|first|upper }}{{ user.last_name|first|upper }}
+                            </div>
+                        {% endif %}
+                        <div class="avatar-edit-overlay" onclick="document.getElementById('id_avatar').click()">
+                            <i class="fas fa-camera"></i>
                         </div>
-                    {% endif %}
-                    <div class="avatar-edit-overlay" onclick="document.getElementById('avatar').click()" style="position: absolute; bottom: 0; right: 0; background: #d4af37; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #fff;">
-                        <i class="fas fa-camera"></i>
                     </div>
                 </div>
+                
                 <div class="profile-hero-info">
-                    <h1 class="profile-name" style="font-size: 2.5rem; margin-bottom: 5px; font-family: 'Playfair Display', serif; color: #fff;">{{ user.get_full_name|default:user.username }}</h1>
-                    <p class="profile-email" style="font-size: 1.1rem; margin-bottom: 15px; color: #e0e0e0;">{{ user.email }}</p>
-                    <div class="profile-badges" style="display: flex; gap: 15px;">
-                        <span class="badge-member" style="background: rgba(212, 175, 55, 0.2); padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; border: 1px solid #d4af37;">
-                            <i class="fas fa-crown" style="color: #d4af37; margin-right: 8px;"></i>
+                    <h1 class="profile-name">{{ user.get_full_name|default:user.username }}</h1>
+                    <p class="profile-email">{{ user.email }}</p>
+                    
+                    <div class="profile-badges">
+                        <div class="profile-badge">
+                            <i class="fas fa-crown text-gold"></i>
                             Miembro desde {{ user.date_joined|date:"F Y" }}
-                        </span>
-                        <span class="badge-status" style="background: rgba(40, 167, 69, 0.2); padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; border: 1px solid #28a745;">
-                            <i class="fas fa-circle text-success" style="color: #28a745; margin-right: 8px; font-size: 10px;"></i>
-                            Activo
-                        </span>
+                        </div>
+                        <div class="profile-badge">
+                            <i class="fas fa-circle text-success"></i>
+                            Cuenta Activa
+                        </div>
+                        {% if user.profile.phone %}
+                        <div class="profile-badge">
+                            <i class="fas fa-phone"></i>
+                            Teléfono Verificado
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Estadísticas Rápidas -->
+                    <div class="profile-stats">
+                        <div class="stat-card">
+                            <span class="stat-number">{{ stats.total_reservations }}</span>
+                            <span class="stat-label">Reservas Totales</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number">${{ stats.total_spent|floatformat:0 }}</span>
+                            <span class="stat-label">Total Gastado</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number">{{ stats.confirmed_reservations }}</span>
+                            <span class="stat-label">Reservas Confirmadas</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number">{{ stats.last_30_days_reservations }}</span>
+                            <span class="stat-label">Últimos 30 días</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="container profile-content" style="padding: 40px 0;">
+    <!-- Contenido Principal -->
+    <div class="container profile-content">
         <div class="row">
-            <!-- Sidebar de navegación del perfil con estilo lujoso -->
+            <!-- Sidebar de Navegación -->
             <div class="col-lg-3 mb-4">
-                <div class="profile-sidebar" style="background: #fff; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f0f0f0;">
-                    <div class="sidebar-header" style="background: linear-gradient(135deg, #d4af37, #f5cc7f); padding: 20px; text-align: center; color: #fff;">
-                        <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 1.5rem;">Mi Cuenta</h3>
+                <div class="profile-sidebar">
+                    <div class="sidebar-header">
+                        <h3>Mi Cuenta</h3>
                     </div>
-                    <div class="sidebar-menu" style="padding: 15px 0;">
-                        <a href="#personal-info" class="sidebar-item active" data-section="personal-info" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; border-left: 4px solid #d4af37; background: rgba(212, 175, 55, 0.1); margin-bottom: 5px; transition: all 0.3s ease;">
-                            <i class="fas fa-user" style="margin-right: 10px; color: #d4af37; width: 20px; text-align: center;"></i>
+                    <nav class="sidebar-menu">
+                        <a href="#personal-info" class="sidebar-item active" data-section="personal-info">
+                            <i class="fas fa-user"></i>
                             <span>Información Personal</span>
                         </a>
-                        <a href="#reservations" class="sidebar-item" data-section="reservations" style="display: flex; align-items: center; padding: 12px 20px; color: #555; text-decoration: none; border-left: 4px solid transparent; margin-bottom: 5px; transition: all 0.3s ease;">
-                            <i class="fas fa-bed" style="margin-right: 10px; width: 20px; text-align: center;"></i>
+                        <a href="#reservations" class="sidebar-item" data-section="reservations">
+                            <i class="fas fa-bed"></i>
                             <span>Mis Reservas</span>
                         </a>
-                        <a href="#settings" class="sidebar-item" data-section="settings" style="display: flex; align-items: center; padding: 12px 20px; color: #555; text-decoration: none; border-left: 4px solid transparent; margin-bottom: 5px; transition: all 0.3s ease;">
-                            <i class="fas fa-cog" style="margin-right: 10px; width: 20px; text-align: center;"></i>
-                            <span>Configuración</span>
-                        </a>
-                        <a href="#preferences" class="sidebar-item" data-section="preferences" style="display: flex; align-items: center; padding: 12px 20px; color: #555; text-decoration: none; border-left: 4px solid transparent; margin-bottom: 5px; transition: all 0.3s ease;">
-                            <i class="fas fa-heart" style="margin-right: 10px; width: 20px; text-align: center;"></i>
+                        <a href="#preferences" class="sidebar-item" data-section="preferences">
+                            <i class="fas fa-heart"></i>
                             <span>Preferencias</span>
                         </a>
-                    </div>
+                        <a href="#settings" class="sidebar-item" data-section="settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Configuración</span>
+                        </a>
+                        <a href="#security" class="sidebar-item" data-section="security">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Seguridad</span>
+                        </a>
+                    </nav>
                 </div>
             </div>
 
-            <!-- Contenido principal con secciones mejoradas y estilo lujoso -->
+            <!-- Contenido de las Secciones -->
             <div class="col-lg-9">
                 <!-- Información Personal -->
-                <div class="profile-section active" id="personal-info" style="display: block;">
-                    <div class="section-card" style="background: #fff; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f0f0f0; margin-bottom: 30px;">
-                        <div class="section-header" style="padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to right, #f8f9fa, #fff);">
-                            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #333; display: flex; align-items: center;">
-                                <i class="fas fa-user-edit" style="margin-right: 10px; color: #d4af37;"></i> 
-                                Información Personal
-                            </h2>
-                            <button class="btn-edit" onclick="toggleEditMode()" style="background: #d4af37; color: #fff; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; transition: all 0.3s ease;">
-                                <i class="fas fa-edit" style="margin-right: 5px;"></i> Editar
+                <div class="profile-section active" id="personal-info">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2><i class="fas fa-user-edit"></i> Información Personal</h2>
+                            <button class="btn btn-outline-primary" onclick="toggleEditMode()">
+                                <i class="fas fa-edit"></i> Editar
                             </button>
                         </div>
                         
-                        <form id="profile-form" method="post" enctype="multipart/form-data">
+                        <form method="post" enctype="multipart/form-data" id="profile-form">
                             {% csrf_token %}
-                            <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;">
+                            <input type="file" id="id_avatar" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
                             
-                            <div class="form-grid" style="padding: 25px;">
-                                <form method="post" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group" style="margin-bottom: 20px;">
-                                                <label for="id_first_name" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
-                                                    <i class="fas fa-user" style="color: #d4af37; margin-right: 8px;"></i>
-                                                    Nombre
-                                                </label>
-                                                <input type="text" name="first_name" id="id_first_name" value="{{ form.first_name.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group" style="margin-bottom: 20px;">
-                                                <label for="id_last_name" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
-                                                    <i class="fas fa-user" style="color: #d4af37; margin-right: 8px;"></i>
-                                                    Apellido
-                                                </label>
-                                                <input type="text" name="last_name" id="id_last_name" value="{{ form.last_name.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
-                                            </div>
+                            <div class="form-grid">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_first_name">
+                                                <i class="fas fa-user"></i>
+                                                Nombre
+                                            </label>
+                                            <input type="text" name="first_name" id="id_first_name" 
+                                                   value="{{ form.first_name.value|default:user.first_name }}" 
+                                                   class="form-control" readonly>
                                         </div>
                                     </div>
-                                    <div class="form-group" style="margin-bottom: 20px;">
-                                        <label for="id_email" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
-                                            <i class="fas fa-envelope" style="color: #d4af37; margin-right: 8px;"></i>
-                                            Email
-                                        </label>
-                                        <input type="email" name="email" id="id_email" value="{{ form.email.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group" style="margin-bottom: 20px;">
-                                                <label for="id_phone" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
-                                                    <i class="fas fa-phone" style="color: #d4af37; margin-right: 8px;"></i>
-                                                    Teléfono
-                                                </label>
-                                                <input type="text" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group" style="margin-bottom: 20px;">
-                                                <label for="id_country" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
-                                                    <i class="fas fa-globe" style="color: #d4af37; margin-right: 8px;"></i>
-                                                    País
-                                                </label>
-                                                <input type="text" name="country" id="id_country" value="{{ form.country.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
-                                            </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_last_name">
+                                                <i class="fas fa-user"></i>
+                                                Apellido
+                                            </label>
+                                            <input type="text" name="last_name" id="id_last_name" 
+                                                   value="{{ form.last_name.value|default:user.last_name }}" 
+                                                   class="form-control" readonly>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group" style="margin-bottom: 20px;">
-                                                <label for="id_city" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
-                                                    <i class="fas fa-city" style="color: #d4af37; margin-right: 8px;"></i>
-                                                    Ciudad
-                                                </label>
-                                                <input type="text" name="city" id="id_city" value="{{ form.city.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
-                                            </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="id_email">
+                                        <i class="fas fa-envelope"></i>
+                                        Email
+                                    </label>
+                                    <input type="email" name="email" id="id_email" 
+                                           value="{{ form.email.value|default:user.email }}" 
+                                           class="form-control" readonly>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_phone">
+                                                <i class="fas fa-phone"></i>
+                                                Teléfono
+                                            </label>
+                                            <input type="text" name="phone" id="id_phone" 
+                                                   value="{{ form.phone.value|default:user.profile.phone }}" 
+                                                   class="form-control" readonly>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group" style="margin-bottom: 20px;">
-                                                <label for="id_address" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
-                                                    <i class="fas fa-map-marker-alt" style="color: #d4af37; margin-right: 8px;"></i>
-                                                    Dirección
-                                                </label>
-                                                <input type="text" name="address" id="id_address" value="{{ form.address.value|default:'' }}" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
-                                            </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_country">
+                                                <i class="fas fa-globe"></i>
+                                                País
+                                            </label>
+                                            <input type="text" name="country" id="id_country" 
+                                                   value="{{ form.country.value|default:user.profile.country }}" 
+                                                   class="form-control" readonly>
                                         </div>
                                     </div>
-                                    <div class="form-group" style="margin-bottom: 20px;">
-                                        <label for="id_avatar" style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">
-                                            <i class="fas fa-image" style="color: #d4af37; margin-right: 8px;"></i>
-                                            Foto de perfil
-                                        </label>
-                                        <input type="file" name="avatar" id="id_avatar" class="form-control" style="border-radius: 5px; border: 1px solid #e0e0e0; padding: 10px 15px; width: 100%; transition: all 0.3s ease;">
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_city">
+                                                <i class="fas fa-city"></i>
+                                                Ciudad
+                                            </label>
+                                            <input type="text" name="city" id="id_city" 
+                                                   value="{{ form.city.value|default:user.profile.city }}" 
+                                                   class="form-control" readonly>
+                                        </div>
                                     </div>
-                                    <div class="form-group mt-4">
-                                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #d4af37, #f5cc7f); border: none; padding: 12px 30px; border-radius: 5px; color: #fff; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);">Guardar cambios</button>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_address">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                Dirección
+                                            </label>
+                                            <input type="text" name="address" id="id_address" 
+                                                   value="{{ form.address.value|default:user.profile.address }}" 
+                                                   class="form-control" readonly>
+                                        </div>
                                     </div>
-                                </form>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="bio">
-                                    <i class="fas fa-quote-left"></i>
-                                    Biografía
-                                </label>
-                                <textarea id="bio" name="bio" rows="4" readonly class="form-control">{{ user.profile.bio|default:'' }}</textarea>
-                            </div>
-                            
-                            <div class="form-actions" id="form-actions" style="display: none;">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Guardar Cambios
-                                </button>
-                                <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">
-                                    <i class="fas fa-times"></i> Cancelar
-                                </button>
+                                </div>
+                                
+                                <div class="form-actions" id="form-actions" style="display: none;">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Guardar Cambios
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </button>
+                                </div>
                             </div>
                         </form>
+                        
+                        <!-- Estadísticas Detalladas -->
+                        <div class="mt-4">
+                            <h3><i class="fas fa-chart-bar"></i> Estadísticas de Actividad</h3>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="stat-detail-card">
+                                        <div class="stat-detail-header">
+                                            <i class="fas fa-calendar-check text-success"></i>
+                                            <span>Reservas Confirmadas</span>
+                                        </div>
+                                        <div class="stat-detail-value">{{ stats.confirmed_reservations }}</div>
+                                        <div class="stat-detail-subtitle">de {{ stats.total_reservations }} totales</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="stat-detail-card">
+                                        <div class="stat-detail-header">
+                                            <i class="fas fa-clock text-warning"></i>
+                                            <span>Reservas Pendientes</span>
+                                        </div>
+                                        <div class="stat-detail-value">{{ stats.pending_reservations }}</div>
+                                        <div class="stat-detail-subtitle">esperando confirmación</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="stat-detail-card">
+                                        <div class="stat-detail-header">
+                                            <i class="fas fa-dollar-sign text-primary"></i>
+                                            <span>Promedio por Reserva</span>
+                                        </div>
+                                        <div class="stat-detail-value">${{ stats.average_spent|floatformat:0 }}</div>
+                                        <div class="stat-detail-subtitle">gasto promedio</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="stat-detail-card">
+                                        <div class="stat-detail-header">
+                                            <i class="fas fa-calendar-alt text-info"></i>
+                                            <span>Este Año</span>
+                                        </div>
+                                        <div class="stat-detail-value">{{ stats.current_year_reservations }}</div>
+                                        <div class="stat-detail-subtitle">reservas en {{ "now"|date:"Y" }}</div>
+                                    </div>
+                                </div>
+                                {% if stats.favorite_payment_method %}
+                                <div class="col-md-12">
+                                    <div class="stat-detail-card">
+                                        <div class="stat-detail-header">
+                                            <i class="fas fa-credit-card text-secondary"></i>
+                                            <span>Método de Pago Preferido</span>
+                                        </div>
+                                        <div class="stat-detail-value">
+                                            {% if stats.favorite_payment_method == 'efectivo' %}
+                                                <i class="fas fa-money-bill-wave"></i> Efectivo
+                                            {% elif stats.favorite_payment_method == 'credito' %}
+                                                <i class="fas fa-credit-card"></i> Tarjeta de Crédito
+                                            {% elif stats.favorite_payment_method == 'debito' %}
+                                                <i class="fas fa-credit-card"></i> Tarjeta de Débito
+                                            {% elif stats.favorite_payment_method == 'mercadopago' %}
+                                                <i class="fab fa-cc-mastercard"></i> MercadoPago
+                                            {% elif stats.favorite_payment_method == 'paypal' %}
+                                                <i class="fab fa-paypal"></i> PayPal
+                                            {% elif stats.favorite_payment_method == 'crypto' %}
+                                                <i class="fab fa-bitcoin"></i> Criptomonedas
+                                            {% elif stats.favorite_payment_method == 'transferencia' %}
+                                                <i class="fas fa-university"></i> Transferencia
+                                            {% else %}
+                                                {{ stats.favorite_payment_method|title }}
+                                            {% endif %}
+                                        </div>
+                                        <div class="stat-detail-subtitle">más utilizado</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Mis Reservas -->
                 <div class="profile-section" id="reservations">
-                    <div class="section-card" style="background: #fff; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f0f0f0; margin-bottom: 30px;">
-                        <div class="section-header" style="padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to right, #f8f9fa, #fff);">
-                            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #333; display: flex; align-items: center;">
-                                <i class="fas fa-bed" style="margin-right: 10px; color: #d4af37;"></i> Mis Reservas
-                            </h2>
-                            <a href="{% url 'habitaciones_lista' %}" class="btn btn-outline-primary" style="background: transparent; color: #d4af37; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 5px; transition: all 0.3s ease; display: flex; align-items: center; text-decoration: none;">
-                                <i class="fas fa-plus" style="margin-right: 5px;"></i> Nueva Reserva
-                            </a>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2><i class="fas fa-bed"></i> Mis Reservas</h2>
+                            <div class="reservations-filters">
+                                <div class="filter-row">
+                                    <div class="filter-group">
+                                        <label for="reservation-filter">Estado:</label>
+                                        <select class="form-control" id="reservation-filter">
+                                            <option value="all">Todas las reservas</option>
+                                            <option value="activa">Activas</option>
+                                            <option value="confirmada">Confirmadas</option>
+                                            <option value="pendiente">Pendientes</option>
+                                            <option value="cancelada">Canceladas</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="date-filter">Período:</label>
+                                        <select class="form-control" id="date-filter">
+                                            <option value="all">Todas las fechas</option>
+                                            <option value="upcoming">Próximas</option>
+                                            <option value="current">Este mes</option>
+                                            <option value="past">Pasadas</option>
+                                            <option value="this-year">Este año</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="sort-filter">Ordenar por:</label>
+                                        <select class="form-control" id="sort-filter">
+                                            <option value="date-desc">Fecha más reciente</option>
+                                            <option value="date-asc">Fecha más antigua</option>
+                                            <option value="amount-desc">Mayor monto</option>
+                                            <option value="amount-asc">Menor monto</option>
+                                            <option value="status">Estado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="filter-row">
+                                    <div class="search-group">
+                                        <input type="text" class="form-control" id="reservation-search" placeholder="Buscar por habitación, fechas o monto...">
+                                        <i class="fas fa-search search-icon"></i>
+                                    </div>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-outline-secondary" id="clear-filters">
+                                            <i class="fas fa-times"></i> Limpiar
+                                        </button>
+                                        <a href="{% url 'habitaciones_lista' %}" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i> Nueva Reserva
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="reservations-container" style="padding: 20px;">
+                        <div class="reservations-container" style="padding: 1.5rem;">
                             {% if reservations %}
                                 {% for reservation in reservations %}
-                                <div class="reservation-card-elegant" style="display: flex; background: #fff; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.03); margin-bottom: 20px; overflow: hidden; border: 1px solid #f0f0f0; transition: all 0.3s ease;">
-                                    <div class="reservation-image" style="position: relative; width: 200px; min-width: 200px; height: 120px; overflow: hidden;">
-                                        <img src="/placeholder.svg?height=120&width=200" alt="Habitación" style="width: 100%; height: 100%; object-fit: cover;">
-                                        <div class="reservation-status-badge status-{{ reservation.status }}" style="position: absolute; top: 10px; left: 10px; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; background: {% if reservation.status == 'confirmed' %}rgba(40, 167, 69, 0.9){% elif reservation.status == 'pending' %}rgba(255, 193, 7, 0.9){% elif reservation.status == 'cancelled' %}rgba(220, 53, 69, 0.9){% else %}rgba(108, 117, 125, 0.9){% endif %}; color: #fff;">
-                                            {{ reservation.get_status_display }}
-                                        </div>
-                                    </div>
-                                    <div class="reservation-details" style="flex-grow: 1; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center;">
-                                        <h3 style="margin: 0 0 10px 0; font-family: 'Playfair Display', serif; font-size: 1.3rem; color: #333;">Habitación {{ reservation.room.numero }}</h3>
-                                        <div class="reservation-info-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                                            <div class="info-item" style="display: flex; align-items: center;">
-                                                <i class="fas fa-calendar-check" style="color: #d4af37; margin-right: 8px; width: 16px; text-align: center;"></i>
-                                                <span style="font-size: 0.9rem; color: #555;">Check-in: {{ reservation.checkin|date:"d/m/Y" }}</span>
-                                            </div>
-                                            <div class="info-item" style="display: flex; align-items: center;">
-                                                <i class="fas fa-calendar-times" style="color: #d4af37; margin-right: 8px; width: 16px; text-align: center;"></i>
-                                                <span style="font-size: 0.9rem; color: #555;">Check-out: {{ reservation.checkout|date:"d/m/Y" }}</span>
-                                            </div>
-                                            <div class="info-item" style="display: flex; align-items: center;">
-                                                <i class="fas fa-users" style="color: #d4af37; margin-right: 8px; width: 16px; text-align: center;"></i>
-                                                <span style="font-size: 0.9rem; color: #555;">{{ reservation.guests }} huésped{{ reservation.guests|pluralize:"es" }}</span>
-                                            </div>
-                                            <div class="info-item" style="display: flex; align-items: center;">
-                                                <i class="fas fa-dollar-sign" style="color: #d4af37; margin-right: 8px; width: 16px; text-align: center;"></i>
-                                                <span style="font-size: 0.9rem; color: #555;">${{ reservation.total_price }}</span>
+                                <div class="reservation-card" data-status="{{ reservation.estado }}" data-reservation-id="{{ reservation.id }}">
+                                    <div class="reservation-card-content">
+                                        <div class="reservation-image">
+                                            {% if reservation.habitacion.imagen %}
+                                                <img src="{{ reservation.habitacion.imagen.url }}" alt="Habitación {{ reservation.habitacion.numero }}">
+                                            {% else %}
+                                                <img src="{% static 'img/habitacion_default.svg' %}" alt="Habitación {{ reservation.habitacion.numero }}">
+                                            {% endif %}
+                                            <div class="reservation-status-badge status-{{ reservation.estado }}">
+                                                {{ reservation.get_estado_display }}
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="reservation-actions" style="display: flex; flex-direction: column; justify-content: center; padding: 15px; border-left: 1px solid #f0f0f0; min-width: 120px;">
-                                        <a href="{% url 'detalle_reserva' reservation.id %}" class="btn btn-outline-primary btn-sm" style="background: transparent; color: #d4af37; border: 1px solid #d4af37; padding: 6px 12px; border-radius: 4px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 0.85rem; transition: all 0.3s ease;">
-                                            <i class="fas fa-eye" style="margin-right: 5px;"></i> Ver Detalles
-                                        </a>
-                                        {% if reservation.status == 'confirmed' %}
-                                        <button class="btn btn-outline-danger btn-sm" style="background: transparent; color: #dc3545; border: 1px solid #dc3545; padding: 6px 12px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease;">
-                                            <i class="fas fa-times" style="margin-right: 5px;"></i> Cancelar
-                                        </button>
-                                        {% endif %}
+                                        
+                                        <div class="reservation-details">
+                                            <h3 class="reservation-title">
+                                                Habitación {{ reservation.habitacion.numero }} - {{ reservation.habitacion.tipo }}
+                                            </h3>
+                                            <div class="reservation-info-grid">
+                                                <div class="info-item">
+                                                    <i class="fas fa-calendar-check"></i>
+                                                    <span>Check-in: {{ reservation.fecha_entrada|date:"d/m/Y" }}</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-calendar-times"></i>
+                                                    <span>Check-out: {{ reservation.fecha_salida|date:"d/m/Y" }}</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-users"></i>
+                                                    <span>{{ reservation.numero_huespedes }} huésped{{ reservation.numero_huespedes|pluralize:"es" }}</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-dollar-sign"></i>
+                                                    <span>${{ reservation.monto|floatformat:0 }}</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-credit-card"></i>
+                                                    <span>{{ reservation.get_metodo_pago_display }}</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span>Reservado: {{ reservation.fecha_reserva|date:"d/m/Y" }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="reservation-actions">
+                                            <a href="{% url 'detalle_reserva' reservation.id %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye"></i> Ver Detalles
+                                            </a>
+                                            {% if reservation.estado == 'confirmada' or reservation.estado == 'pendiente' %}
+                                            <button class="btn btn-outline-danger btn-sm" onclick="cancelReservation({{ reservation.id }})">
+                                                <i class="fas fa-times"></i> Cancelar
+                                            </button>
+                                            {% endif %}
+                                            {% if reservation.estado == 'activa' %}
+                                            <button class="btn btn-outline-success btn-sm">
+                                                <i class="fas fa-star"></i> Calificar
+                                            </button>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </div>
                                 {% endfor %}
                             {% else %}
-                                <div class="no-reservations-elegant" style="text-align: center; padding: 40px 20px; background: linear-gradient(to bottom, rgba(212, 175, 55, 0.05), rgba(212, 175, 55, 0.01)); border-radius: 8px; border: 1px dashed rgba(212, 175, 55, 0.3);">
-                                    <div class="no-reservations-icon" style="margin-bottom: 20px;">
-                                        <i class="fas fa-bed" style="font-size: 3rem; color: #d4af37; opacity: 0.7;"></i>
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">
+                                        <i class="fas fa-bed"></i>
                                     </div>
-                                    <h3 style="margin: 0 0 10px 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #333;">No tienes reservas aún</h3>
-                                    <p style="margin-bottom: 20px; color: #666; font-size: 1rem;">Descubre nuestras elegantes habitaciones y haz tu primera reserva</p>
-                                    <a href="{% url 'habitaciones_lista' %}" class="btn btn-primary" style="background: linear-gradient(135deg, #d4af37, #f5cc7f); border: none; padding: 10px 20px; border-radius: 5px; color: #fff; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);">
-                                        <i class="fas fa-search" style="margin-right: 8px;"></i> Explorar Habitaciones
+                                    <h3>No tienes reservas aún</h3>
+                                    <p>Descubre nuestras elegantes habitaciones y haz tu primera reserva</p>
+                                    <a href="{% url 'habitaciones_lista' %}" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Explorar Habitaciones
                                     </a>
                                 </div>
                             {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Configuración -->
-                <div class="profile-section" id="settings">
-                    <div class="section-card" style="background: #fff; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #f0f0f0; margin-bottom: 30px;">
-                        <div class="section-header" style="padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to right, #f8f9fa, #fff);">
-                            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #333; display: flex; align-items: center;">
-                                <i class="fas fa-cog" style="margin-right: 10px; color: #d4af37;"></i> Configuración de Cuenta
-                            </h2>
-                        </div>
-                        
-                        <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px;">
-                            <div class="setting-card" style="background: #fff; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.03); padding: 20px; border: 1px solid #f0f0f0; display: flex; align-items: center; transition: all 0.3s ease;">
-                                <div class="setting-icon" style="background: rgba(212, 175, 55, 0.1); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                                    <i class="fas fa-lock" style="color: #d4af37; font-size: 1.2rem;"></i>
-                                </div>
-                                <div class="setting-content" style="flex-grow: 1;">
-                                    <h3 style="margin: 0 0 5px 0; font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #333;">Cambiar Contraseña</h3>
-                                    <p style="margin: 0; color: #666; font-size: 0.9rem;">Actualiza tu contraseña para mantener tu cuenta segura</p>
-                                </div>
-                                <div class="setting-action">
-                                    <a href="{% url 'password_change' %}" class="btn btn-outline-primary" style="background: transparent; color: #d4af37; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 5px; transition: all 0.3s ease; display: flex; align-items: center; text-decoration: none;">
-                                        <i class="fas fa-key" style="margin-right: 5px;"></i> Cambiar
-                                    </a>
-                                </div>
-                            </div>
-                            
-                            <div class="setting-card" style="background: #fff; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.03); padding: 20px; border: 1px solid #f0f0f0; display: flex; align-items: center; transition: all 0.3s ease;">
-                                <div class="setting-icon" style="background: rgba(212, 175, 55, 0.1); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                                    <i class="fas fa-bell" style="color: #d4af37; font-size: 1.2rem;"></i>
-                                </div>
-                                <div class="setting-content" style="flex-grow: 1;">
-                                    <h3 style="margin: 0 0 5px 0; font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #333;">Notificaciones</h3>
-                                    <p style="margin: 0; color: #666; font-size: 0.9rem;">Configura cómo quieres recibir nuestras comunicaciones</p>
-                                </div>
-                                <div class="setting-action">
-                                    <button class="btn btn-outline-primary" onclick="toggleNotifications()" style="background: transparent; color: #d4af37; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 5px; transition: all 0.3s ease; display: flex; align-items: center; cursor: pointer;">
-                                        <i class="fas fa-cog" style="margin-right: 5px;"></i> Configurar
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="setting-card">
-                                <div class="setting-icon">
-                                    <i class="fas fa-shield-alt"></i>
-                                </div>
-                                <div class="setting-content">
-                                    <h3>Privacidad</h3>
-                                    <p>Controla la visibilidad de tu información personal</p>
-                                </div>
-                                <div class="setting-action">
-                                    <button class="btn btn-outline-primary">
-                                        <i class="fas fa-eye"></i> Configurar
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -323,55 +442,249 @@
                 <div class="profile-section" id="preferences">
                     <div class="section-card">
                         <div class="section-header">
-                            <h2><i class="fas fa-heart"></i> Preferencias</h2>
+                            <h2><i class="fas fa-heart"></i> Preferencias de Hospedaje</h2>
                         </div>
                         
-                        <div class="preferences-content">
-                            <div class="preference-group">
-                                <h3><i class="fas fa-bed"></i> Preferencias de Habitación</h3>
-                                <div class="preference-options">
-                                    <label class="preference-option">
-                                        <input type="checkbox" name="smoking" value="no">
-                                        <span class="checkmark"></span>
-                                        Habitación para no fumadores
-                                    </label>
-                                    <label class="preference-option">
-                                        <input type="checkbox" name="floor" value="high">
-                                        <span class="checkmark"></span>
-                                        Piso alto
-                                    </label>
-                                    <label class="preference-option">
-                                        <input type="checkbox" name="view" value="ocean">
-                                        <span class="checkmark"></span>
-                                        Vista al mar
-                                    </label>
+                        <form method="post" class="preferences-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="update_preferences" value="1">
+                            
+                            <div class="row">
+                                <!-- Notificaciones -->
+                                <div class="col-md-6">
+                                    <h4><i class="fas fa-bell"></i> Notificaciones</h4>
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            {{ preferences_form.email_notifications }}
+                                            <label class="form-check-label" for="{{ preferences_form.email_notifications.id_for_label }}">
+                                                {{ preferences_form.email_notifications.label }}
+                                            </label>
+                                            <small class="form-text text-muted">{{ preferences_form.email_notifications.help_text }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            {{ preferences_form.sms_notifications }}
+                                            <label class="form-check-label" for="{{ preferences_form.sms_notifications.id_for_label }}">
+                                                {{ preferences_form.sms_notifications.label }}
+                                            </label>
+                                            <small class="form-text text-muted">{{ preferences_form.sms_notifications.help_text }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            {{ preferences_form.marketing_emails }}
+                                            <label class="form-check-label" for="{{ preferences_form.marketing_emails.id_for_label }}">
+                                                {{ preferences_form.marketing_emails.label }}
+                                            </label>
+                                            <small class="form-text text-muted">{{ preferences_form.marketing_emails.help_text }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Habitación -->
+                                <div class="col-md-6">
+                                    <h4><i class="fas fa-bed"></i> Preferencias de Habitación</h4>
+                                    <div class="form-group">
+                                        <label for="{{ preferences_form.room_type_preference.id_for_label }}">
+                                            {{ preferences_form.room_type_preference.label }}
+                                        </label>
+                                        {{ preferences_form.room_type_preference }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="{{ preferences_form.floor_preference.id_for_label }}">
+                                            {{ preferences_form.floor_preference.label }}
+                                        </label>
+                                        {{ preferences_form.floor_preference }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="{{ preferences_form.view_preference.id_for_label }}">
+                                            {{ preferences_form.view_preference.label }}
+                                        </label>
+                                        {{ preferences_form.view_preference }}
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="preference-group">
-                                <h3><i class="fas fa-utensils"></i> Preferencias Alimentarias</h3>
-                                <div class="preference-options">
-                                    <label class="preference-option">
-                                        <input type="checkbox" name="diet" value="vegetarian">
-                                        <span class="checkmark"></span>
-                                        Vegetariano
-                                    </label>
-                                    <label class="preference-option">
-                                        <input type="checkbox" name="diet" value="vegan">
-                                        <span class="checkmark"></span>
-                                        Vegano
-                                    </label>
-                                    <label class="preference-option">
-                                        <input type="checkbox" name="allergies" value="gluten">
-                                        <span class="checkmark"></span>
-                                        Sin gluten
-                                    </label>
+                            <div class="row">
+                                <!-- Servicios -->
+                                <div class="col-md-6">
+                                    <h4><i class="fas fa-concierge-bell"></i> Servicios</h4>
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            {{ preferences_form.breakfast_included }}
+                                            <label class="form-check-label" for="{{ preferences_form.breakfast_included.id_for_label }}">
+                                                {{ preferences_form.breakfast_included.label }}
+                                            </label>
+                                            <small class="form-text text-muted">{{ preferences_form.breakfast_included.help_text }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            {{ preferences_form.late_checkout }}
+                                            <label class="form-check-label" for="{{ preferences_form.late_checkout.id_for_label }}">
+                                                {{ preferences_form.late_checkout.label }}
+                                            </label>
+                                            <small class="form-text text-muted">{{ preferences_form.late_checkout.help_text }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            {{ preferences_form.early_checkin }}
+                                            <label class="form-check-label" for="{{ preferences_form.early_checkin.id_for_label }}">
+                                                {{ preferences_form.early_checkin.label }}
+                                            </label>
+                                            <small class="form-text text-muted">{{ preferences_form.early_checkin.help_text }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pago e Idioma -->
+                                <div class="col-md-6">
+                                    <h4><i class="fas fa-credit-card"></i> Pago e Idioma</h4>
+                                    <div class="form-group">
+                                        <label for="{{ preferences_form.preferred_payment_method.id_for_label }}">
+                                            {{ preferences_form.preferred_payment_method.label }}
+                                        </label>
+                                        {{ preferences_form.preferred_payment_method }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="{{ preferences_form.language_preference.id_for_label }}">
+                                            {{ preferences_form.language_preference.label }}
+                                        </label>
+                                        {{ preferences_form.language_preference }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="{{ preferences_form.currency_preference.id_for_label }}">
+                                            {{ preferences_form.currency_preference.label }}
+                                        </label>
+                                        {{ preferences_form.currency_preference }}
+                                    </div>
                                 </div>
                             </div>
                             
-                            <button class="btn btn-primary">
-                                <i class="fas fa-save"></i> Guardar Preferencias
-                            </button>
+                            <div class="form-actions mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Guardar Preferencias
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="resetPreferences()">
+                                    <i class="fas fa-undo"></i> Restablecer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Configuración -->
+                <div class="profile-section" id="settings">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2><i class="fas fa-cog"></i> Configuración de Cuenta</h2>
+                        </div>
+                        
+                        <div class="settings-grid">
+                            <div class="setting-card">
+                                <div class="setting-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <h3>Notificaciones</h3>
+                                    <p>Configura cómo quieres recibir nuestras comunicaciones</p>
+                                </div>
+                                <div class="setting-action">
+                                    <button class="btn btn-outline-primary" onclick="toggleNotifications()">
+                                        <i class="fas fa-cog"></i> Configurar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-icon">
+                                    <i class="fas fa-language"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <h3>Idioma</h3>
+                                    <p>Selecciona tu idioma preferido</p>
+                                </div>
+                                <div class="setting-action">
+                                    <select class="form-control" style="width: auto;">
+                                        <option value="es">Español</option>
+                                        <option value="en">English</option>
+                                        <option value="pt">Português</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-icon">
+                                    <i class="fas fa-moon"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <h3>Tema</h3>
+                                    <p>Elige entre tema claro u oscuro</p>
+                                </div>
+                                <div class="setting-action">
+                                    <button class="btn btn-outline-primary" onclick="toggleTheme()">
+                                        <i class="fas fa-adjust"></i> Cambiar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seguridad -->
+                <div class="profile-section" id="security">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2><i class="fas fa-shield-alt"></i> Seguridad</h2>
+                        </div>
+                        
+                        <div class="settings-grid">
+                            <div class="setting-card">
+                                <div class="setting-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <h3>Cambiar Contraseña</h3>
+                                    <p>Actualiza tu contraseña para mantener tu cuenta segura</p>
+                                </div>
+                                <div class="setting-action">
+                                    <a href="{% url 'usuarios:password_change' %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-key"></i> Cambiar
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <h3>Autenticación de Dos Factores</h3>
+                                    <p>Añade una capa extra de seguridad a tu cuenta</p>
+                                </div>
+                                <div class="setting-action">
+                                    <button class="btn btn-outline-primary">
+                                        <i class="fas fa-shield-alt"></i> Activar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-icon">
+                                    <i class="fas fa-download"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <h3>Descargar Datos</h3>
+                                    <p>Descarga una copia de toda tu información</p>
+                                </div>
+                                <div class="setting-action">
+                                    <button class="btn btn-outline-primary">
+                                        <i class="fas fa-download"></i> Descargar
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -379,4 +692,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/profile.js' %}"></script>
 {% endblock %}

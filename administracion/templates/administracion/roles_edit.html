@@ -1,0 +1,116 @@
+{% extends 'administracion/base_admin.html' %}
+
+{% block title %}Editar Rol - {{ rol.nombre }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Editar Rol: {{ rol.nombre }}</h2>
+    <a href="{% url 'administracion:roles_list' %}" class="btn btn-secondary">Volver a Roles</a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información del Rol</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Rol *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ rol.nombre }}" required maxlength="50">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" 
+                                  rows="3" maxlength="200">{{ rol.descripcion }}</textarea>
+                    </div>
+                    
+                    <h6 class="mt-4 mb-3">Permisos del Rol</h6>
+                    
+                    {% for modulo, permisos in permisos_por_modulo.items %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">{{ modulo|title }}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for permiso in permisos %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="permisos" value="{{ permiso.id }}" 
+                                               id="permiso_{{ permiso.id }}"
+                                               {% if permiso.id in permisos_asignados %}checked{% endif %}>
+                                        <label class="form-check-label" for="permiso_{{ permiso.id }}">
+                                            {{ permiso.get_accion_display }}
+                                            {% if permiso.descripcion %}
+                                            <small class="text-muted d-block">{{ permiso.descripcion }}</small>
+                                            {% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Actualizar Rol</button>
+                        <a href="{% url 'administracion:roles_list' %}" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Información del Rol</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Nombre:</strong> {{ rol.nombre }}</p>
+                <p><strong>Descripción:</strong> {{ rol.descripcion|default:"Sin descripción" }}</p>
+                <p><strong>Activo:</strong> 
+                    {% if rol.activo %}
+                        <span class="badge bg-success">Sí</span>
+                    {% else %}
+                        <span class="badge bg-danger">No</span>
+                    {% endif %}
+                </p>
+                <p><strong>Rol del Sistema:</strong> 
+                    {% if rol.es_sistema %}
+                        <span class="badge bg-info">Sí</span>
+                    {% else %}
+                        <span class="badge bg-secondary">No</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar funcionalidad para seleccionar/deseleccionar todos los permisos de un módulo
+    document.querySelectorAll('.card-header h6').forEach(function(header) {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function() {
+            const card = this.closest('.card');
+            const checkboxes = card.querySelectorAll('input[type="checkbox"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = !allChecked;
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

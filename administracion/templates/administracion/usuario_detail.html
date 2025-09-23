@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3">Detalle de Usuario</h1>
-    <a href="{% url 'admin:usuarios_list' %}" class="btn btn-secondary">
+    <a href="{% url 'administracion:usuarios_list' %}" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> Volver a la lista
     </a>
 </div>
@@ -44,6 +44,14 @@
                             <span class="badge bg-primary">Staff</span>
                         {% else %}
                             <span class="badge bg-info">Cliente</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span class="fw-bold">Estado de bloqueo:</span>
+                        {% if usuario.profile.is_blocked %}
+                            <span class="badge bg-danger">Bloqueado</span>
+                        {% else %}
+                            <span class="badge bg-success">No bloqueado</span>
                         {% endif %}
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
@@ -98,6 +106,137 @@
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Sección de Gestión de Bloqueo -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-shield-alt"></i> Gestión de Bloqueo de Usuario
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if usuario.profile.is_blocked %}
+                    <div class="alert alert-danger" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-ban"></i> Usuario Bloqueado
+                        </h6>
+                        <p class="mb-2">Este usuario está actualmente bloqueado y no puede acceder al sistema.</p>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted small">Fecha de bloqueo</p>
+                                <p class="fw-bold">{{ usuario.profile.blocked_at|date:"d/m/Y H:i"|default:"-" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted small">Bloqueado por</p>
+                                <p class="fw-bold">{{ usuario.profile.blocked_by.get_full_name|default:usuario.profile.blocked_by.username|default:"-" }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if usuario.profile.block_reason %}
+                            <div class="mt-3">
+                                <p class="mb-1 text-muted small">Motivo del bloqueo</p>
+                                <p class="fw-bold">{{ usuario.profile.block_reason }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        <hr>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#unblockModal">
+                                <i class="fas fa-unlock"></i> Desbloquear Usuario
+                            </button>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-success" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-check-circle"></i> Usuario Activo
+                        </h6>
+                        <p class="mb-2">Este usuario no está bloqueado y puede acceder normalmente al sistema.</p>
+                        
+                        <hr>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#blockModal">
+                                <i class="fas fa-ban"></i> Bloquear Usuario
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Bloquear Usuario -->
+<div class="modal fade" id="blockModal" tabindex="-1" aria-labelledby="blockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="blockModalLabel">
+                    <i class="fas fa-ban"></i> Bloquear Usuario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'administracion:block_user' usuario.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-warning" role="alert">
+                        <strong>¿Estás seguro de que quieres bloquear a {{ usuario.get_full_name|default:usuario.username }}?</strong>
+                    </div>
+                    <p>El usuario no podrá:</p>
+                    <ul>
+                        <li>Iniciar sesión en el sistema</li>
+                        <li>Realizar nuevas reservas</li>
+                        <li>Acceder a su perfil</li>
+                    </ul>
+                    
+                    <div class="mb-3">
+                        <label for="block_reason" class="form-label">Motivo del bloqueo (opcional)</label>
+                        <textarea class="form-control" id="block_reason" name="block_reason" rows="3" placeholder="Describe el motivo del bloqueo..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-ban"></i> Bloquear Usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Desbloquear Usuario -->
+<div class="modal fade" id="unblockModal" tabindex="-1" aria-labelledby="unblockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="unblockModalLabel">
+                    <i class="fas fa-unlock"></i> Desbloquear Usuario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'administracion:unblock_user' usuario.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-info" role="alert">
+                        <strong>¿Estás seguro de que quieres desbloquear a {{ usuario.get_full_name|default:usuario.username }}?</strong>
+                    </div>
+                    <p>El usuario podrá:</p>
+                    <ul>
+                        <li>Iniciar sesión en el sistema</li>
+                        <li>Realizar nuevas reservas</li>
+                        <li>Acceder a su perfil</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-unlock"></i> Desbloquear Usuario
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

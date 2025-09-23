@@ -1,0 +1,169 @@
+{% extends "administracion/base_admin.html" %}
+{% block title %}Gestión de Roles{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">Gestión de Roles y Permisos</h2>
+  {% if permisos.roles.crear %}
+  <a href="{% url 'administracion:roles_create' %}" class="btn btn-success">Nuevo rol</a>
+  {% endif %}
+</div>
+
+<div class="row">
+  <!-- Lista de Roles -->
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Roles del Sistema</h5>
+      </div>
+      <div class="card-body">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Rol</th>
+              <th>Usuarios</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rol in roles %}
+            <tr>
+              <td>
+                <strong>{{ rol.nombre }}</strong>
+                {% if rol.descripcion %}
+                <br><small class="text-muted">{{ rol.descripcion }}</small>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge bg-primary">{{ rol.usuarios_count }}</span>
+              </td>
+              <td>
+                {% if permisos.roles.editar %}
+                <a href="{% url 'administracion:roles_edit' rol.id %}" class="btn btn-sm btn-warning">Editar</a>
+                {% endif %}
+                {% if permisos.roles.eliminar and rol.activo %}
+                <a href="{% url 'administracion:roles_delete' rol.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted">No hay roles registrados.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Asignación de Roles a Usuarios -->
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Asignar Roles a Usuarios</h5>
+      </div>
+      <div class="card-body">
+        {% if permisos.roles.asignar %}
+        <form method="post" action="{% url 'administracion:asignar_rol' %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="usuario" class="form-label">Usuario</label>
+            <select name="usuario" id="usuario" class="form-select" required>
+              <option value="">Seleccionar usuario...</option>
+              {% for usuario in usuarios %}
+              <option value="{{ usuario.id }}">{{ usuario.username }} - {{ usuario.get_full_name|default:usuario.email }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="rol" class="form-label">Rol</label>
+            <select name="rol" id="rol" class="form-select" required>
+              <option value="">Seleccionar rol...</option>
+              {% for rol in roles %}
+              <option value="{{ rol.id }}">{{ rol.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Asignar Rol</button>
+        </form>
+        {% else %}
+        <p class="text-muted">No tienes permisos para asignar roles.</p>
+        {% endif %}
+
+        <!-- Lista de asignaciones actuales -->
+        <hr>
+        <h6>Asignaciones Actuales</h6>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for asignacion in asignaciones %}
+              <tr>
+                <td>{{ asignacion.usuario.username }}</td>
+                <td>
+                  <span class="badge bg-info">{{ asignacion.rol.nombre }}</span>
+                </td>
+                <td>
+                  {% if permisos.roles.revocar %}
+                  <a href="{% url 'administracion:revocar_rol' asignacion.id %}" 
+                     class="btn btn-sm btn-outline-danger"
+                     onclick="return confirm('¿Estás seguro de revocar este rol?')">
+                    Revocar
+                  </a>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="3" class="text-center text-muted">No hay asignaciones.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Matriz de Permisos -->
+<div class="card mt-4">
+  <div class="card-header">
+    <h5 class="mb-0">Matriz de Permisos por Rol</h5>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th>Módulo/Acción</th>
+            {% for rol in roles %}
+            <th class="text-center">{{ rol.nombre }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for modulo, acciones in permisos_matriz.items %}
+          {% for accion in acciones %}
+          <tr>
+            <td><strong>{{ modulo|title }}</strong> - {{ accion|title }}</td>
+            {% for rol in roles %}
+            <td class="text-center">
+              {% if rol.id in permisos_por_rol and modulo in permisos_por_rol.rol.id and accion in permisos_por_rol.rol.id.modulo %}
+              <i class="fas fa-check text-success"></i>
+              {% else %}
+              <i class="fas fa-times text-danger"></i>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

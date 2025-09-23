@@ -66,7 +66,7 @@
                         <span style="font-size: 0.9rem; color: #555;">Recordarme</span>
                     </label>
                     <!-- Cambiando enlace de recuperación por URL funcional -->
-                    <a href="{% url 'password_reset' %}" class="forgot-password" style="color: #d4af37; text-decoration: none; font-size: 0.9rem; transition: all 0.3s ease;">¿Olvidaste tu contraseña?</a>
+                    <a href="{% url 'usuarios:password_reset' %}" class="forgot-password" style="color: #d4af37; text-decoration: none; font-size: 0.9rem; transition: all 0.3s ease;">¿Olvidaste tu contraseña?</a>
                 </div>
                 
                 <button type="submit" class="login-btn" style="width: 100%; background: linear-gradient(135deg, #d4af37, #f5cc7f); border: none; padding: 12px; border-radius: 5px; color: #fff; font-weight: 500; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);">
@@ -93,7 +93,7 @@
                 
                 <div class="login-footer" style="text-align: center; padding-top: 15px; border-top: 1px solid #f0f0f0;">
                     <!-- Enlace dinámico a registro -->
-                    <p style="margin: 0; color: #555; font-size: 0.95rem;">¿No tienes una cuenta? <a href="{% url 'register' %}" class="register-link" style="color: #d4af37; text-decoration: none; font-weight: 500; transition: all 0.3s ease;">Regístrate aquí</a></p>
+                    <p style="margin: 0; color: #555; font-size: 0.95rem;">¿No tienes una cuenta? <a href="{% url 'usuarios:register' %}" class="register-link" style="color: #d4af37; text-decoration: none; font-weight: 500; transition: all 0.3s ease;">Regístrate aquí</a></p>
                 </div>
             </form>
         </div>

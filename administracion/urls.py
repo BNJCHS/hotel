@@ -1,15 +1,22 @@
 from django.urls import path
 from . import views
 
-app_name = 'admin'
+app_name = 'administracion'
 
 urlpatterns = [
+    # Autenticación específica para administración
+    path("login/", views.admin_login, name="admin_login"),
+    path("logout/", views.admin_logout, name="admin_logout"),
+    
+    # Dashboard en /admin/
+    path("", views.dashboard, name="dashboard"),
+    
     # Usuarios
     path("usuarios/", views.usuarios_list, name="usuarios_list"),
     path("usuarios/<int:user_id>/", views.usuario_detail, name="usuario_detail"),
+    path("usuarios/<int:user_id>/bloquear/", views.block_user, name="block_user"),
+    path("usuarios/<int:user_id>/desbloquear/", views.unblock_user, name="unblock_user"),
     path('reservas/activar/<int:reserva_id>/', views.activar_reserva, name='activar_reserva'),
-    # Dashboard en /admin/
-    path("", views.dashboard, name="dashboard"),
 
     # Empleados
     path("empleados/", views.empleados_list, name="empleados_list"),
@@ -49,5 +56,13 @@ urlpatterns = [
     # listado y control de huéspedes activos
     path('huespedes-activos/', views.huespedes_activos, name='huespedes_activos'),
     path('huespedes-activos/finalizar/<int:activo_id>/', views.finalizar_huesped_activo, name='finalizar_huesped_activo'),
+
+    # Gestión de roles y permisos
+    path('roles/', views.roles_list, name='roles_list'),
+    path('roles/nuevo/', views.roles_create, name='roles_create'),
+    path('roles/editar/<int:pk>/', views.roles_edit, name='roles_edit'),
+    path('roles/eliminar/<int:pk>/', views.roles_delete, name='roles_delete'),
+    path('roles/asignar/', views.asignar_rol, name='asignar_rol'),
+    path('roles/revocar/<int:asignacion_id>/', views.revocar_rol, name='revocar_rol'),
 
 ]

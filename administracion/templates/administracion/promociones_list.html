@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-2">
   <h2 class="mb-0">Promociones</h2>
-  <a href="{% url 'admin:promociones_create' %}" class="btn btn-success">Nueva promoción</a>
+  <a href="{% url 'administracion:promociones_create' %}" class="btn btn-success">Nueva promoción</a>
 </div>
 
 {% include "administracion/_list_toolbar.html" %}
@@ -26,8 +26,8 @@
       <td>{{ promo.fecha_inicio }} → {{ promo.fecha_fin }}</td>
       <td class="text-truncate" style="max-width: 400px;">{{ promo.descripcion }}</td>
       <td class="text-end">
-        <a href="{% url 'admin:promociones_edit' promo.id %}" class="btn btn-sm btn-warning">Editar</a>
-        <a href="{% url 'admin:promociones_delete' promo.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+        <a href="{% url 'administracion:promociones_edit' promo.id %}" class="btn btn-sm btn-warning">Editar</a>
+        <a href="{% url 'administracion:promociones_delete' promo.id %}" class="btn btn-sm btn-danger">Eliminar</a>
       </td>
     </tr>
     {% empty %}

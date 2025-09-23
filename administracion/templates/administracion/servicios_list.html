@@ -3,7 +3,9 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-2">
   <h2 class="mb-0">Servicios</h2>
-  <a href="{% url 'admin:servicios_create' %}" class="btn btn-success">Nuevo servicio</a>
+  {% if permisos.servicios.crear %}
+  <a href="{% url 'administracion:servicios_create' %}" class="btn btn-success">Nuevo servicio</a>
+  {% endif %}
 </div>
 
 {% include "administracion/_list_toolbar.html" %}
@@ -24,8 +26,12 @@
       <td>${{ s.precio }}</td>
       <td class="text-truncate" style="max-width: 400px;">{{ s.descripcion }}</td>
       <td class="text-end">
-        <a href="{% url 'admin:servicios_edit' s.id %}" class="btn btn-sm btn-warning">Editar</a>
-        <a href="{% url 'admin:servicios_delete' s.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+        {% if permisos.servicios.editar %}
+        <a href="{% url 'administracion:servicios_edit' s.id %}" class="btn btn-sm btn-warning">Editar</a>
+        {% endif %}
+        {% if permisos.servicios.eliminar %}
+        <a href="{% url 'administracion:servicios_delete' s.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+        {% endif %}
       </td>
     </tr>
     {% empty %}

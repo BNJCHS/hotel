@@ -3,8 +3,39 @@
 
 {% block title %}Seleccionar tipos de habitación{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/progress-bar.css">
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
+  <!-- Progress Bar -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="progress-container">
+        <div class="progress-bar-fill" style="width: 33%;"></div>
+        <div class="progress-step active">
+          <div class="step-circle">
+            <span class="step-number">1</span>
+          </div>
+          <div class="step-label">Habitación</div>
+        </div>
+        <div class="progress-step">
+          <div class="step-circle">
+            <span class="step-number">2</span>
+          </div>
+          <div class="step-label">Servicios</div>
+        </div>
+        <div class="progress-step">
+          <div class="step-circle">
+            <span class="step-number">3</span>
+          </div>
+          <div class="step-label">Confirmación</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <h2 class="mb-4">Elige tipos de habitación</h2>
   <p>Fechas: <strong>{{ fecha_entrada }}</strong> a <strong>{{ fecha_salida }}</strong> — Huéspedes: <strong>{{ numero_huespedes }}</strong></p>
 
@@ -26,13 +57,16 @@
           <img src="/placeholder.svg?height=200&width=300" class="card-img-top" alt="{{ t.get_tipo_display }}">
           {% endif %}
           <div class="card-body d-flex flex-column">
-            <h5 class="card-title mb-1">{{ t.get_tipo_display }}</h5>
-            <p class="text-muted mb-2">Capacidad: {{ t.capacidad }} /noche</p>
+            <h5 class="card-title mb-1">{{ t.nombre }}</h5>
+            <p class="text-muted mb-2">Capacidad: {{ t.capacidad }} huésped{{ t.capacidad|pluralize:"es" }}</p>
             <p class="mb-2">Precio: <strong>${{ t.precio }}</strong> por noche</p>
-            <p class="mb-3">Stock disponible en fechas: <strong>{{ t.stock_disponible }}</strong></p>
+            <p class="mb-3">Stock disponible en fechas: <strong>{{ t.stock_disponible_fechas }}</strong></p>
+            {% if t.descripcion %}
+            <p class="text-muted small mb-3">{{ t.descripcion|truncatewords:15 }}</p>
+            {% endif %}
             <div class="mt-auto">
               <label class="form-label">Cantidad</label>
-              <input type="number" min="0" max="{{ t.stock_disponible }}" name="cantidad_{{ t.id }}" value="0" class="form-control" />
+              <input type="number" min="0" max="{{ t.stock_disponible_fechas }}" name="cantidad_{{ t.id }}" value="0" class="form-control" />
             </div>
           </div>
         </div>

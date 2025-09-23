@@ -16,8 +16,7 @@ def detalle_habitacion_publica(request, id):
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Habitacion
--from .forms import HabitacionAdminForm
-+from .forms import HabitacionAdminForm, TipoHabitacionForm
+from .forms import HabitacionAdminForm, TipoHabitacionForm
 
 # Listado de habitaciones para administración
 def admin_habitaciones_list(request):
@@ -26,23 +25,15 @@ def admin_habitaciones_list(request):
 
 # Crear nueva habitación (admin)
 def admin_habitaciones_create(request):
--    if request.method == 'POST':
--        form = HabitacionAdminForm(request.POST, request.FILES)
--        if form.is_valid():
--            form.save()
--            return redirect('habitaciones:habitaciones_list')
--    else:
--        form = HabitacionAdminForm()
--    return render(request, 'administracion/habitaciones_form.html', {'form': form, 'titulo': 'Nueva Habitación'})
-+    # Cambiamos el flujo: este formulario ahora crea Tipos de Habitación, no Habitaciones individuales
-+    if request.method == 'POST':
-+        form = TipoHabitacionForm(request.POST, request.FILES)
-+        if form.is_valid():
-+            form.save()
-+            return redirect('habitaciones:habitaciones_list')
-+    else:
-+        form = TipoHabitacionForm()
-+    return render(request, 'administracion/habitaciones_form.html', {'form': form, 'titulo': 'Nuevo Tipo de Habitación'})
+    # Cambiamos el flujo: este formulario ahora crea Tipos de Habitación, no Habitaciones individuales
+    if request.method == 'POST':
+        form = TipoHabitacionForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('habitaciones:habitaciones_list')
+    else:
+        form = TipoHabitacionForm()
+    return render(request, 'administracion/habitaciones_form.html', {'form': form, 'titulo': 'Nuevo Tipo de Habitación'})
 
 # Editar habitación (admin)
 def admin_habitaciones_edit(request, pk):

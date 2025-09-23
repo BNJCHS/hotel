@@ -77,22 +77,25 @@
                                 <div class="col-md-6">
                                     <h4 class="card-title text-dark mb-3">
                                         <i class="fas fa-bed me-2 text-primary"></i>
-                                        Habitación {{ reserva.habitacion.numero }}
+                                        {{ reserva.tipo_habitacion.nombre }}
+                                        {% if reserva.cantidad_habitaciones > 1 %}
+                                            <span class="badge bg-primary ms-2">{{ reserva.cantidad_habitaciones }} habitaciones</span>
+                                        {% endif %}
                                     </h4>
                                     <div class="row g-2 mb-3">
                                         <div class="col-6">
                                             <small class="text-muted d-block">Check-in</small>
-                                            <strong class="text-dark">{{ reserva.fecha_entrada|date:"d/m/Y" }}</strong>
+                                            <strong class="text-dark">{{ reserva.check_in|date:"d/m/Y" }}</strong>
                                         </div>
                                         <div class="col-6">
                                             <small class="text-muted d-block">Check-out</small>
-                                            <strong class="text-dark">{{ reserva.fecha_salida|date:"d/m/Y" }}</strong>
+                                            <strong class="text-dark">{{ reserva.check_out|date:"d/m/Y" }}</strong>
                                         </div>
                                     </div>
                                     <div class="row g-2 mb-3">
                                         <div class="col-6">
                                             <small class="text-muted d-block">Huéspedes</small>
-                                            <strong class="text-dark">{{ reserva.numero_huespedes }} persona{{ reserva.numero_huespedes|pluralize:"s" }}</strong>
+                                            <strong class="text-dark">{{ reserva.cantidad_huespedes }} persona{{ reserva.cantidad_huespedes|pluralize:"s" }}</strong>
                                         </div>
                                         <div class="col-6">
                                             <small class="text-muted d-block">Noches</small>
@@ -113,7 +116,7 @@
                                 <div class="col-md-3 text-end">
                                     <div class="mb-3">
                                         <small class="text-muted d-block">Total</small>
-                                        <h3 class="text-primary fw-bold mb-0">${{ reserva.precio_total }}</h3>
+                                        <h3 class="text-primary fw-bold mb-0">${{ reserva.monto }}</h3>
                                     </div>
                                     <div class="d-grid gap-2">
                                         <button class="btn btn-outline-primary btn-sm" onclick="verDetalles({{ reserva.id }})">

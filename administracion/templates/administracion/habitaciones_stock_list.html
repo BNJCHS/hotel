@@ -15,11 +15,11 @@
         <tbody>
             {% for stock in stocks %}
             <tr>
-                <td>{{ stock.habitacion.tipo }}</td>
+                <td>{{ stock.habitacion.tipo_habitacion.nombre }}</td>
                 <td>{{ stock.cantidad }}</td>
                 <td>
-                    <a href="{% url 'admin:habitaciones_stock_edit' stock.id %}" class="btn btn-warning btn-sm">✏️ Editar</a>
-                    <a href="{% url 'admin:habitaciones_stock_delete' stock.id %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
+                    <a href="{% url 'administracion:habitaciones_stock_edit' stock.id %}" class="btn btn-warning btn-sm">✏️ Editar</a>
+                    <a href="{% url 'administracion:habitaciones_stock_delete' stock.id %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
                 </td>
             </tr>
             {% empty %}

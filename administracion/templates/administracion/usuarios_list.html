@@ -14,6 +14,122 @@
     </form>
 </div>
 
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Total Usuarios</h6>
+                        <h3 class="mb-0">{{ total_usuarios }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Usuarios Activos</h6>
+                        <h3 class="mb-0">{{ usuarios_activos }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Usuarios Bloqueados</h6>
+                        <h3 class="mb-0">{{ usuarios_bloqueados }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-slash fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Staff</h6>
+                        <h3 class="mb-0">{{ page_obj.paginator.object_list|length }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-tie fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="fas fa-filter"></i> Filtros
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="q" class="form-label">Buscar</label>
+                <input type="text" name="q" id="q" class="form-control" placeholder="Nombre, email, usuario..." value="{{ query|default:'' }}">
+            </div>
+            <div class="col-md-2">
+                <label for="status" class="form-label">Estado</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Activos</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactivos</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="block_status" class="form-label">Bloqueo</label>
+                <select name="block_status" id="block_status" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="blocked" {% if block_filter == 'blocked' %}selected{% endif %}>Bloqueados</option>
+                    <option value="not_blocked" {% if block_filter == 'not_blocked' %}selected{% endif %}>No bloqueados</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="user_type" class="form-label">Tipo</label>
+                <select name="user_type" id="user_type" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="staff" {% if user_type_filter == 'staff' %}selected{% endif %}>Staff</option>
+                    <option value="client" {% if user_type_filter == 'client' %}selected{% endif %}>Clientes</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Filtrar
+                    </button>
+                    <a href="{% url 'administracion:usuarios_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Limpiar
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header bg-primary text-white">
         <h5 class="mb-0">Usuarios Registrados</h5>
@@ -28,6 +144,7 @@
                         <th>Email</th>
                         <th>Fecha de registro</th>
                         <th>Estado</th>
+                        <th>Bloqueo</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -46,14 +163,25 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'admin:usuario_detail' usuario.id %}" class="btn btn-sm btn-info">
+                            {% if usuario.profile.is_blocked %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-ban"></i> Bloqueado
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check"></i> Normal
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'administracion:usuario_detail' usuario.id %}" class="btn btn-sm btn-info">
                                 <i class="fas fa-eye"></i> Ver
                             </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center py-4">
+                        <td colspan="7" class="text-center py-4">
                             <p class="text-muted mb-0">No se encontraron usuarios</p>
                         </td>
                     </tr>

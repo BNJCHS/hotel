@@ -1,0 +1,97 @@
+{% extends 'administracion/base_auth.html' %}
+
+{% block title %}Login - Sistema de Administración{% endblock %}
+
+{% block header_title %}Acceso Administrativo{% endblock %}
+{% block header_subtitle %}Ingrese sus credenciales de administrador{% endblock %}
+
+{% block content %}
+<form method="post" class="admin-login-form">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="username" class="form-label">
+            <i class="fas fa-user me-2"></i>Usuario Administrador
+        </label>
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="fas fa-user"></i>
+            </span>
+            <input type="text" 
+                   class="form-control" 
+                   id="username" 
+                   name="username" 
+                   placeholder="Ingrese su usuario"
+                   required
+                   value="{{ form.username.value|default:'' }}">
+        </div>
+        {% if form.username.errors %}
+            <div class="text-danger mt-1">
+                {% for error in form.username.errors %}
+                    <small>{{ error }}</small>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="password" class="form-label">
+            <i class="fas fa-lock me-2"></i>Contraseña
+        </label>
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="fas fa-lock"></i>
+            </span>
+            <input type="password" 
+                   class="form-control" 
+                   id="password" 
+                   name="password" 
+                   placeholder="Ingrese su contraseña"
+                   required>
+        </div>
+        {% if form.password.errors %}
+            <div class="text-danger mt-1">
+                {% for error in form.password.errors %}
+                    <small>{{ error }}</small>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <div class="form-group">
+        <button type="submit" class="btn btn-admin">
+            <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+        </button>
+    </div>
+    
+    <div class="text-center mt-3">
+        <small class="text-muted">
+            <i class="fas fa-shield-alt me-1"></i>
+            Acceso restringido solo para personal autorizado
+        </small>
+    </div>
+</form>
+
+<style>
+    .admin-login-form .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .input-group-text {
+        color: #667eea;
+    }
+    
+    .btn-admin:active {
+        transform: translateY(0);
+    }
+</style>
+{% endblock %}

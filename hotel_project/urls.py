@@ -20,12 +20,13 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', include('hotel.urls')),
-    path('usuarios/', include('usuarios.urls')),
+    path('usuarios/', include(('usuarios.urls', 'usuarios'), namespace='usuarios')),
     path('habitaciones/', include(('habitaciones.urls', 'habitaciones'), namespace='habitaciones')),
-    path('admin/',include('administracion.urls', namespace='admin')),
+    path('administracion/',include('administracion.urls', namespace='administracion')),
     path('reservas/', include('reservas.urls')),
     path('chatbot/', include('chatbot.urls', namespace='chatbot')),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

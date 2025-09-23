@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Reserva
-from habitaciones.models import Habitacion
+from habitaciones.models import Habitacion, TipoHabitacion
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from usuarios.decorators import require_login_and_not_blocked
 from administracion.models import Servicio
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -13,6 +14,7 @@ from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.conf import settings
+from django.db import models
 
 from datetime import date, datetime
 from decimal import Decimal
@@ -116,7 +118,7 @@ def seleccionar_huespedes(request):
     })
 
 
-@login_required
+@require_login_and_not_blocked
 def reservar_habitacion(request, habitacion_id):
     habitacion = get_object_or_404(Habitacion, id=habitacion_id)
     
@@ -244,46 +246,37 @@ def agregar_al_carrito(request, habitacion_id):
     return redirect('seleccionar_servicio')
 
 @login_required
-def seleccionar_servicio(request):
-    habitacion_id = request.session.get('habitacion_id')
-    if not habitacion_id:
-        return redirect('habitaciones_lista')
-
-    habitacion = get_object_or_404(Habitacion, id=habitacion_id)
+def seleccionar_servicio(request, reserva_id=None):
+    # Si no se proporciona reserva_id, intentamos obtenerlo de la sesión
+    if not reserva_id:
+        reserva_id = request.session.get('reserva_id')
+        if not reserva_id:
+            return redirect('seleccionar_tipos')
+    
+    # Obtener la reserva
+    reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
     servicios = Servicio.objects.all()
     
-    # Obtener datos de la sesión
-    fecha_entrada = request.session.get('fecha_entrada')
-    fecha_salida = request.session.get('fecha_salida')
-    numero_huespedes = request.session.get('numero_huespedes')
-    
-    if not fecha_entrada or not fecha_salida or not numero_huespedes:
-        return redirect('seleccionar_huespedes')
+    # Guardar el ID de la reserva en la sesión para pasos posteriores
+    request.session['reserva_id'] = reserva.id
 
     if request.method == 'POST':
         servicios_seleccionados = request.POST.getlist('servicios')  # IDs de servicios
         metodo_pago = request.POST.get('metodo_pago', 'efectivo')
 
-        # Crear la reserva
-        reserva = Reserva.objects.create(
-            habitacion=habitacion,
-            usuario=request.user,
-            check_in=fecha_entrada,
-            check_out=fecha_salida,
-            metodo_pago=metodo_pago,
-            token=get_random_string(64),
-            cantidad_huespedes=numero_huespedes
-        )
+        # Actualizar método de pago si se proporciona
+        if metodo_pago:
+            reserva.metodo_pago = metodo_pago
         
-        # Agregar servicios a la reserva
+        # Limpiar servicios existentes y agregar los nuevos
+        reserva.servicios.clear()  # Eliminar todos los servicios existentes
         if servicios_seleccionados:
             servicios_obj = Servicio.objects.filter(id__in=servicios_seleccionados)
             reserva.servicios.add(*servicios_obj)
         
         # Calcular precio
-        noches = (datetime.strptime(fecha_salida, '%Y-%m-%d').date() - 
-                 datetime.strptime(fecha_entrada, '%Y-%m-%d').date()).days or 1
-        precio_habitacion = habitacion.precio * noches
+        noches = (reserva.check_out - reserva.check_in).days or 1
+        precio_habitacion = reserva.tipo_habitacion.precio * reserva.cantidad_habitaciones * noches
         precio_servicios = sum(servicio.precio for servicio in reserva.servicios.all())
         subtotal = precio_habitacion + precio_servicios
         impuestos = subtotal * Decimal("0.18")
@@ -295,9 +288,14 @@ def seleccionar_servicio(request):
         # Redirigir a la página de confirmación con el ID de la reserva
         return redirect('confirmar_reserva', reserva_id=reserva.id)
 
+    # Obtener los servicios ya seleccionados para esta reserva
+    servicios_seleccionados = list(reserva.servicios.all().values('id', 'nombre', 'precio'))
+    
     return render(request, 'reservas/seleccionar_servicio.html', {
-        'habitacion': habitacion,
+        'reserva': reserva,
+        'tipo_habitacion': reserva.tipo_habitacion,
         'servicios': servicios,
+        'servicios_seleccionados_json': json.dumps(servicios_seleccionados),
     })
 
 def reserva_exitosa(request):
@@ -308,7 +306,7 @@ from decimal import Decimal
 from datetime import datetime
 
 
-@login_required
+@require_login_and_not_blocked
 def confirmar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
 
@@ -316,7 +314,7 @@ def confirmar_reserva(request, reserva_id):
     if reserva.check_in and reserva.check_out:
         noches = (reserva.check_out - reserva.check_in).days or 1
 
-    precio_habitacion = reserva.habitacion.precio * noches
+    precio_habitacion = reserva.tipo_habitacion.precio * reserva.cantidad_habitaciones * noches
     precio_servicios = sum(servicio.precio for servicio in reserva.servicios.all())
     subtotal = precio_habitacion + precio_servicios
 
@@ -336,7 +334,7 @@ def confirmar_reserva(request, reserva_id):
         if metodo_pago:
             reserva.metodo_pago = metodo_pago
             reserva.monto = precio_total
-            reserva.confirmada = False  # aún pendiente de confirmar
+            reserva.estado = 'pendiente'  # aún pendiente de confirmar por email
             reserva.save()
 
             # Enviar correo de confirmación
@@ -354,9 +352,28 @@ def confirmar_reserva(request, reserva_id):
             # Datos de pago SIMULADO (no se realiza ningún cobro real)
             sim_tx_id = None
             sim_tx_status = None
+            sim_payment_provider = None
+            
             if getattr(settings, "SIMULATE_PAYMENTS", False):
+                # Generar ID de transacción simulada
                 sim_tx_id = f"SIM-{get_random_string(10)}"
                 sim_tx_status = "aprobado"
+                
+                # Personalizar información según el método de pago
+                if metodo_pago == 'mercadopago':
+                    sim_payment_provider = "MercadoPago"
+                    sim_tx_id = f"MP-{get_random_string(8).upper()}"
+                elif metodo_pago == 'paypal':
+                    sim_payment_provider = "PayPal"
+                    sim_tx_id = f"PP-{get_random_string(12).upper()}"
+                elif metodo_pago == 'crypto':
+                    sim_payment_provider = "Crypto"
+                    sim_tx_id = f"0x{get_random_string(40, allowed_chars='0123456789abcdef')}"
+                elif metodo_pago == 'transferencia':
+                    sim_payment_provider = "Banco"
+                    sim_tx_id = f"TR-{get_random_string(10).upper()}"
+                else:
+                    sim_payment_provider = "Tarjeta"
 
             # Mostrar la página de "Reserva Enviada"
             return render(request, 'reservas/reserva_enviada.html', {
@@ -364,11 +381,14 @@ def confirmar_reserva(request, reserva_id):
                 'simulate_payments': getattr(settings, "SIMULATE_PAYMENTS", False),
                 'sim_tx_id': sim_tx_id,
                 'sim_tx_status': sim_tx_status,
+                'sim_payment_provider': sim_payment_provider,
+                'metodo_pago': metodo_pago,
             })
 
     return render(request, "reservas/confirmar_reserva.html", {
         "reserva": reserva,
-        "habitacion": reserva.habitacion,
+        "tipo_habitacion": reserva.tipo_habitacion,
+        "cantidad_habitaciones": reserva.cantidad_habitaciones,
         "servicios_seleccionados": reserva.servicios.all(),
         "precio_habitacion": precio_habitacion,
         "precio_servicios": precio_servicios,
@@ -382,13 +402,47 @@ def confirmar_reserva(request, reserva_id):
 @login_required
 def confirmar_reserva_token(request, token):
     reserva = get_object_or_404(Reserva, token=token, usuario=request.user)
-    reserva.confirmada = True
+    reserva.estado = 'confirmada'
     reserva.save()
+    
+    # Procesar tipos adicionales si existen
+    tipos_adicionales = request.session.get('tipos_adicionales', [])
+    if tipos_adicionales:
+        for tipo_id, qty in tipos_adicionales:
+            try:
+                tipo = TipoHabitacion.objects.get(id=tipo_id)
+                # Crear reserva adicional
+                nueva_reserva = Reserva.objects.create(
+                    usuario=request.user,
+                    tipo_habitacion=tipo,
+                    cantidad_habitaciones=qty,
+                    check_in=reserva.check_in,
+                    check_out=reserva.check_out,
+                    cantidad_huespedes=reserva.cantidad_huespedes,
+                    estado='confirmada',
+                    metodo_pago=reserva.metodo_pago,
+                    token=get_random_string(64),
+                )
+                # Calcular monto
+                noches = (reserva.check_out - reserva.check_in).days or 1
+                precio_total = tipo.precio * qty * noches
+                impuestos = precio_total * Decimal('0.18')
+                nueva_reserva.monto = precio_total + impuestos
+                nueva_reserva.save()
+                
+                # Reservar stock
+                tipo.reservar_stock(qty)
+            except TipoHabitacion.DoesNotExist:
+                pass
+        
+        # Limpiar la sesión
+        del request.session['tipos_adicionales']
+    
     return render(request, 'reservas/reserva_confirmada.html', {'reserva': reserva, 'simulate_payments': getattr(settings, "SIMULATE_PAYMENTS", False)})
 
 @login_required
 def mis_reservas(request):
-    reservas = Reserva.objects.filter(usuario=request.user).select_related('habitacion')
+    reservas = Reserva.objects.filter(usuario=request.user).select_related('tipo_habitacion').order_by('-fecha_reserva')
     return render(request, 'reservas/mis_reservas.html', {'reservas': reservas})
 
 
@@ -404,7 +458,7 @@ def cancelar_reserva(request, reserva_id):
 # ===============================
 # Agregar múltiples habitaciones a partir de una reserva existente
 # ===============================
-@login_required
+@require_login_and_not_blocked
 def agregar_reservas_multiples(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
@@ -509,8 +563,8 @@ def agregar_reservas_multiples(request):
 @login_required
 def seleccionar_tipos(request):
     """
-    Paso nuevo: permitir elegir múltiples tipos (Habitacion como TIPO) con cantidades,
-    validando que la suma de capacidades cubra a los huéspedes y que el stock por fechas alcance.
+    Vista para seleccionar tipos de habitaciones con stock disponible.
+    Permite elegir múltiples tipos con cantidades, validando capacidad y stock.
     """
     # Datos requeridos desde la sesión
     numero_huespedes = request.session.get('numero_huespedes')
@@ -529,28 +583,31 @@ def seleccionar_tipos(request):
         messages.error(request, 'Fechas inválidas.')
         return redirect('seleccionar_huespedes')
 
-    # Obtener todos los tipos (Habitacion funciona como tipo con stock)
-    tipos = Habitacion.objects.filter(disponible=True).order_by('precio')
+    # Obtener todos los tipos de habitaciones activos
+    tipos = TipoHabitacion.objects.filter(activo=True).order_by('precio')
 
-    # Calcular disponibilidad (stock disponible) por tipo en el rango
+    # Calcular disponibilidad por tipo en el rango de fechas
     disponibles = {}
-    for t in tipos:
-        overlapping = Reserva.objects.filter(
-            habitacion=t,
+    for tipo in tipos:
+        # Contar reservas que se solapan con las fechas solicitadas
+        reservas_solapadas = Reserva.objects.filter(
+            tipo_habitacion=tipo,
             check_in__lt=check_out,
             check_out__gt=check_in,
-        ).count()
-        disponibles[t.id] = max(0, t.stock - overlapping)
+            estado__in=['confirmada', 'activa']
+        ).aggregate(total=models.Sum('cantidad_habitaciones'))['total'] or 0
+        
+        disponibles[tipo.id] = max(0, tipo.stock_disponible - reservas_solapadas)
 
     # Anotar cada tipo con su stock disponible para el template
-    for t in tipos:
-        t.stock_disponible = disponibles.get(t.id, 0)
+    for tipo in tipos:
+        tipo.stock_disponible_fechas = disponibles.get(tipo.id, 0)
     if request.method == 'POST':
         # Recoger cantidades solicitadas
-        seleccion = []  # lista de (habitacion_obj, cantidad)
+        seleccion = []  # lista de (tipo_habitacion_obj, cantidad)
         total_capacidad = 0
-        for t in tipos:
-            qty_str = request.POST.get(f'cantidad_{t.id}', '0').strip()
+        for tipo in tipos:
+            qty_str = request.POST.get(f'cantidad_{tipo.id}', '0').strip()
             try:
                 qty = int(qty_str or 0)
             except ValueError:
@@ -559,8 +616,8 @@ def seleccionar_tipos(request):
                 qty = 0
             if qty > 0:
                 # Validar stock disponible
-                if qty > disponibles.get(t.id, 0):
-                    messages.error(request, f'No hay suficiente stock para {t.get_tipo_display()} (solicitado {qty}, disponible {disponibles.get(t.id, 0)}).')
+                if qty > disponibles.get(tipo.id, 0):
+                    messages.error(request, f'No hay suficiente stock para {tipo.nombre} (solicitado {qty}, disponible {disponibles.get(tipo.id, 0)}).')
                     return render(request, 'reservas/seleccionar_tipos.html', {
                         'tipos': tipos,
                         'disponibles': disponibles,
@@ -568,8 +625,8 @@ def seleccionar_tipos(request):
                         'fecha_entrada': fecha_entrada,
                         'fecha_salida': fecha_salida,
                     })
-                seleccion.append((t, qty))
-                total_capacidad += t.capacidad * qty
+                seleccion.append((tipo, qty))
+                total_capacidad += tipo.capacidad * qty
 
         if not seleccion:
             messages.error(request, 'Debes seleccionar al menos un tipo de habitación.')
@@ -592,30 +649,42 @@ def seleccionar_tipos(request):
                 'fecha_salida': fecha_salida,
             })
 
-        # Crear reservas individuales por cada unidad solicitada
+        # Crear reservas con el nuevo modelo
         noches = (check_out - check_in).days or 1
         created = []
-        for t, qty in seleccion:
-            for i in range(qty):
-                r = Reserva.objects.create(
-                    usuario=request.user,
-                    habitacion=t,
-                    check_in=check_in,
-                    check_out=check_out,
-                    metodo_pago='efectivo',
-                    token=get_random_string(64),
-                    cantidad_huespedes=min(t.capacidad, int(numero_huespedes)),
-                    confirmada=False,
-                )
-                # Calcular monto base por habitación + impuestos (sin servicios ni plan/promoción aquí)
-                precio_habitacion = t.precio * noches
-                impuestos = precio_habitacion * Decimal('0.18')
-                r.monto = precio_habitacion + impuestos
-                r.save()
-                created.append(r.id)
-
-        messages.success(request, f'Se crearon {len(created)} reservas. Puedes revisarlas en Mis reservas.')
-        return redirect('mis_reservas')
+        
+        # Crear una sola reserva para el primer tipo seleccionado
+        # (para mantener el flujo de selección de servicios y confirmación)
+        tipo, qty = seleccion[0]
+        reserva = Reserva.objects.create(
+            usuario=request.user,
+            tipo_habitacion=tipo,
+            cantidad_habitaciones=qty,
+            check_in=check_in,
+            check_out=check_out,
+            cantidad_huespedes=int(numero_huespedes),
+            estado='pendiente',
+            token=get_random_string(64),
+        )
+        
+        # Calcular monto inicial (se actualizará en pasos posteriores)
+        precio_total = tipo.precio * qty * noches
+        impuestos = precio_total * Decimal('0.18')
+        reserva.monto = precio_total + impuestos
+        reserva.save()
+        
+        # Reservar stock
+        tipo.reservar_stock(qty)
+        
+        # Guardar el ID de la reserva en la sesión para el siguiente paso
+        request.session['reserva_id'] = reserva.id
+        
+        # Si hay más tipos seleccionados, los guardamos para procesarlos después
+        if len(seleccion) > 1:
+            request.session['tipos_adicionales'] = [(t.id, q) for t, q in seleccion[1:]]
+        
+        # Redirigir a la selección de servicios
+        return redirect('seleccionar_servicio_con_id', reserva_id=reserva.id)
 
     return render(request, 'reservas/seleccionar_tipos.html', {
         'tipos': tipos,

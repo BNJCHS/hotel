@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .block-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .block-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .block-header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .user-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .user-details {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        }
+        
+        .warning-message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .warning-message strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="block-container">
+        <div class="block-header">
+            <h1>🚫 Bloquear Usuario</h1>
+        </div>
+        
+        <div class="user-info">
+            <h3>{{ user_to_block.get_full_name|default:user_to_block.username }}</h3>
+            <div class="user-details">
+                <strong>Usuario:</strong> {{ user_to_block.username }}<br>
+                <strong>Email:</strong> {{ user_to_block.email }}<br>
+                <strong>Fecha de registro:</strong> {{ user_to_block.date_joined|date:"d/m/Y H:i" }}<br>
+                {% if user_to_block.profile.phone %}
+                <strong>Teléfono:</strong> {{ user_to_block.profile.phone }}<br>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="warning-message">
+            <strong>⚠️ Advertencia:</strong>
+            Al bloquear este usuario, no podrá realizar nuevas reservas ni acceder a ciertas funcionalidades del sistema.
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="reason">Razón del bloqueo:</label>
+                <textarea name="reason" id="reason" placeholder="Describe la razón por la cual se está bloqueando este usuario..." required></textarea>
+            </div>
+            
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-danger">
+                    🚫 Confirmar Bloqueo
+                </button>
+                <a href="{% url 'admin:auth_user_changelist' %}" class="btn btn-secondary">
+                    ↩️ Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -15,7 +15,40 @@
             {% if simulate_payments %}
             <div class="alert alert-info" role="alert">
                 <i class="fas fa-receipt me-2"></i>
-                Pago simulado generado. ID de transacción: <strong>{{ sim_tx_id }}</strong> (estado: {{ sim_tx_status }})
+                <p class="mb-1">Pago simulado generado con <strong>{{ sim_payment_provider }}</strong></p>
+                
+                {% if metodo_pago == 'mercadopago' %}
+                <div class="payment-details p-3 my-2 border rounded bg-light">
+                    <img src="https://www.mercadopago.com/org-img/MP3/API/logos/mp-logo.svg" alt="MercadoPago" height="30" class="mb-2">
+                    <p class="mb-1"><strong>ID de transacción:</strong> {{ sim_tx_id }}</p>
+                    <p class="mb-1"><strong>Estado:</strong> {{ sim_tx_status }}</p>
+                    <p class="mb-0"><small class="text-muted">Simulación de pago - No se ha realizado ningún cargo real</small></p>
+                </div>
+                
+                {% elif metodo_pago == 'paypal' %}
+                <div class="payment-details p-3 my-2 border rounded bg-light">
+                    <i class="fab fa-paypal fa-2x mb-2" style="color: #003087;"></i>
+                    <p class="mb-1"><strong>ID de transacción:</strong> {{ sim_tx_id }}</p>
+                    <p class="mb-1"><strong>Estado:</strong> {{ sim_tx_status }}</p>
+                    <p class="mb-0"><small class="text-muted">Simulación de pago - No se ha realizado ningún cargo real</small></p>
+                </div>
+                
+                {% elif metodo_pago == 'crypto' %}
+                <div class="payment-details p-3 my-2 border rounded bg-light">
+                    <i class="fab fa-bitcoin fa-2x mb-2" style="color: #f7931a;"></i>
+                    <p class="mb-1"><strong>Hash de transacción:</strong></p>
+                    <p class="mb-1"><code class="small">{{ sim_tx_id }}</code></p>
+                    <p class="mb-1"><strong>Estado:</strong> {{ sim_tx_status }}</p>
+                    <p class="mb-0"><small class="text-muted">Simulación de pago - No se ha realizado ningún cargo real</small></p>
+                </div>
+                
+                {% else %}
+                <div class="payment-details p-3 my-2 border rounded bg-light">
+                    <p class="mb-1"><strong>ID de transacción:</strong> {{ sim_tx_id }}</p>
+                    <p class="mb-1"><strong>Estado:</strong> {{ sim_tx_status }}</p>
+                    <p class="mb-0"><small class="text-muted">Simulación de pago - No se ha realizado ningún cargo real</small></p>
+                </div>
+                {% endif %}
             </div>
             {% endif %}
             <p class="card-text">

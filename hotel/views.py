@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from reservas.models import Reserva
 from habitaciones.models import Habitacion
 from django.contrib import messages
+from usuarios.decorators import require_login_and_not_blocked
 import json
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -281,7 +282,7 @@ def planes_y_promociones(request):
 # ===============================
 # Reservar un Plan
 # ===============================
-@login_required
+@require_login_and_not_blocked
 def reservar_plan(request, plan_id):
     plan = get_object_or_404(Plan, id=plan_id)
 
@@ -300,7 +301,7 @@ def reservar_plan(request, plan_id):
 # ===============================
 # Reservar una Promoción
 # ===============================
-@login_required
+@require_login_and_not_blocked
 def reservar_promocion(request, promocion_id):
     promocion = get_object_or_404(Promocion, id=promocion_id)
 

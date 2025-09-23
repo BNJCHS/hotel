@@ -3,7 +3,7 @@
 {% block page_title %}Confirmar Eliminación{% endblock %}
 
 {% block content %}
-<p>¿Estás seguro de eliminar la habitación <strong>{{ habitacion.tipo }}</strong>?</p>
+<p>¿Estás seguro de eliminar la habitación <strong>{{ habitacion.tipo_habitacion.nombre }}</strong>?</p>
 <form method="post">
     {% csrf_token %}
     <button type="submit" class="btn btn-danger">Eliminar</button>
