@@ -82,7 +82,11 @@ def seleccionar_huespedes(request):
     today = datetime.now().date().strftime('%Y-%m-%d')
     
     if request.method == 'POST':
-        numero_huespedes = int(request.POST.get('numero_huespedes', 1))
+        numero_huespedes_val = request.POST.get('numero_huespedes')
+        if numero_huespedes_val is None or numero_huespedes_val == '':
+            numero_huespedes = int(request.session.get('numero_huespedes', 1))
+        else:
+            numero_huespedes = int(numero_huespedes_val)
         fecha_entrada = request.POST.get('fecha_entrada')
         fecha_salida = request.POST.get('fecha_salida')
         
@@ -95,14 +99,18 @@ def seleccionar_huespedes(request):
                 return render(request, 'reservas/seleccionar_huespedes.html', {
                     'error': 'La fecha de entrada no puede ser anterior a hoy',
                     'today': today,
-                    'numero_huespedes': numero_huespedes
+                    'numero_huespedes': numero_huespedes,
+                    'fecha_entrada': fecha_entrada,
+                    'fecha_salida': fecha_salida,
                 })
             
             if fecha_salida_obj <= fecha_entrada_obj:
                 return render(request, 'reservas/seleccionar_huespedes.html', {
                     'error': 'La fecha de salida debe ser posterior a la de entrada',
                     'today': today,
-                    'numero_huespedes': numero_huespedes
+                    'numero_huespedes': numero_huespedes,
+                    'fecha_entrada': fecha_entrada,
+                    'fecha_salida': fecha_salida,
                 })
         
         # Guardar en sesión
@@ -110,11 +118,17 @@ def seleccionar_huespedes(request):
         request.session['fecha_entrada'] = fecha_entrada
         request.session['fecha_salida'] = fecha_salida
         
-        # Redirigir al nuevo paso: selección de tipos con stock
+        # Redirigir según si ya hay una habitación seleccionada
+        if request.session.get('habitacion_id'):
+            return redirect('seleccionar_fechas')
+        # De otro modo, continuar al flujo de tipos con stock
         return redirect('seleccionar_tipos')
     
     return render(request, 'reservas/seleccionar_huespedes.html', {
         'today': today,
+        'numero_huespedes': request.session.get('numero_huespedes'),
+        'fecha_entrada': request.session.get('fecha_entrada'),
+        'fecha_salida': request.session.get('fecha_salida'),
     })
 
 
@@ -122,10 +136,11 @@ def seleccionar_huespedes(request):
 def reservar_habitacion(request, habitacion_id):
     habitacion = get_object_or_404(Habitacion, id=habitacion_id)
     
-    # Verificar si hay número de huéspedes en la sesión
+    # Verificar/establecer número de huéspedes en la sesión
     numero_huespedes = request.session.get('numero_huespedes')
     if not numero_huespedes:
-        return redirect('seleccionar_huespedes')
+        request.session['numero_huespedes'] = habitacion.capacidad
+        numero_huespedes = habitacion.capacidad
     
     # Verificar si la habitación tiene capacidad suficiente
     if habitacion.capacidad < numero_huespedes:

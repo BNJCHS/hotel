@@ -9,6 +9,55 @@
     <!-- PLANES -->
     <h1 class="text-3xl font-bold mb-6">Planes Disponibles</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+        <!-- Plan Naturaleza Destacado -->
+        <div class="bg-white p-6 rounded-lg shadow-md border-2 border-green-500 col-span-full">
+            <div class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold inline-block mb-2">PLAN DESTACADO</div>
+            <h2 class="text-2xl font-semibold mb-3 text-green-700">Plan Naturaleza</h2>
+            <div class="md:flex gap-4">
+                <img src="{% static 'img/pool_aerea_unsplash.jpg' %}" alt="Plan Naturaleza" class="w-full md:w-1/2 h-64 object-cover mb-4 rounded-lg">
+                <div>
+                    <p class="mb-3 text-lg">Sumérgete en la naturaleza con nuestro plan especial diseñado para los amantes del aire libre y la aventura.</p>
+                    <ul class="mb-4 space-y-2">
+                        <li class="flex items-start">
+                            <span class="text-green-600 mr-2">✓</span>
+                            <span>Excursiones guiadas por senderos naturales</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-600 mr-2">✓</span>
+                            <span>Merienda campestre incluida</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-600 mr-2">✓</span>
+                            <span>Bicicletas gratis o alquiler con descuentos</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-600 mr-2">✓</span>
+                            <span>Mapas turísticos y guías locales</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-600 mr-2">✓</span>
+                            <span>Habitación con vistas panorámicas</span>
+                        </li>
+                    </ul>
+                    <p class="mb-3"><strong>Precio:</strong> <span class="text-xl font-bold text-green-700">$1,200</span> por noche</p>
+                    <div class="flex gap-2 mt-4">
+                        <a href="#"
+                           class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                           Ver detalles
+                        </a>
+                        <a href="#"
+                           class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-bold">
+                           Reservar ahora
+                        </a>
+                        <a href="#"
+                           class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                           Agregar a la reserva
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         {% for plan in planes %}
         <div class="bg-white p-6 rounded-lg shadow-md">
             <h2 class="text-2xl font-semibold mb-2">{{ plan.nombre }}</h2>
@@ -33,13 +82,36 @@
             </div>
         </div>
         {% empty %}
-        <p>No hay planes disponibles.</p>
+        {% if not forloop.counter %}
+        <p>No hay planes adicionales disponibles.</p>
+        {% endif %}
         {% endfor %}
     </div>
 
     <!-- PROMOCIONES -->
     <h1 class="text-3xl font-bold mb-6">Promociones Disponibles</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Promoción de Verano Destacada -->
+        <div class="bg-white p-6 rounded-lg shadow-md border-2 border-yellow-400">
+            <div class="bg-yellow-400 text-white px-3 py-1 rounded-full text-sm font-bold inline-block mb-2">¡DESTACADO!</div>
+            <h2 class="text-2xl font-semibold mb-2 text-yellow-600">Promoción Especial de Verano</h2>
+            <img src="{% static 'img/pool_aerea_unsplash.jpg' %}" alt="Promoción de Verano" class="w-full max-w-md mb-2 rounded-lg">
+            <p class="mb-2"><strong>Descuento:</strong> 25%</p>
+            <p class="mb-2"><strong>Descripción:</strong> Disfruta del verano con nuestra promoción especial que incluye acceso ilimitado a la piscina, cóctel de bienvenida y late check-out hasta las 16:00.</p>
+            <p class="mb-2"><strong>Válido desde:</strong> 1 de junio hasta 31 de agosto</p>
+
+            <div class="flex gap-2 mt-4">
+                <a href="#"
+                   class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                   Ver más
+                </a>
+                <a href="#"
+                   class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 font-bold">
+                   ¡Reserva Ahora!
+                </a>
+            </div>
+        </div>
+        
         {% for promo in promociones %}
         <div class="bg-white p-6 rounded-lg shadow-md">
             <h2 class="text-2xl font-semibold mb-2">{{ promo.nombre }}</h2>
@@ -64,7 +136,9 @@
             </div>
         </div>
         {% empty %}
-        <p>No hay promociones disponibles.</p>
+        {% if not forloop.counter %}
+        <p>No hay promociones adicionales disponibles.</p>
+        {% endif %}
         {% endfor %}
     </div>
 

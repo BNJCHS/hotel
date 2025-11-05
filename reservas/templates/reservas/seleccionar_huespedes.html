@@ -26,6 +26,16 @@
                     <form method="POST" action="{% url 'seleccionar_huespedes' %}">
                         {% csrf_token %}
                         
+                        {% if numero_huespedes %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Huéspedes</label>
+                            <div class="alert alert-info d-flex align-items-center">
+                                <i class="bi bi-people-fill me-2"></i>
+                                <span>Reservando para {{ numero_huespedes }} huésped{% if numero_huespedes > 1 %}es{% endif %} (definido por la habitación seleccionada)</span>
+                            </div>
+                            <input type="hidden" name="numero_huespedes" value="{{ numero_huespedes }}">
+                        </div>
+                        {% else %}
                         <div class="mb-4">
                             <label for="numero_huespedes" class="form-label fw-bold">¿Cuántas personas se hospedarán?</label>
                             <div class="input-group">
@@ -35,6 +45,7 @@
                             </div>
                             <div class="form-text">Seleccione el número total de personas que se hospedarán</div>
                         </div>
+                        {% endif %}
 
                         <div class="mb-4">
                             <label for="fecha_entrada" class="form-label fw-bold">Fecha de Entrada</label>

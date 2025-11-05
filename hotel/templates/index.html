@@ -2,27 +2,22 @@
 {% load static %}
 
 {% block title %}Hotel Elegante - Bienvenido al Paraíso{% endblock %}
-
 {% block content %}
 <!-- Hero Section -->
-<section class="hero position-relative" id="hero">
-  <div class="hero-background">
+<section class="hero position-relative min-vh-100" id="hero">
+  <<div class="hero-background" style="background-image: url('{% static "img/luhotel.webp" %}');"></div>
 
-    <img src="{% static 'img/lobby_escalera_unsplash.jpg' %}" alt="Hotel Elegante" class="hero-image">
-    <div class="hero-overlay position-absolute w-100 h-100 bg-dark opacity-50"></div>
-  </div>
-
-  <div class="container position-relative h-100 d-flex align-items-center">
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
+  <div class="container position-relative d-flex align-items-center justify-content-center" style="z-index: 3;">
     <div class="hero-content text-center text-white py-5">
       <h1 class="display-4 fw-bold mb-4">Bienvenido al Hotel Elegante</h1>
       <p class="lead mb-5">Experimenta el lujo y la comodidad en un entorno único</p>
       <div class="hero-buttons">
-        <a href="{% url 'seleccionar_huespedes' %}" class="btn btn-primary btn-lg px-5 py-3">Reservar Ahora</a>
-        <a href="{% url 'habitaciones_lista' %}" class="btn btn-secondary btn-lg">Ver Habitaciones</a>
+        <a href="{% url 'seleccionar_huespedes' %}" class="btn btn-hotel-gold btn-lg px-5 py-3">Reservar Ahora</a>
+        <a href="{% url 'habitaciones_lista' %}" class="btn btn-hotel-gray btn-lg">Ver Habitaciones</a>
       </div>
     </div>
   </div>
-
   <div class="scroll-indicator">
     <i class="fas fa-chevron-down"></i>
   </div>
@@ -67,22 +62,28 @@
             {% if habitacion.imagen %}
             <div class="img-placeholder position-relative">
               <img src="{{ habitacion.imagen.url }}" class="card-img-top img-fluid" alt="{{ habitacion.nombre }}">
+              <div class="position-absolute top-0 start-0 p-3">
+                <span class="room-name-overlay">{{ habitacion.nombre }}</span>
+              </div>
               <div class="position-absolute bottom-0 end-0 p-3">
-                <span class="badge bg-primary">Destacada</span>
+                <span class="badge badge-hotel-beige-dark">Destacada</span>
               </div>
             </div>
             {% else %}
             <div class="img-placeholder position-relative">
               <img src="{% static 'img/habitacion_pexels_1.jpg' %}" class="card-img-top img-fluid" alt="{{ habitacion.nombre }}">
+              <div class="position-absolute top-0 start-0 p-3">
+                <span class="room-name-overlay">{{ habitacion.nombre }}</span>
+              </div>
               <div class="position-absolute bottom-0 end-0 p-3">
-                <span class="badge bg-primary">Destacada</span>
+                <span class="badge badge-hotel-beige-dark">Destacada</span>
               </div>
             </div>
             {% endif %}
             <div class="card-body p-4">
               <h3 class="card-title h5 mb-3">{{ habitacion.nombre }}</h3>
               <p class="card-text text-muted mb-3">{{ habitacion.descripcion|truncatewords:20 }}</p>
-              <a href="{% url 'habitaciones_lista' %}" class="btn btn-outline-primary w-100">Ver más</a>
+              <a href="{% url 'habitacion_detalle' habitacion.id %}" class="btn btn-outline-light w-100">Ver más</a>
             </div>
           </div>
         </div>
@@ -92,7 +93,7 @@
       {% endif %}
     </div>
     <div class="text-center mt-5">
-      <a href="{% url 'habitaciones_lista' %}" class="btn btn-outline-primary">Ver todas las habitaciones</a>
+      <a href="{% url 'habitaciones_lista' %}" class="btn btn-hotel-beige-dark">Ver todas las habitaciones</a>
     </div>
   </div>
 </section>
@@ -115,14 +116,14 @@
             <h3 class="card-title h5 mb-3">{{ plan.nombre }}</h3>
             <p class="card-text text-muted mb-3">{{ plan.descripcion|truncatechars:100 }}</p>
             <p class="precio fw-bold mb-4">Precio: ${{ plan.precio }}</p>
-            <a href="{% url 'detalle_plan' plan.id %}" class="btn btn-primary">Ver más</a>
+            <a href="{% url 'detalle_plan' plan.id %}" class="btn btn-outline-light">Ver más</a>
           </div>
         </div>
       </div>
       {% endfor %}
     </div>
     <div class="text-center mt-5">
-      <a href="{% url 'planes_y_promociones' %}" class="btn btn-outline-primary">Ver todos los planes</a>
+      <a href="{% url 'planes_y_promociones' %}" class="btn btn-hotel-beige-dark">Ver todos los planes</a>
     </div>
   </div>
 </section>
@@ -145,14 +146,14 @@
             <h3 class="card-title h5 mb-3">{{ promo.nombre }}</h3>
             <p class="card-text text-muted mb-3">{{ promo.descripcion|truncatechars:100 }}</p>
             <p class="descuento fw-bold mb-4 text-danger">Descuento: {{ promo.descuento }}%</p>
-            <a href="{% url 'promocion_detalle' promo.id %}" class="btn btn-secondary">Ver más</a>
+            <a href="{% url 'promocion_detalle' promo.id %}" class="btn btn-outline-light">Ver más</a>
           </div>
         </div>
       </div>
       {% endfor %}
     </div>
     <div class="text-center mt-5">
-      <a href="{% url 'planes_y_promociones' %}" class="btn btn-outline-secondary">Ver todas las promociones</a>
+      <a href="{% url 'planes_y_promociones' %}" class="btn btn-hotel-beige-dark">Ver todas las promociones</a>
     </div>
   </div>
 </section>
@@ -263,4 +264,68 @@
     </div>
   </div>
 </section>
+{% block extra_css %}
+<style>
+  /* Fondo gris oscuro solo para el contenido del index (entre hero y footer) */
+  main.index-dark {
+    background-color: #2b2b2b;
+    color: #e9e9e9;
+  }
+  /* Legibilidad de textos en modo oscuro del index */
+  main.index-dark h2,
+  main.index-dark h3,
+  main.index-dark p,
+  main.index-dark .card-title,
+  main.index-dark .card-text {
+    color: #e9e9e9 !important;
+  }
+  main.index-dark .text-muted {
+    color: #cfcfcf !important;
+  }
+
+  /* Evitar que bg-light y fondos de secciones sobrescriban el fondo oscuro */
+  main.index-dark .bg-light { background-color: transparent !important; }
+  main.index-dark .seccion-planes,
+  main.index-dark .seccion-promociones,
+  main.index-dark .seccion-servicios,
+  main.index-dark .about,
+  main.index-dark .seccion-habitaciones,
+  main.index-dark .seccion-instalaciones {
+    background-color: transparent !important;
+  }
+
+  /* Tarjetas en gris más claro sobre el fondo oscuro */
+  main.index-dark .card {
+    background-color: #3a3a3a;
+    color: #f1f1f1;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  main.index-dark .card .card-title,
+  main.index-dark .card .card-text {
+    color: #f1f1f1 !important;
+  }
+
+  /* Overlay con el nombre de la habitación sobre la imagen */
+  .room-name-overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    backdrop-filter: saturate(120%) blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+</style>
+{% endblock %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.classList.add('index-dark');
+    }
+  });
+</script>
 {% endblock %}

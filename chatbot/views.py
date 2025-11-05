@@ -384,12 +384,8 @@ def chat(request):
                 "message": "Claro, ¿sobre qué te gustaría saber del hotel? Por ejemplo: horarios de check‑in/out, servicios, ubicación/contacto, desayuno o estacionamiento.",
             })
 
-        # Si no se reconoce la pregunta, pedir reformular
-        return JsonResponse({
-            "success": True,
-            "stage": "greeting",
-            "message": "No estoy seguro de haber entendido. ¿Podrías especificar tu consulta? Por ejemplo: horarios de check‑in/out, servicios, ubicación/contacto, desayuno o estacionamiento.",
-        })
+        # Si no se reconoce la pregunta en modo Q&A, continuar al flujo de reserva
+        # (no retornamos aquí para permitir extracción de entidades y pasos siguientes)
 
         # Extraer entidades del mensaje
         extracted = extract_intent_and_entities(message)

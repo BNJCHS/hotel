@@ -88,7 +88,7 @@
     </header>
 
     <!-- Main Content -->
-    <main style="padding-top: 76px;">
+    <main>
         {% block content %}
         {% endblock %}
     </main>
@@ -169,10 +169,10 @@
 
     <!-- Chatbot Widget -->
     <div id="chatbot-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-        <div id="chatbot-toggle" style="background:#0d6efd;color:#fff;padding:12px 16px;border-radius:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.15);">
+        <div id="chatbot-toggle" style="background:rgba(110, 11, 20, 0.85);color:#fff;padding:12px 16px;border-radius:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.15);">
             Chat 💬
         </div>
-        <div id="chatbot-panel" style="display:none;width:320px;height:420px;background:#fff;border-radius:12px;box-shadow:0 12px 24px rgba(0,0,0,.2);overflow:hidden;margin-top:8px;">
+        <div id="chatbot-panel" style="display:none;width:320px;height:420px;background:#fff;border-radius:12px;box-shadow:0 12px 24px rgba(0,0,0,.2);overflow:hidden;margin-top:8px;" data-user-id="{% if user.is_authenticated %}{{ user.id }}{% endif %}">
             <div style="background:#0d6efd;color:#fff;padding:10px 12px;font-weight:600;">Asistente del Hotel</div>
             <div id="chatbot-messages" style="height:320px;overflow:auto;padding:12px;background:#f7f7f9;"></div>
             <div style="display:flex;gap:6px;padding:10px;background:#fff;border-top:1px solid #eee;">
@@ -192,6 +192,55 @@
 
             toggle.addEventListener('click', ()=>{
                 panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+            });
+
+              const userId = (panel.getAttribute('data-user-id') || '').trim() ? parseInt(panel.getAttribute('data-user-id'), 10) : null;
+
+            // Enviar texto al backend
+            async function sendText(text){
+                const msg = (text||'').trim();
+                if(!msg) return;
+                addMsg(msg, 'user');
+                input.value = '';
+                try {
+                    const res = await fetch('/chatbot/chat/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: msg, user_id: userId })
+                    });
+                    let data;
+                    try {
+                        data = await res.json();
+                    } catch (parseErr) {
+                        const raw = await res.text();
+                        console.error('Respuesta no JSON del chatbot:', raw);
+                        addMsg('Respuesta inesperada del asistente. Intenta de nuevo.', 'bot');
+                        return;
+                    }
+                    if(!data.success){
+                        addMsg(data.message || 'No se pudo procesar tu mensaje.', 'bot');
+                        return;
+                    }
+                    if (data.message) addMsg(data.message, 'bot');
+                    if (Array.isArray(data.options) && data.options.length){
+                        renderOptions(data.options);
+                    } else if (data.stage === 'greeting') {
+                        renderGreetingOptions();
+                    } else {
+                        clearOptions();
+                    }
+                } catch(err){
+                    addMsg('Ocurrió un error al contactar el asistente. Intenta nuevamente.', 'bot');
+                }
+            }
+
+            // Enviar con botón y Enter
+            sendBtn.addEventListener('click', ()=> sendText(input.value));
+            input.addEventListener('keydown', (e)=>{
+                if(e.key === 'Enter'){
+                    e.preventDefault();
+                    sendText(input.value);
+                }
             });
 
             function addMsg(text, who='bot'){

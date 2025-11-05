@@ -398,3 +398,16 @@ html {
 .footer a:hover {
   color: var(--beige);
 }
+
+/* Botón beige oscuro para "Ver más" en Habitaciones y Planes */
+.btn-hotel-beige-dark {
+  background-color: #e2d7b5 !important;
+  color: var(--vino) !important;
+  border: 1px solid var(--vino);
+  transition: all 0.3s ease;
+}
+.btn-hotel-beige-dark:hover,
+.btn-hotel-beige-dark:focus {
+  background-color: #d6cca8 !important;
+  color: var(--vino) !important;
+}
