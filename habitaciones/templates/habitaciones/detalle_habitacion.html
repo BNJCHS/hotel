@@ -1,24 +1,83 @@
 {% extends "base.html" %}
+{% load static %}
+{% block extra_css %}
+<style>
+main{padding-top:84px}
+@media (max-width:992px){main{padding-top:104px}}
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-  <h2 class="mb-4">Habitación: {{ habitacion.nombre }}</h2>
-
-  {% if habitacion.imagen %}
-    <img src="{{ habitacion.imagen.url }}" alt="Imagen de la habitación" class="img-fluid rounded mb-3">
-  {% endif %}
-
-  <ul class="list-group">
-    <li class="list-group-item"><strong>Capacidad:</strong> {{ habitacion.capacidad }} personas</li>
-    <li class="list-group-item"><strong>Precio por noche:</strong> ${{ habitacion.precio }}</li>
-    <li class="list-group-item"><strong>Descripción:</strong> {{ habitacion.descripcion }}</li>
-  </ul>
-
-  <div class="mt-4 d-flex gap-2">
-    <a href="{% url 'reservar_habitacion' habitacion.id %}" class="btn btn-primary">
-      <i class="fas fa-calendar-check me-1"></i> Reservar
-    </a>
-    <a href="{% url 'lista_habitaciones' %}" class="btn btn-secondary">← Volver a la lista</a>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm overflow-hidden rounded-3">
+        {% if habitacion.tipo_habitacion.imagen %}
+          <img src="{{ habitacion.tipo_habitacion.imagen.url }}" alt="Imagen del tipo de habitación" class="img-fluid">
+        {% else %}
+          <img src="{% static 'img/habitacion_pexels_2.jpg' %}" alt="Habitación {{ habitacion.numero }}" class="img-fluid">
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <h2 class="mb-3">Habitación {{ habitacion.numero }} - {{ habitacion.tipo_habitacion.nombre }}</h2>
+      <ul class="list-group mb-3">
+        <li class="list-group-item"><strong>Capacidad:</strong> {{ habitacion.capacidad }} personas</li>
+        <li class="list-group-item"><strong>Precio por noche:</strong> ${{ habitacion.precio }}</li>
+        <li class="list-group-item"><strong>Tipo:</strong> {{ habitacion.tipo_habitacion.nombre }}</li>
+        <li class="list-group-item">
+          <strong>Disponibilidad:</strong>
+          {% if habitacion.en_mantenimiento %}
+            En mantenimiento
+          {% elif habitacion.disponible %}
+            Disponible
+          {% else %}
+            No disponible
+          {% endif %}
+        </li>
+        <li class="list-group-item">
+          <strong>Stock del tipo:</strong>
+          {{ habitacion.tipo_habitacion.stock_disponible }}/{{ habitacion.tipo_habitacion.stock_total }}
+          {% if habitacion.tipo_habitacion.stock_total %}
+            (Ocupación: {{ habitacion.tipo_habitacion.porcentaje_ocupacion }}%)
+          {% endif %}
+        </li>
+        <li class="list-group-item">
+          <strong>Descripción:</strong>
+          {% if habitacion.tipo_habitacion.descripcion %}
+            {{ habitacion.tipo_habitacion.descripcion }}
+          {% elif habitacion.observaciones %}
+            {{ habitacion.observaciones }}
+          {% else %}
+            No hay descripción disponible.
+          {% endif %}
+        </li>
+      </ul>
+      <div class="d-flex gap-2 mb-4">
+        <a href="{% url 'reservar_habitacion' habitacion.id %}" class="btn btn-primary">
+          <i class="fas fa-calendar-check me-1"></i> Reservar
+        </a>
+        <a href="{% url 'habitaciones:list_habitaciones_reserva' %}" class="btn btn-outline-secondary">← Volver a la lista</a>
+        <a href="{% url 'habitaciones_explorar' %}" class="btn btn-outline-secondary">Ver más habitaciones</a>
+      </div>
+      <h3 class="h5 mt-4">Amenidades</h3>
+      <div class="row">
+        <div class="col-6">
+          <ul class="list-unstyled mb-2">
+            <li><i class="fas fa-check text-success me-2"></i> WiFi gratis</li>
+            <li><i class="fas fa-check text-success me-2"></i> TV de pantalla plana</li>
+            <li><i class="fas fa-check text-success me-2"></i> Aire acondicionado</li>
+          </ul>
+        </div>
+        <div class="col-6">
+          <ul class="list-unstyled mb-2">
+            <li><i class="fas fa-check text-success me-2"></i> Baño privado</li>
+            <li><i class="fas fa-check text-success me-2"></i> Ropa de cama premium</li>
+            <li><i class="fas fa-check text-success me-2"></i> Servicio de limpieza</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

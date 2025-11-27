@@ -1,23 +1,54 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Detalle Plan{% endblock %}
+{% block title %}{{ plan.nombre }} - Detalle del Plan{% endblock %}
+
+{% block extra_css %}
+<style>
+main{padding-top:84px}
+@media (max-width:992px){main{padding-top:104px}}
+.plan-image{width:100%;height:320px;object-fit:cover;border-radius:12px}
+.feature-list li{margin:.25rem 0}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="card shadow-sm mb-4">
-        {% load static %}
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-6">
         {% if plan.imagen %}
-            <img src="{{ plan.imagen.url }}" class="card-img-top" alt="{{ plan.nombre }}">
+          <img src="{{ plan.imagen.url }}" alt="{{ plan.nombre }}" class="plan-image shadow-sm">
         {% else %}
-            <img src="{% static 'img/restaurante_pexels_1.jpg' %}" class="card-img-top" alt="{{ plan.nombre }}">
+          <img src="{% static 'img/pool_aerea_unsplash.jpg' %}" alt="{{ plan.nombre }}" class="plan-image shadow-sm">
         {% endif %}
-        <div class="card-body">
-            <h3 class="card-title">{{ plan.nombre }}</h3>
-            <p class="card-text">{{ plan.descripcion }}</p>
-            <p class="h5">Precio: ${{ plan.precio }}</p>
-            <p class="h6">Habitación asignada: {{ plan.habitacion.numero }}</p>
-            <a href="{% url 'reservar_plan' plan.id %}" class="btn btn-success">Seleccionar Plan</a>
+      </div>
+      <div class="col-lg-6">
+        <h1 class="h3 mb-2">{{ plan.nombre }}</h1>
+        <div class="d-flex align-items-baseline gap-2 mb-3">
+          <span class="h4 text-primary">${{ plan.precio }}</span>
+          <small class="text-muted">/plan</small>
         </div>
+        <p class="text-muted">{{ plan.descripcion }}</p>
+        <ul class="list-group mb-3">
+          <li class="list-group-item"><strong>Habitación:</strong> {{ plan.habitacion.numero }} ({{ plan.habitacion.tipo_habitacion.nombre }})</li>
+          <li class="list-group-item"><strong>Capacidad:</strong> {{ plan.habitacion.capacidad }} personas</li>
+          <li class="list-group-item"><strong>Disponibilidad:</strong> {% if plan.habitacion.esta_disponible %}Disponible{% else %}No disponible{% endif %}</li>
+          <li class="list-group-item"><strong>Stock del tipo:</strong> {{ plan.habitacion.tipo_habitacion.stock_disponible }}/{{ plan.habitacion.tipo_habitacion.stock_total }} {% if plan.habitacion.tipo_habitacion.stock_total %}(Ocupación: {{ plan.habitacion.tipo_habitacion.porcentaje_ocupacion }}%){% endif %}</li>
+        </ul>
+        <div class="d-flex gap-2 mb-4">
+          <a href="{% url 'reservar_plan' plan.id %}" class="btn btn-primary"><i class="fas fa-calendar-check me-1"></i> Seleccionar Plan</a>
+          <a href="{% url 'planes_lista' %}" class="btn btn-outline-secondary">Ver más planes</a>
+          <a href="{% url 'index' %}" class="btn btn-outline-secondary">Inicio</a>
+        </div>
+        <h3 class="h5 mt-3">Características</h3>
+        <ul class="feature-list list-unstyled">
+          <li><i class="fas fa-check text-success me-2"></i> Acceso a instalaciones</li>
+          <li><i class="fas fa-check text-success me-2"></i> Atención prioritaria</li>
+          <li><i class="fas fa-check text-success me-2"></i> Flexibilidad de fechas</li>
+        </ul>
+      </div>
     </div>
-</div>
+  </div>
+</section>
 {% endblock %}

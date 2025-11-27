@@ -15,6 +15,7 @@ urlpatterns = [
     path("reservar/plan/<int:plan_id>/", views.reservar_plan, name="reservar_plan"),
     path("reservar/promocion/<int:promocion_id>/", views.reservar_promocion, name="reservar_promocion"),
     path('habitaciones/', views.lista_habitaciones, name='habitaciones_lista'),
+    path('habitaciones/explorar/', views.lista_habitaciones_explorar, name='habitaciones_explorar'),
     path('habitacion/<int:id>/', views.habitacion_detalle, name='habitacion_detalle'),
     path('planes-promociones/', views.planes_y_promociones, name='planes_y_promociones'),
     path('instalaciones/', views.instalaciones, name='instalaciones'),

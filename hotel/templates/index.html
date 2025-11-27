@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Hotel Elegante - Bienvenido al Paraíso{% endblock %}
+{% block title %}GOLD STAR - Bienvenido al Paraíso{% endblock %}
 {% block content %}
 <!-- Hero Section -->
 <section class="hero position-relative min-vh-100" id="hero">
@@ -10,11 +10,11 @@
   <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
   <div class="container position-relative d-flex align-items-center justify-content-center" style="z-index: 3;">
     <div class="hero-content text-center text-white py-5">
-      <h1 class="display-4 fw-bold mb-4">Bienvenido al Hotel Elegante</h1>
+      <h1 class="display-4 fw-bold mb-4">Bienvenido  al hotel GOLD STAR</h1>
       <p class="lead mb-5">Experimenta el lujo y la comodidad en un entorno único</p>
       <div class="hero-buttons">
         <a href="{% url 'seleccionar_huespedes' %}" class="btn btn-hotel-gold btn-lg px-5 py-3">Reservar Ahora</a>
-        <a href="{% url 'habitaciones_lista' %}" class="btn btn-hotel-gray btn-lg">Ver Habitaciones</a>
+        <a href="{% url 'habitaciones_explorar' %}" class="btn btn-hotel-gray btn-lg">Ver Habitaciones</a>
       </div>
     </div>
   </div>
@@ -61,7 +61,7 @@
           <div class="card h-100 border-0 shadow-sm overflow-hidden">
             {% if habitacion.imagen %}
             <div class="img-placeholder position-relative">
-              <img src="{{ habitacion.imagen.url }}" class="card-img-top img-fluid" alt="{{ habitacion.nombre }}">
+              <img src="{{ imAGEN.jpg }}" class="card-img-top img-fluid" alt="{{ habitacion.nombre }}">
               <div class="position-absolute top-0 start-0 p-3">
                 <span class="room-name-overlay">{{ habitacion.nombre }}</span>
               </div>
@@ -93,7 +93,7 @@
       {% endif %}
     </div>
     <div class="text-center mt-5">
-      <a href="{% url 'habitaciones_lista' %}" class="btn btn-hotel-beige-dark">Ver todas las habitaciones</a>
+      <a href="{% url 'habitaciones_explorar' %}" class="btn btn-hotel-beige-dark">Ver todas las habitaciones</a>
     </div>
   </div>
 </section>

@@ -290,7 +290,10 @@ def seleccionar_servicio(request, reserva_id=None):
             reserva.servicios.add(*servicios_obj)
         
         # Calcular precio
-        noches = (reserva.check_out - reserva.check_in).days or 1
+        if reserva.check_in and reserva.check_out:
+            noches = (reserva.check_out - reserva.check_in).days or 1
+        else:
+            noches = 1
         precio_habitacion = reserva.tipo_habitacion.precio * reserva.cantidad_habitaciones * noches
         precio_servicios = sum(servicio.precio for servicio in reserva.servicios.all())
         subtotal = precio_habitacion + precio_servicios

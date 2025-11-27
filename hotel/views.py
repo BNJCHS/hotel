@@ -12,21 +12,16 @@ from usuarios.decorators import require_login_and_not_blocked
 import json
 from datetime import datetime, timedelta
 from decimal import Decimal
+from django.utils import timezone
 from administracion.models import Servicio
 
 def lista_habitaciones(request):
-    # Obtener parámetros de la sesión
     numero_huespedes = request.session.get('numero_huespedes', None)
     fecha_entrada = request.session.get('fecha_entrada', None)
     fecha_salida = request.session.get('fecha_salida', None)
-    
-    # Si no hay número de huéspedes, redirigir a la selección de huéspedes
     if not numero_huespedes:
         return redirect('seleccionar_huespedes')
-    
-    # Filtrar habitaciones por capacidad y verificar disponibilidad para las fechas seleccionadas
     habitaciones = Habitacion.objects.filter(disponible=True, capacidad__gte=numero_huespedes)
-    
     context = {
         'habitaciones': habitaciones,
         'numero_huespedes': numero_huespedes,
@@ -34,6 +29,12 @@ def lista_habitaciones(request):
         'fecha_salida': fecha_salida
     }
     return render(request, 'lista_habitaciones.html', context)
+
+def lista_habitaciones_explorar(request):
+    habitaciones = Habitacion.objects.all()
+    return render(request, 'habitaciones/listar_habitaciones.html', {
+        'habitaciones': habitaciones
+    })
 def habitacion_detalle(request, id):
     habitacion = get_object_or_404(Habitacion, id=id)
     
@@ -264,7 +265,17 @@ def detalle_plan(request, plan_id):
 
 def promocion_detalle(request, promocion_id):
     promocion = get_object_or_404(Promocion, id=promocion_id)
-    return render(request, 'promocion_detalle.html', {'promocion': promocion})
+    today = timezone.now().date()
+    is_active = promocion.fecha_inicio <= today <= promocion.fecha_fin
+    estado = 'activa' if is_active else ('proxima' if today < promocion.fecha_inicio else 'finalizada')
+    dias_restantes = (promocion.fecha_fin - today).days if is_active else 0
+    dias_para_inicio = (promocion.fecha_inicio - today).days if today < promocion.fecha_inicio else 0
+    return render(request, 'promocion_detalle.html', {
+        'promocion': promocion,
+        'estado': estado,
+        'dias_restantes': dias_restantes,
+        'dias_para_inicio': dias_para_inicio,
+    })
 
 def servicio_detalle(request, servicio_id):
     servicio = get_object_or_404(Servicio, id=servicio_id)
@@ -286,16 +297,18 @@ def planes_y_promociones(request):
 def reservar_plan(request, plan_id):
     plan = get_object_or_404(Plan, id=plan_id)
 
-    # Crear la reserva con el plan
     reserva = Reserva.objects.create(
         usuario=request.user,
-        habitacion=plan.habitacion,  # el plan ya tiene una habitación asociada
+        tipo_habitacion=plan.habitacion.tipo_habitacion,
+        cantidad_habitaciones=1,
         plan=plan,
-        confirmada=False
     )
 
-    # Redirigir a confirmar la reserva con el ID
-    return redirect("confirmar_reserva", reserva_id=reserva.id)
+    request.session['reserva_id'] = reserva.id
+    return render(request, 'reservas/preguntar_servicios.html', {
+        'reserva_id': reserva.id,
+        'plan': plan,
+    })
 
 
 # ===============================
@@ -305,22 +318,19 @@ def reservar_plan(request, plan_id):
 def reservar_promocion(request, promocion_id):
     promocion = get_object_or_404(Promocion, id=promocion_id)
 
-    # ⚠️ Supongo que ya elegiste la habitación antes
     habitacion_id = request.session.get("habitacion_id")
     if not habitacion_id:
-        return redirect("seleccionar_habitacion")
+        return redirect("habitaciones_explorar")
 
     habitacion = get_object_or_404(Habitacion, id=habitacion_id)
 
-    # Crear la reserva con la promoción
     reserva = Reserva.objects.create(
         usuario=request.user,
-        habitacion=habitacion,
+        tipo_habitacion=habitacion.tipo_habitacion,
+        cantidad_habitaciones=1,
         promocion=promocion,
-        confirmada=False
     )
 
-    # Redirigir a confirmar la reserva con el ID
     return redirect("confirmar_reserva", reserva_id=reserva.id)
 
 

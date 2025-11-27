@@ -27,7 +27,7 @@
             <div class="section-divider"></div>
         </div>
         
-        <div class="room-card room-card-enhanced" ...>
+        <!-- removed invalid stray wrapper -->
 
             {% for h in habitaciones %}
             <div class="room-card-enhanced" data-tipo="{{ h.tipo|lower }}" data-precio="{{ h.precio }}" data-capacidad="{{ h.capacidad }}">
@@ -35,14 +35,14 @@
                     {% if h.imagen %}
                         <img src="{{ h.imagen.url }}" alt="Habitación {{ h.numero }}" class="room-img">
                     {% else %}
-                        <img src="/placeholder.svg?height=280&width=400" alt="Habitación {{ h.numero }}" class="room-img">
+                        <img src="{% static 'img/habitacion_pexels_1.jpg' %}" alt="Habitación {{ h.numero }}" class="room-img">
                     {% endif %}
                     <div class="room-badge">
                         <span class="room-number">{{ h.numero }}</span>
                     </div>
                     <div class="room-overlay-new">
                         <div class="overlay-content">
-                            <a href="{% url 'detalle_habitacion_publica' h.id %}" class="btn-overlay">
+                            <a href="{% url 'habitaciones:detalle_habitacion_publica' h.id %}" class="btn-overlay">
                                 <i class="fas fa-eye"></i> Ver Detalles
                             </a>
                         </div>
@@ -92,7 +92,7 @@
                                 <i class="fas fa-shopping-cart"></i>
                                 Reservar
                             </a>
-                            <a href="{% url 'detalle_habitacion_publica' h.id %}" class="btn-action btn-outline">
+                            <a href="{% url 'habitaciones:detalle_habitacion_publica' h.id %}" class="btn-action btn-outline">
                                 <i class="fas fa-info-circle"></i>
                                 Detalles
                             </a>
@@ -115,4 +115,39 @@
         </div>
     </div>
 </section>
+<style>
+.rooms-hero{position:relative;padding:80px 0;background:linear-gradient(135deg,#1f1f1f,#2a2a2a);color:#fff}
+.hero-overlay{background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.65))}
+.section-header{text-align:center;margin-bottom:24px}
+.section-header h2{font-weight:700}
+.section-divider{width:64px;height:3px;background:#d4af37;margin:12px auto;border-radius:2px}
+.rooms-showcase .container{display:flex;flex-direction:column;gap:24px}
+.room-card-enhanced{display:flex;flex-direction:row;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.12);transition:transform .25s ease,box-shadow .25s ease;min-height:220px}
+.room-card-enhanced:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.18)}
+.room-image-container{position:relative;flex:0 0 38%}
+.room-img{width:100%;height:100%;min-height:220px;object-fit:cover}
+.room-overlay-new{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.55) 100%);opacity:0;transition:opacity .25s ease}
+.room-card-enhanced:hover .room-overlay-new{opacity:1}
+.overlay-content{position:absolute;bottom:16px;right:16px}
+.btn-overlay{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:#fff;color:#222;text-decoration:none;font-weight:600}
+.room-badge{position:absolute;top:12px;left:12px;background:#fff;color:#222;padding:6px 10px;border-radius:999px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.room-details{flex:1;display:flex;flex-direction:column;justify-content:space-between}
+.room-title-section{padding:16px}
+.room-title{margin:8px 0 6px}
+.room-type-badge{display:inline-block;background:#f1f1f1;border-radius:999px;padding:6px 10px;font-weight:600;color:#333}
+.room-description{color:#666;margin:0 16px}
+.price-section{display:flex;align-items:baseline;gap:8px;margin:0 16px 12px}
+.room-price-new{font-weight:700;color:#0d6efd}
+.room-actions-new{display:flex;gap:10px;padding:0 16px 16px;justify-content:flex-end}
+.btn-action{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;text-decoration:none}
+.btn-action.btn-primary{background:#0d6efd;color:#fff}
+.btn-action.btn-outline{background:transparent;color:#0d6efd;border:1px solid #0d6efd}
+.no-rooms-found{padding:32px;text-align:center}
+@media (max-width:768px){
+  .room-card-enhanced{flex-direction:column}
+  .room-image-container{flex:0 0 auto}
+  .room-img{height:220px}
+  .room-actions-new{justify-content:flex-start}
+}
+</style>
 {% endblock %}

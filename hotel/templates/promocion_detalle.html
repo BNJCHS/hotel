@@ -1,31 +1,62 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+main{padding-top:84px}
+@media (max-width:992px){main{padding-top:104px}}
+.plan-image{width:100%;height:320px;object-fit:cover;border-radius:12px}
+.feature-list li{margin:.25rem 0}
+</style>
+{% endblock %}
+
 {% block title %}Detalle de Promoción - {{ promocion.nombre }}{% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-4">{{ promocion.nombre }}</h1>
-
-    {% if promocion.imagen %}
-        <img src="{{ promocion.imagen.url }}" alt="{{ promocion.nombre }}" class="w-full max-w-xl mb-4 rounded-lg shadow-md">
-    {% else %}
-        <img src="{% static 'img/pool_dia_unsplash.jpg' %}" alt="{{ promocion.nombre }}" class="w-full max-w-xl mb-4 rounded-lg shadow-md">
-    {% endif %}
-
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <p class="mb-2"><strong>Descripción:</strong> {{ promocion.descripcion }}</p>
-        <p class="mb-2"><strong>Descuento:</strong> {{ promocion.descuento }}%</p>
-        <p class="mb-2"><strong>Fecha de inicio:</strong> {{ promocion.fecha_inicio }}</p>
-        <p class="mb-2"><strong>Fecha de fin:</strong> {{ promocion.fecha_fin }}</p>
-
-        {% if promocion.plan %}
-            <p class="mb-2"><strong>Plan asociado:</strong> {{ promocion.plan.nombre }}</p>
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-6">
+        {% if promocion.imagen %}
+          <img src="{{ promocion.imagen.url }}" alt="{{ promocion.nombre }}" class="plan-image shadow-sm">
+        {% else %}
+          <img src="{% static 'img/pool_aerea_unsplash.jpg' %}" alt="{{ promocion.nombre }}" class="plan-image shadow-sm">
         {% endif %}
-
-        <a href="{% url 'promociones_lista' %}" class="inline-block mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-            Volver a promociones
-        </a>
+      </div>
+      <div class="col-lg-6">
+        <h1 class="h3 mb-2">{{ promocion.nombre }}</h1>
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <span class="h4 text-danger">-{{ promocion.descuento }}%</span>
+          {% if estado == 'activa' %}
+            <span class="badge bg-success">Activa</span>
+          {% elif estado == 'proxima' %}
+            <span class="badge bg-warning text-dark">Próxima</span>
+          {% else %}
+            <span class="badge bg-secondary">Finalizada</span>
+          {% endif %}
+        </div>
+        <p class="text-muted">{{ promocion.descripcion }}</p>
+        <ul class="list-group mb-3">
+          <li class="list-group-item"><strong>Vigencia:</strong> {{ promocion.fecha_inicio|date:"d/m/Y" }} — {{ promocion.fecha_fin|date:"d/m/Y" }}</li>
+          {% if estado == 'activa' %}
+            <li class="list-group-item"><strong>Termina en:</strong> {{ dias_restantes }} día{{ dias_restantes|pluralize:"s" }}</li>
+          {% elif estado == 'proxima' %}
+            <li class="list-group-item"><strong>Comienza en:</strong> {{ dias_para_inicio }} día{{ dias_para_inicio|pluralize:"s" }}</li>
+          {% endif %}
+        </ul>
+        <div class="d-flex gap-2 mb-4">
+          <a href="{% url 'reservar_promocion' promocion.id %}" class="btn btn-primary"><i class="fas fa-tag me-1"></i> Seleccionar Promoción</a>
+          <a href="{% url 'promociones_lista' %}" class="btn btn-outline-secondary">← Volver a promociones</a>
+          <a href="{% url 'planes_lista' %}" class="btn btn-outline-secondary">Ver planes</a>
+        </div>
+        <h3 class="h5 mt-3">Condiciones</h3>
+        <ul class="feature-list list-unstyled">
+          <li><i class="fas fa-check text-success me-2"></i> Sujeto a disponibilidad</li>
+          <li><i class="fas fa-check text-success me-2"></i> No acumulable con otras ofertas</li>
+          <li><i class="fas fa-check text-success me-2"></i> Aplicable dentro de las fechas de vigencia</li>
+        </ul>
+      </div>
     </div>
-</div>
+  </div>
+</section>
 {% endblock %}
