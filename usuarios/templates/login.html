@@ -81,14 +81,10 @@
                 </div>
                 
                 <div class="social-login" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
-                    <button type="button" class="social-btn google-btn" style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #e0e0e0; background: #fff; color: #555; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
+                    <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.GET.next|default:'/' }}" class="social-btn google-btn" style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #e0e0e0; background: #fff; color: #555; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; text-decoration: none;">
                         <i class="fab fa-google" style="margin-right: 10px; color: #DB4437;"></i>
                         Continuar con Google
-                    </button>
-                    <button type="button" class="social-btn facebook-btn" style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #e0e0e0; background: #fff; color: #555; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
-                        <i class="fab fa-facebook-f" style="margin-right: 10px; color: #4267B2;"></i>
-                        Continuar con Facebook
-                    </button>
+                    </a>
                 </div>
                 
                 <div class="login-footer" style="text-align: center; padding-top: 15px; border-top: 1px solid #f0f0f0;">

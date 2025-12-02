@@ -93,10 +93,7 @@
                             <i class="fas fa-bed"></i>
                             <span>Mis Reservas</span>
                         </a>
-                        <a href="#preferences" class="sidebar-item" data-section="preferences">
-                            <i class="fas fa-heart"></i>
-                            <span>Preferencias</span>
-                        </a>
+                        <!-- Sección de preferencias eliminada -->
                         <a href="#settings" class="sidebar-item" data-section="settings">
                             <i class="fas fa-cog"></i>
                             <span>Configuración</span>
@@ -356,38 +353,41 @@
                             </div>
                         </div>
                         
-                        <div class="reservations-container" style="padding: 1.5rem;">
+                        <div class="reservations-container" style="padding: 1.5rem; max-height: 400px; overflow-y: auto;">
                             {% if reservations %}
                                 {% for reservation in reservations %}
                                 <div class="reservation-card" data-status="{{ reservation.estado }}" data-reservation-id="{{ reservation.id }}">
                                     <div class="reservation-card-content">
                                         <div class="reservation-image">
-                                            {% if reservation.habitacion.imagen %}
-                                                <img src="{{ reservation.habitacion.imagen.url }}" alt="Habitación {{ reservation.habitacion.numero }}">
+                                            {% if reservation.habitacion_asignada and reservation.habitacion_asignada.imagen %}
+                                                <img src="{{ reservation.habitacion_asignada.imagen.url }}" alt="Habitación {{ reservation.habitacion_asignada.numero }}">
                                             {% else %}
-                                                <img src="{% static 'img/habitacion_default.svg' %}" alt="Habitación {{ reservation.habitacion.numero }}">
+                                                <img src="{% static 'img/habitacion_default.svg' %}" alt="Habitación">
                                             {% endif %}
                                             <div class="reservation-status-badge status-{{ reservation.estado }}">
                                                 {{ reservation.get_estado_display }}
                                             </div>
                                         </div>
-                                        
                                         <div class="reservation-details">
                                             <h3 class="reservation-title">
-                                                Habitación {{ reservation.habitacion.numero }} - {{ reservation.habitacion.tipo }}
+                                                {% if reservation.habitacion_asignada %}
+                                                    Habitación {{ reservation.habitacion_asignada.numero }} - {{ reservation.habitacion_asignada.tipo_habitacion.nombre }}
+                                                {% else %}
+                                                    {{ reservation.tipo_habitacion.nombre }}
+                                                {% endif %}
                                             </h3>
                                             <div class="reservation-info-grid">
                                                 <div class="info-item">
                                                     <i class="fas fa-calendar-check"></i>
-                                                    <span>Check-in: {{ reservation.fecha_entrada|date:"d/m/Y" }}</span>
+                                                    <span>Check-in: {{ reservation.check_in|date:"d/m/Y" }}</span>
                                                 </div>
                                                 <div class="info-item">
                                                     <i class="fas fa-calendar-times"></i>
-                                                    <span>Check-out: {{ reservation.fecha_salida|date:"d/m/Y" }}</span>
+                                                    <span>Check-out: {{ reservation.check_out|date:"d/m/Y" }}</span>
                                                 </div>
                                                 <div class="info-item">
                                                     <i class="fas fa-users"></i>
-                                                    <span>{{ reservation.numero_huespedes }} huésped{{ reservation.numero_huespedes|pluralize:"es" }}</span>
+                                                    <span>{{ reservation.cantidad_huespedes }} huésped{{ reservation.cantidad_huespedes|pluralize:"es" }}</span>
                                                 </div>
                                                 <div class="info-item">
                                                     <i class="fas fa-dollar-sign"></i>
@@ -403,9 +403,8 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
                                         <div class="reservation-actions">
-                                            <a href="{% url 'detalle_reserva' reservation.id %}" class="btn btn-outline-primary btn-sm">
+                                            <a href="{% url 'reservas:detalle_reserva' reservation.id %}" class="btn btn-outline-primary btn-sm">
                                                 <i class="fas fa-eye"></i> Ver Detalles
                                             </a>
                                             {% if reservation.estado == 'confirmada' or reservation.estado == 'pendiente' %}
@@ -438,143 +437,6 @@
                     </div>
                 </div>
 
-                <!-- Preferencias -->
-                <div class="profile-section" id="preferences">
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h2><i class="fas fa-heart"></i> Preferencias de Hospedaje</h2>
-                        </div>
-                        
-                        <form method="post" class="preferences-form">
-                            {% csrf_token %}
-                            <input type="hidden" name="update_preferences" value="1">
-                            
-                            <div class="row">
-                                <!-- Notificaciones -->
-                                <div class="col-md-6">
-                                    <h4><i class="fas fa-bell"></i> Notificaciones</h4>
-                                    <div class="form-group">
-                                        <div class="form-check">
-                                            {{ preferences_form.email_notifications }}
-                                            <label class="form-check-label" for="{{ preferences_form.email_notifications.id_for_label }}">
-                                                {{ preferences_form.email_notifications.label }}
-                                            </label>
-                                            <small class="form-text text-muted">{{ preferences_form.email_notifications.help_text }}</small>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="form-check">
-                                            {{ preferences_form.sms_notifications }}
-                                            <label class="form-check-label" for="{{ preferences_form.sms_notifications.id_for_label }}">
-                                                {{ preferences_form.sms_notifications.label }}
-                                            </label>
-                                            <small class="form-text text-muted">{{ preferences_form.sms_notifications.help_text }}</small>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="form-check">
-                                            {{ preferences_form.marketing_emails }}
-                                            <label class="form-check-label" for="{{ preferences_form.marketing_emails.id_for_label }}">
-                                                {{ preferences_form.marketing_emails.label }}
-                                            </label>
-                                            <small class="form-text text-muted">{{ preferences_form.marketing_emails.help_text }}</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Habitación -->
-                                <div class="col-md-6">
-                                    <h4><i class="fas fa-bed"></i> Preferencias de Habitación</h4>
-                                    <div class="form-group">
-                                        <label for="{{ preferences_form.room_type_preference.id_for_label }}">
-                                            {{ preferences_form.room_type_preference.label }}
-                                        </label>
-                                        {{ preferences_form.room_type_preference }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="{{ preferences_form.floor_preference.id_for_label }}">
-                                            {{ preferences_form.floor_preference.label }}
-                                        </label>
-                                        {{ preferences_form.floor_preference }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="{{ preferences_form.view_preference.id_for_label }}">
-                                            {{ preferences_form.view_preference.label }}
-                                        </label>
-                                        {{ preferences_form.view_preference }}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <!-- Servicios -->
-                                <div class="col-md-6">
-                                    <h4><i class="fas fa-concierge-bell"></i> Servicios</h4>
-                                    <div class="form-group">
-                                        <div class="form-check">
-                                            {{ preferences_form.breakfast_included }}
-                                            <label class="form-check-label" for="{{ preferences_form.breakfast_included.id_for_label }}">
-                                                {{ preferences_form.breakfast_included.label }}
-                                            </label>
-                                            <small class="form-text text-muted">{{ preferences_form.breakfast_included.help_text }}</small>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="form-check">
-                                            {{ preferences_form.late_checkout }}
-                                            <label class="form-check-label" for="{{ preferences_form.late_checkout.id_for_label }}">
-                                                {{ preferences_form.late_checkout.label }}
-                                            </label>
-                                            <small class="form-text text-muted">{{ preferences_form.late_checkout.help_text }}</small>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="form-check">
-                                            {{ preferences_form.early_checkin }}
-                                            <label class="form-check-label" for="{{ preferences_form.early_checkin.id_for_label }}">
-                                                {{ preferences_form.early_checkin.label }}
-                                            </label>
-                                            <small class="form-text text-muted">{{ preferences_form.early_checkin.help_text }}</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Pago e Idioma -->
-                                <div class="col-md-6">
-                                    <h4><i class="fas fa-credit-card"></i> Pago e Idioma</h4>
-                                    <div class="form-group">
-                                        <label for="{{ preferences_form.preferred_payment_method.id_for_label }}">
-                                            {{ preferences_form.preferred_payment_method.label }}
-                                        </label>
-                                        {{ preferences_form.preferred_payment_method }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="{{ preferences_form.language_preference.id_for_label }}">
-                                            {{ preferences_form.language_preference.label }}
-                                        </label>
-                                        {{ preferences_form.language_preference }}
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="{{ preferences_form.currency_preference.id_for_label }}">
-                                            {{ preferences_form.currency_preference.label }}
-                                        </label>
-                                        {{ preferences_form.currency_preference }}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-actions mt-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Guardar Preferencias
-                                </button>
-                                <button type="button" class="btn btn-secondary" onclick="resetPreferences()">
-                                    <i class="fas fa-undo"></i> Restablecer
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
                 <!-- Configuración -->
                 <div class="profile-section" id="settings">
                     <div class="section-card">
@@ -589,12 +451,27 @@
                                 </div>
                                 <div class="setting-content">
                                     <h3>Notificaciones</h3>
-                                    <p>Configura cómo quieres recibir nuestras comunicaciones</p>
+                                    <p>Configura si quieres recibir nuestras promociones y novedades por email</p>
+                                    <p>
+                                        Estado: 
+                                        {% if notifications_enabled %}
+                                            <span class="badge bg-success">Activadas</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Desactivadas</span>
+                                        {% endif %}
+                                    </p>
                                 </div>
                                 <div class="setting-action">
-                                    <button class="btn btn-outline-primary" onclick="toggleNotifications()">
-                                        <i class="fas fa-cog"></i> Configurar
-                                    </button>
+                                    <form method="post" action="{% url 'usuarios:toggle_notifications' %}">
+                                        {% csrf_token %}
+                                        <div class="form-check form-switch" style="margin-bottom: 0.75rem;">
+                                            <input class="form-check-input" type="checkbox" id="id_notifications_enabled" name="notifications_enabled" {% if notifications_enabled %}checked{% endif %}>
+                                            <label class="form-check-label" for="id_notifications_enabled">Recibir promociones y novedades por email</label>
+                                        </div>
+                                        <button type="submit" class="btn btn-outline-primary">
+                                            <i class="fas fa-save"></i> Guardar
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                             
@@ -662,29 +539,48 @@
                                 </div>
                                 <div class="setting-content">
                                     <h3>Autenticación de Dos Factores</h3>
+                                    {% if user.profile.two_factor_enabled %}
+                                        <p>Estado: <span class="badge bg-success">Activo</span></p>
+                                    {% else %}
+                                        <p>Estado: <span class="badge bg-secondary">Inactivo</span></p>
+                                    {% endif %}
                                     <p>Añade una capa extra de seguridad a tu cuenta</p>
                                 </div>
                                 <div class="setting-action">
-                                    <button class="btn btn-outline-primary">
-                                        <i class="fas fa-shield-alt"></i> Activar
-                                    </button>
+                                    {% if user.profile.two_factor_enabled %}
+                                        <form method="post" action="{% url 'usuarios:disable_two_factor' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger">
+                                                <i class="fas fa-shield-alt"></i> Desactivar
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post" action="{% url 'usuarios:enable_two_factor' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-primary">
+                                                <i class="fas fa-shield-alt"></i> Activar
+                                            </button>
+                                        </form>
+                                    {% endif %}
                                 </div>
                             </div>
-                            
+
+                            {% if not user.profile.two_factor_enabled and user.profile.two_factor_pending_code %}
                             <div class="setting-card">
                                 <div class="setting-icon">
-                                    <i class="fas fa-download"></i>
+                                    <i class="fas fa-key"></i>
                                 </div>
                                 <div class="setting-content">
-                                    <h3>Descargar Datos</h3>
-                                    <p>Descarga una copia de toda tu información</p>
+                                    <h3>Verificación 2FA Pendiente</h3>
+                                    <p>Se ha enviado un código a tu correo. Completa la verificación en la página dedicada.</p>
                                 </div>
                                 <div class="setting-action">
-                                    <button class="btn btn-outline-primary">
-                                        <i class="fas fa-download"></i> Descargar
-                                    </button>
+                                    <a href="{% url 'usuarios:verify_two_factor_page' %}" class="btn btn-primary">
+                                        <i class="fas fa-arrow-right"></i> Ir a Verificación
+                                    </a>
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

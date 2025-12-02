@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Seleccionar Servicios{% endblock %}
 
@@ -56,7 +57,17 @@
                                 {% if reserva.tipo_habitacion.imagen %}
                                     <img src="{{ reserva.tipo_habitacion.imagen.url }}" class="img-fluid rounded" alt="{{ reserva.tipo_habitacion.nombre }}">
                                 {% else %}
-                                    <img src="/placeholder.svg?height=100&width=150" class="img-fluid rounded" alt="Habitación">
+                                {% with nombre_lower=reserva.tipo_habitacion.nombre|lower %}
+                                  {% if "presidencial" in nombre_lower %}
+                                  <img src="{% static 'img/habitacion_presidencial.svg' %}" class="img-fluid rounded" alt="{{ reserva.tipo_habitacion.nombre }}">
+                                  {% elif "suite" in nombre_lower %}
+                                  <img src="{% static 'img/habitacion_suite.svg' %}" class="img-fluid rounded" alt="{{ reserva.tipo_habitacion.nombre }}">
+                                  {% elif "doble" in nombre_lower %}
+                                  <img src="{% static 'img/habitacion_doble.svg' %}" class="img-fluid rounded" alt="{{ reserva.tipo_habitacion.nombre }}">
+                                  {% else %}
+                                  <img src="{% static 'img/habitacion_simple.svg' %}" class="img-fluid rounded" alt="{{ reserva.tipo_habitacion.nombre }}">
+                                  {% endif %}
+                                {% endwith %}
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
@@ -129,7 +140,21 @@
                         {% if servicio.imagen %}
                             <img src="{{ servicio.imagen.url }}" class="card-img-top" alt="{{ servicio.nombre }}">
                         {% else %}
-                            <img src="/placeholder.svg?height=200&width=300" class="card-img-top" alt="{{ servicio.nombre }}">
+                        {% with nombre_lower=servicio.nombre|lower %}
+                          {% if "spa" in nombre_lower or "masaje" in nombre_lower or "relax" in nombre_lower %}
+                          <img src="{% static 'img/spa_pexels_1.jpg' %}" class="card-img-top" alt="{{ servicio.nombre }}">
+                          {% elif "restaurante" in nombre_lower or "comida" in nombre_lower or "desayuno" in nombre_lower or "almuerzo" in nombre_lower or "cena" in nombre_lower %}
+                          <img src="{% static 'img/restaurante_pexels_1.jpg' %}" class="card-img-top" alt="{{ servicio.nombre }}">
+                          {% elif "piscina" in nombre_lower or "pool" in nombre_lower or "entretenimiento" in nombre_lower or "tour" in nombre_lower or "excursion" in nombre_lower %}
+                          <img src="{% static 'img/pool_dia_unsplash.jpg' %}" class="card-img-top" alt="{{ servicio.nombre }}">
+                          {% elif "negocios" in nombre_lower or "business" in nombre_lower or "reunion" in nombre_lower or "cowork" in nombre_lower %}
+                          <img src="{% static 'img/lobby.png' %}" class="card-img-top" alt="{{ servicio.nombre }}">
+                          {% elif "transporte" in nombre_lower or "taxi" in nombre_lower or "shuttle" in nombre_lower %}
+                          <img src="{% static 'img/hero.jpg.svg' %}" class="card-img-top" alt="{{ servicio.nombre }}">
+                          {% else %}
+                          <img src="{% static 'img/logo-hotel.png' %}" class="card-img-top" alt="{{ servicio.nombre }}">
+                          {% endif %}
+                        {% endwith %}
                         {% endif %}
                         <div class="service-category-badge">{{ servicio.get_categoria_display }}</div>
                     </div>
@@ -146,16 +171,17 @@
                         
                         <div class="d-flex justify-content-between align-items-center mt-auto">
                             <div class="price-tag">
-                                <span class="h5 text-primary mb-0">${{ servicio.precio }}</span>
+                                <span class="badge bg-primary bg-gradient fs-6">${{ servicio.precio }}</span>
                             </div>
                             <div class="service-actions">
-                                <button class="btn btn-outline-primary btn-sm me-2" onclick="verDetallesServicio({{ servicio.id }})">
+                                <button class="btn btn-outline-primary btn-sm me-2" onclick="verDetallesServicio({{ servicio.id }})" title="Ver detalles">
                                     <i class="fas fa-info-circle"></i>
                                 </button>
                                 <button class="btn btn-primary btn-sm agregar-servicio" 
                                         data-id="{{ servicio.id }}" 
                                         data-nombre="{{ servicio.nombre }}" 
-                                        data-precio="{{ servicio.precio }}">
+                                        data-precio="{{ servicio.precio }}"
+                                        title="Agregar a tu reserva">
                                     <i class="fas fa-plus me-1"></i>Agregar
                                 </button>
                             </div>
@@ -209,6 +235,8 @@
 </div>
 
 <script>
+// Evita que el JS global (main.js) agregue manejadores duplicados en esta página
+window.SERVICIOS_INLINE = true;
 document.addEventListener("DOMContentLoaded", function() {
     const serviciosSeleccionados = new Map();
     const inputsServicios = document.getElementById("inputs-servicios");

@@ -8,76 +8,137 @@
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <!-- Progress Bar -->
-  <div class="row mb-5">
-    <div class="col-12">
-      <div class="progress-container">
-        <div class="progress-bar-fill" style="width: 33%;"></div>
-        <div class="progress-step active">
-          <div class="step-circle">
-            <span class="step-number">1</span>
+<div class="container-fluid py-5" style="background: linear-gradient(135deg, var(--hotel-beige) 0%, var(--hotel-cream) 100%);">
+  <div class="container">
+    <!-- Progress Bar -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="progress-container">
+          <div class="progress-bar-fill" style="width: 33%;"></div>
+          <div class="progress-step active">
+            <div class="step-circle">
+              <span class="step-number">1</span>
+            </div>
+            <div class="step-label">Habitación</div>
           </div>
-          <div class="step-label">Habitación</div>
-        </div>
-        <div class="progress-step">
-          <div class="step-circle">
-            <span class="step-number">2</span>
+          <div class="progress-step">
+            <div class="step-circle">
+              <span class="step-number">2</span>
+            </div>
+            <div class="step-label">Servicios</div>
           </div>
-          <div class="step-label">Servicios</div>
-        </div>
-        <div class="progress-step">
-          <div class="step-circle">
-            <span class="step-number">3</span>
+          <div class="progress-step">
+            <div class="step-circle">
+              <span class="step-number">3</span>
+            </div>
+            <div class="step-label">Confirmación</div>
           </div>
-          <div class="step-label">Confirmación</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <h2 class="mb-4">Elige tipos de habitación</h2>
-  <p>Fechas: <strong>{{ fecha_entrada }}</strong> a <strong>{{ fecha_salida }}</strong> — Huéspedes: <strong>{{ numero_huespedes }}</strong></p>
+    <div class="text-center mb-4">
+      <h1 class="display-5 fw-bold text-dark mb-2">Elige tu habitación ideal</h1>
+      <p class="lead text-muted">Selecciona cantidades por tipo según tus fechas y huéspedes</p>
+      <div class="d-inline-flex gap-2 mt-2">
+        <span class="badge bg-light text-dark border"><i class="fas fa-calendar me-1"></i> {{ fecha_entrada }} → {{ fecha_salida }}</span>
+        <span class="badge bg-light text-dark border"><i class="fas fa-users me-1"></i> {{ numero_huespedes }} huésped{% if numero_huespedes|default:0 > 1 %}es{% endif %}</span>
+      </div>
+    </div>
 
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
 
-  <form method="post">
-    {% csrf_token %}
-    <div class="row g-4">
-      {% for t in tipos %}
-      <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-sm">
-          {% if t.imagen %}
-          <img src="{{ t.imagen.url }}" class="card-img-top" alt="{{ t.get_tipo_display }}">
-          {% else %}
-          <img src="/placeholder.svg?height=200&width=300" class="card-img-top" alt="{{ t.get_tipo_display }}">
-          {% endif %}
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title mb-1">{{ t.nombre }}</h5>
-            <p class="text-muted mb-2">Capacidad: {{ t.capacidad }} huésped{{ t.capacidad|pluralize:"es" }}</p>
-            <p class="mb-2">Precio: <strong>${{ t.precio }}</strong> por noche</p>
-            <p class="mb-3">Stock disponible en fechas: <strong>{{ t.stock_disponible_fechas }}</strong></p>
-            {% if t.descripcion %}
-            <p class="text-muted small mb-3">{{ t.descripcion|truncatewords:15 }}</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="row g-4">
+        {% for t in tipos %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm service-card border-0">
+            {% if t.imagen %}
+            <img src="{{ t.imagen.url }}" class="card-img-top" alt="{{ t.nombre }}">
+            {% else %}
+            {% with nombre_lower=t.nombre|lower %}
+              {% if "presidencial" in nombre_lower %}
+              <img src="{% static 'img/habitacion_presidencial.svg' %}" class="card-img-top" alt="{{ t.nombre }}">
+              {% elif "suite" in nombre_lower %}
+              <img src="{% static 'img/habitacion_suite.svg' %}" class="card-img-top" alt="{{ t.nombre }}">
+              {% elif "doble" in nombre_lower %}
+              <img src="{% static 'img/habitacion_doble.svg' %}" class="card-img-top" alt="{{ t.nombre }}">
+              {% elif "simple" in nombre_lower or "estándar" in nombre_lower or "estandar" in nombre_lower %}
+              <img src="{% static 'img/habitacion_simple.svg' %}" class="card-img-top" alt="{{ t.nombre }}">
+              {% else %}
+               <img src="{% static 'img/habitacion_simple.svg' %}" class="card-img-top" alt="{{ t.nombre }}">
+               {% endif %}
+             {% endwith %}
             {% endif %}
-            <div class="mt-auto">
-              <label class="form-label">Cantidad</label>
-              <input type="number" min="0" max="{{ t.stock_disponible_fechas }}" name="cantidad_{{ t.id }}" value="0" class="form-control" />
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="card-title mb-0">{{ t.nombre }}</h5>
+                <span class="badge bg-primary bg-gradient">${{ t.precio }} / noche</span>
+              </div>
+              <div class="mb-2">
+                <span class="badge bg-light text-dark border me-2"><i class="fas fa-users me-1"></i> Capacidad {{ t.capacidad }}</span>
+                <span class="badge bg-light text-dark border"><i class="fas fa-warehouse me-1"></i> Stock {{ t.stock_disponible_fechas }}</span>
+              </div>
+              {% if t.descripcion %}
+              <p class="text-muted small mb-2">{{ t.descripcion|truncatewords:22 }}</p>
+              {% endif %}
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <small class="text-muted">Ocupación: {{ t.porcentaje_ocupacion }}%</small>
+                  <small class="text-muted">Disponibles: {{ t.stock_disponible_fechas }} de {{ t.stock_total }}</small>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar bg-warning" role="progressbar" style="width: {{ t.porcentaje_ocupacion }}%;" aria-valuenow="{{ t.porcentaje_ocupacion }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </div>
+
+              <div class="mt-auto">
+                <label class="form-label">Cantidad</label>
+                <div class="input-group input-group-sm">
+                  <button type="button" class="btn btn-outline-secondary qty-minus" data-target="cantidad_{{ t.id }}"><i class="fas fa-minus"></i></button>
+                  <input type="number" min="0" max="{{ t.stock_disponible_fechas }}" name="cantidad_{{ t.id }}" id="cantidad_{{ t.id }}" value="0" class="form-control text-center qty-input" />
+                  <button type="button" class="btn btn-outline-secondary qty-plus" data-target="cantidad_{{ t.id }}"><i class="fas fa-plus"></i></button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
 
-    <div class="text-end mt-4">
-      <a href="{% url 'seleccionar_huespedes' %}" class="btn btn-outline-secondary">Volver</a>
-      <button type="submit" class="btn btn-primary">Continuar</button>
-    </div>
-  </form>
+      <div class="d-flex justify-content-between align-items-center mt-4">
+    <a href="{% url 'reservas:seleccionar_huespedes' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Volver</a>
+        <button type="submit" class="btn btn-success">Continuar <i class="fas fa-arrow-right ms-1"></i></button>
+      </div>
+    </form>
+  </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.qty-minus').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.target;
+        const input = document.getElementById(id);
+        const current = parseInt(input.value || '0', 10);
+        input.value = Math.max(0, current - 1);
+      });
+    });
+    document.querySelectorAll('.qty-plus').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.target;
+        const input = document.getElementById(id);
+        const max = parseInt(input.getAttribute('max') || '999', 10);
+        const current = parseInt(input.value || '0', 10);
+        input.value = Math.min(max, current + 1);
+      });
+    });
+  });
+</script>
 {% endblock %}

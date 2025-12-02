@@ -13,37 +13,38 @@
     <!-- Cambiando de Tailwind CSS a Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme-dark-overrides.css' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-hotel-beige">
+<body>
     <!-- Refactorizando header con clases Bootstrap -->
-    <header class="navbar navbar-expand-lg navbar-light bg-hotel-beige fixed-top shadow-sm" id="header">
+    <header class="navbar navbar-expand-lg fixed-top shadow-sm" id="header">
         <div class="container">
             <!-- Logo -->
-            <a class="navbar-brand d-flex align-items-center text-hotel-navy" href="{% url 'index' %}">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'index' %}">
                 <i class="fas fa-hotel fs-3 me-2"></i>
                 <span class="fw-bold fs-4 font-display">GOLD STAR</span>
             </a>
             
             <!-- Mobile toggle -->
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="fas fa-bars text-hotel-navy"></i>
+                <i class="fas fa-bars text-dark"></i>
             </button>
             
             <!-- Navigation -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link text-hotel-navy fw-medium" href="{% url 'index' %}">Inicio</a>
+                        <a class="nav-link fw-medium" href="{% url 'index' %}">Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-hotel-navy fw-medium" href="{% url 'about' %}">Sobre Nosotros</a>
+                        <a class="nav-link fw-medium" href="{% url 'about' %}">Sobre Nosotros</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-hotel-navy fw-medium" href="{% url 'contact' %}">Contacto</a>
+                        <a class="nav-link fw-medium" href="{% url 'contact' %}">Contacto</a>
                     </li>
                     
                     {% if user.is_authenticated %}
@@ -60,7 +61,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="{% url 'mis_reservas' %}">
+            <a class="dropdown-item d-flex align-items-center" href="{% url 'reservas:mis_reservas' %}">
                                         <i class="fas fa-calendar-alt me-2"></i>Mis Reservas
                                     </a>
                                 </li>
@@ -74,7 +75,7 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link text-hotel-navy fw-medium" href="{% url 'usuarios:login' %}">
+                            <a class="nav-link fw-medium" href="{% url 'usuarios:login' %}">
                                 <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
                             </a>
                         </li>

@@ -4,10 +4,16 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from django.conf import settings
+from django.core.mail import EmailMessage
 from .models import (
     Empleado, Plan, Promocion, Servicio, Huesped,
     Rol, Permiso, RolPermiso, UsuarioRol
 )
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.core.mail import EmailMultiAlternatives
+from django.utils import timezone
 
 
 class RolPermisoInline(admin.TabularInline):
@@ -118,6 +124,51 @@ class PlanAdmin(admin.ModelAdmin):
     list_display = ['nombre', 'precio', 'habitacion']
     list_filter = ['habitacion']
     search_fields = ['nombre', 'descripcion']
+    actions = ['enviar_plan_por_email']
+
+    def enviar_plan_por_email(self, request, queryset):
+        """Envía el plan seleccionado por email a usuarios con notificaciones activadas (HTML + CTA)."""
+        users = User.objects.filter(is_active=True).exclude(email="").select_related('profile')
+        recipients = []
+        for u in users:
+            try:
+                prefs = getattr(u.profile, 'preferences', {}) or {}
+                if prefs.get('notifications_enabled', True):
+                    recipients.append(u.email)
+            except Exception:
+                recipients.append(u.email)
+        recipients = list(dict.fromkeys(recipients))
+        if not recipients:
+            self.message_user(request, 'No hay usuarios con notificaciones activadas o emails válidos.', level='warning')
+            return
+        enviados = 0
+        today = timezone.now().date()
+        for plan in queryset:
+            subject = f"Plan: {plan.nombre}"
+            plan_url = request.build_absolute_uri(reverse('detalle_plan', args=[plan.id]))
+            imagen_url = request.build_absolute_uri(plan.imagen.url) if getattr(plan, 'imagen', None) else None
+
+            html_body = render_to_string('emails/plan_email.html', {
+                'plan': plan,
+                'plan_url': plan_url,
+                'imagen_url': imagen_url,
+                'year': today.year,
+            })
+            text_body = strip_tags(html_body)
+            try:
+                email = EmailMultiAlternatives(
+                    subject=subject,
+                    body=text_body,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    bcc=recipients,
+                )
+                email.attach_alternative(html_body, "text/html")
+                email.send(fail_silently=False)
+                enviados += 1
+            except Exception as e:
+                self.message_user(request, f'Error al enviar "{plan.nombre}": {e}', level='error')
+        self.message_user(request, f"Planes enviados: {enviados}. Destinatarios: {len(recipients)} usuarios.")
+    enviar_plan_por_email.short_description = 'Enviar plan por email a usuarios (respeta notificaciones)'
 
 
 @admin.register(Promocion)
@@ -125,6 +176,7 @@ class PromocionAdmin(admin.ModelAdmin):
     list_display = ['nombre', 'descuento', 'fecha_inicio', 'fecha_fin', 'activa']
     list_filter = ['fecha_inicio', 'fecha_fin']
     search_fields = ['nombre', 'descripcion']
+    actions = ['enviar_promocion_por_email']
     
     def activa(self, obj):
         from django.utils import timezone
@@ -136,6 +188,57 @@ class PromocionAdmin(admin.ModelAdmin):
             'Sí' if is_active else 'No'
         )
     activa.short_description = 'Activa'
+
+    def enviar_promocion_por_email(self, request, queryset):
+        """Envía la promoción seleccionada por email a usuarios con notificaciones activadas (HTML + CTA)."""
+        users = User.objects.filter(is_active=True).exclude(email="").select_related('profile')
+        recipients = []
+        for u in users:
+            try:
+                prefs = getattr(u.profile, 'preferences', {}) or {}
+                if prefs.get('notifications_enabled', True):
+                    recipients.append(u.email)
+            except Exception:
+                recipients.append(u.email)
+        recipients = list(dict.fromkeys(recipients))
+        if not recipients:
+            self.message_user(request, 'No hay usuarios con notificaciones activadas o emails válidos.', level='warning')
+            return
+        enviados = 0
+        today = timezone.now().date()
+        for promo in queryset:
+            subject = f"Promoción: {promo.nombre} ({promo.descuento}%)"
+            is_active = promo.fecha_inicio <= today <= promo.fecha_fin
+            estado = 'activa' if is_active else ('proxima' if today < promo.fecha_inicio else 'finalizada')
+            dias_restantes = (promo.fecha_fin - today).days if is_active else 0
+            dias_para_inicio = (promo.fecha_inicio - today).days if today < promo.fecha_inicio else 0
+            promo_url = request.build_absolute_uri(reverse('promocion_detalle', args=[promo.id]))
+            imagen_url = request.build_absolute_uri(promo.imagen.url) if getattr(promo, 'imagen', None) else None
+
+            html_body = render_to_string('emails/promocion_email.html', {
+                'promocion': promo,
+                'estado': estado,
+                'dias_restantes': dias_restantes,
+                'dias_para_inicio': dias_para_inicio,
+                'promo_url': promo_url,
+                'imagen_url': imagen_url,
+                'year': today.year,
+            })
+            text_body = strip_tags(html_body)
+            try:
+                email = EmailMultiAlternatives(
+                    subject=subject,
+                    body=text_body,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    bcc=recipients,
+                )
+                email.attach_alternative(html_body, "text/html")
+                email.send(fail_silently=False)
+                enviados += 1
+            except Exception as e:
+                self.message_user(request, f'Error al enviar "{promo.nombre}": {e}', level='error')
+        self.message_user(request, f"Promociones enviadas: {enviados}. Destinatarios: {len(recipients)} usuarios.")
+    enviar_promocion_por_email.short_description = 'Enviar promoción por email a usuarios (respeta notificaciones)'
 
 
 @admin.register(Servicio)

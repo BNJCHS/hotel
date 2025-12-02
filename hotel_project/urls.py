@@ -22,9 +22,10 @@ urlpatterns = [
     path('', include('hotel.urls')),
     path('usuarios/', include(('usuarios.urls', 'usuarios'), namespace='usuarios')),
     path('habitaciones/', include(('habitaciones.urls', 'habitaciones'), namespace='habitaciones')),
-    path('administracion/',include('administracion.urls', namespace='administracion')),
-    path('reservas/', include('reservas.urls')),
+    path('administracion/', include(('administracion.urls', 'administracion'), namespace='administracion')),
+    path('reservas/', include(('reservas.urls', 'reservas'), namespace='reservas')),
     path('chatbot/', include('chatbot.urls', namespace='chatbot')),
+    path('oauth/', include('social_django.urls', namespace='social')),
 ]
 
 if settings.DEBUG:

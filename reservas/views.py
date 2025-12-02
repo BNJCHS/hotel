@@ -15,13 +15,15 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from django.conf import settings
 from django.db import models
+from django.core.serializers.json import DjangoJSONEncoder
 
 from datetime import date, datetime
 from decimal import Decimal
 from .models import Huesped
-from .forms import HuespedForm
+from .forms import HuespedForm, RequiredHuespedFormSet
 from django.forms import modelformset_factory
 from administracion.models import Plan, Promocion
+from administracion.models import Huesped as AdminHuesped
 
 @login_required
 def detalle_reserva(request, reserva_id):
@@ -118,11 +120,8 @@ def seleccionar_huespedes(request):
         request.session['fecha_entrada'] = fecha_entrada
         request.session['fecha_salida'] = fecha_salida
         
-        # Redirigir según si ya hay una habitación seleccionada
-        if request.session.get('habitacion_id'):
-            return redirect('seleccionar_fechas')
-        # De otro modo, continuar al flujo de tipos con stock
-        return redirect('seleccionar_tipos')
+        # Redirigir SIEMPRE a captura de huéspedes
+        return redirect('reservas:capturar_huespedes')
     
     return render(request, 'reservas/seleccionar_huespedes.html', {
         'today': today,
@@ -148,7 +147,52 @@ def reservar_habitacion(request, habitacion_id):
         return redirect('habitaciones_lista')
     
     request.session['habitacion_id'] = habitacion.id  # Guardamos la habitación en sesión
-    return redirect('seleccionar_fechas')
+    # Redirigimos directamente a selección de huéspedes para capturar fechas sin rebote
+    return redirect('reservas:seleccionar_huespedes')
+
+
+@login_required
+def capturar_huespedes(request):
+    """Paso intermedio para capturar datos de huéspedes basado en la cantidad seleccionada."""
+    numero_huespedes = request.session.get('numero_huespedes')
+    fecha_entrada = request.session.get('fecha_entrada')
+    fecha_salida = request.session.get('fecha_salida')
+    today = date.today().isoformat()
+
+    if not (numero_huespedes and fecha_entrada and fecha_salida):
+        messages.error(request, 'Primero selecciona fechas y número de huéspedes.')
+        return redirect('reservas:seleccionar_huespedes')
+
+    HuespedFormSetExtra = modelformset_factory(
+        Huesped,
+        form=HuespedForm,
+        formset=RequiredHuespedFormSet,
+        extra=int(numero_huespedes),
+        can_delete=False,
+        min_num=int(numero_huespedes),
+        validate_min=True,
+        max_num=int(numero_huespedes),
+        validate_max=True,
+    )
+
+    if request.method == 'POST':
+        formset = HuespedFormSetExtra(request.POST, queryset=Huesped.objects.none())
+        if formset.is_valid():
+            request.session['huespedes'] = formset.cleaned_data
+            # Decidir siguiente paso según si hay habitación directa o no
+            if request.session.get('habitacion_id'):
+                return redirect('reservas:seleccionar_fechas')
+            return redirect('reservas:seleccionar_tipos')
+    else:
+        formset = HuespedFormSetExtra(queryset=Huesped.objects.none())
+
+    return render(request, 'reservas/capturar_huespedes.html', {
+        'formset': formset,
+        'numero_huespedes': numero_huespedes,
+        'fecha_entrada': fecha_entrada,
+        'fecha_salida': fecha_salida,
+        'today': today,
+    })
 
 
 @login_required
@@ -161,7 +205,7 @@ def seleccionar_fechas(request):
     fecha_salida = request.session.get('fecha_salida')
     
     if not numero_huespedes or not fecha_entrada or not fecha_salida:
-        return redirect('seleccionar_huespedes')  # Si no hay datos de huéspedes, volvemos
+        return redirect('reservas:seleccionar_huespedes')  # Si no hay datos de huéspedes, volvemos
     
     habitacion_id = request.session.get('habitacion_id')
     if not habitacion_id:
@@ -175,15 +219,25 @@ def seleccionar_fechas(request):
         return redirect('habitaciones_lista')
 
     if request.method == 'POST':
-        # Formset de huéspedes
-        HuespedFormSetExtra = modelformset_factory(Huesped, form=HuespedForm, extra=numero_huespedes, can_delete=False)
+        # Formset de huéspedes (requerido, exactamente numero_huespedes)
+        HuespedFormSetExtra = modelformset_factory(
+            Huesped,
+            form=HuespedForm,
+            formset=RequiredHuespedFormSet,
+            extra=numero_huespedes,
+            can_delete=False,
+            min_num=numero_huespedes,
+            validate_min=True,
+            max_num=numero_huespedes,
+            validate_max=True,
+        )
         
         if 'huespedes_submitted' in request.POST:
             formset = HuespedFormSetExtra(request.POST, queryset=Huesped.objects.none())
             if formset.is_valid():
                 huespedes_data = formset.cleaned_data
                 request.session['huespedes'] = huespedes_data
-                return redirect('seleccionar_servicio')
+                return redirect('reservas:seleccionar_servicio')
         else:
             formset = HuespedFormSetExtra(queryset=Huesped.objects.none())
 
@@ -196,8 +250,18 @@ def seleccionar_fechas(request):
             'habitacion': habitacion
         })
 
-    # Crear formset para los huéspedes
-    HuespedFormSetExtra = modelformset_factory(Huesped, form=HuespedForm, extra=numero_huespedes, can_delete=False)
+    # Crear formset para los huéspedes (requerido, exactamente numero_huespedes)
+    HuespedFormSetExtra = modelformset_factory(
+        Huesped,
+        form=HuespedForm,
+        formset=RequiredHuespedFormSet,
+        extra=numero_huespedes,
+        can_delete=False,
+        min_num=numero_huespedes,
+        validate_min=True,
+        max_num=numero_huespedes,
+        validate_max=True,
+    )
     formset = HuespedFormSetExtra(queryset=Huesped.objects.none())
     
     return render(request, 'reservas/seleccionar_fechas.html', {
@@ -208,6 +272,7 @@ def seleccionar_fechas(request):
         'today': today,
         'habitacion': habitacion
     })
+
 @csrf_exempt
 def agregar_servicio(request):
     if request.method == "POST":
@@ -258,7 +323,7 @@ def quitar_servicio(request):
 def agregar_al_carrito(request, habitacion_id):
     habitacion = get_object_or_404(Habitacion, id=habitacion_id)
     request.session['habitacion_id'] = habitacion.id
-    return redirect('seleccionar_servicio')
+    return redirect('reservas:seleccionar_servicio')
 
 @login_required
 def seleccionar_servicio(request, reserva_id=None):
@@ -266,7 +331,7 @@ def seleccionar_servicio(request, reserva_id=None):
     if not reserva_id:
         reserva_id = request.session.get('reserva_id')
         if not reserva_id:
-            return redirect('seleccionar_tipos')
+            return redirect('reservas:seleccionar_tipos')
     
     # Obtener la reserva
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
@@ -304,16 +369,17 @@ def seleccionar_servicio(request, reserva_id=None):
         reserva.save()
 
         # Redirigir a la página de confirmación con el ID de la reserva
-        return redirect('confirmar_reserva', reserva_id=reserva.id)
+        return redirect('reservas:confirmar_reserva', reserva_id=reserva.id)
 
     # Obtener los servicios ya seleccionados para esta reserva
     servicios_seleccionados = list(reserva.servicios.all().values('id', 'nombre', 'precio'))
+    servicios_seleccionados_json = json.dumps(servicios_seleccionados, cls=DjangoJSONEncoder)
     
     return render(request, 'reservas/seleccionar_servicio.html', {
         'reserva': reserva,
         'tipo_habitacion': reserva.tipo_habitacion,
         'servicios': servicios,
-        'servicios_seleccionados_json': json.dumps(servicios_seleccionados),
+        'servicios_seleccionados_json': servicios_seleccionados_json,
     })
 
 def reserva_exitosa(request):
@@ -357,7 +423,7 @@ def confirmar_reserva(request, reserva_id):
 
             # Enviar correo de confirmación
             confirm_url = request.build_absolute_uri(
-                reverse("confirmar_reserva_token", args=[reserva.token])
+                reverse("reservas:confirmar_reserva_token", args=[reserva.token])
             )
             send_mail(
                 "Confirma tu reserva",
@@ -422,6 +488,59 @@ def confirmar_reserva_token(request, token):
     reserva = get_object_or_404(Reserva, token=token, usuario=request.user)
     reserva.estado = 'confirmada'
     reserva.save()
+
+    # Generar código de seguridad para check-in si no existe
+    if not getattr(reserva, 'codigo_checkin', None):
+        reserva.codigo_checkin = get_random_string(6, allowed_chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789')
+        reserva.save()
+
+    # Enviar correo con detalles de la reserva y código de check-in
+    try:
+        servicios = list(reserva.servicios.all())
+        servicios_txt = '\n'.join([
+            f"- {s.nombre}: ${s.precio}" for s in servicios
+        ]) if servicios else 'Sin servicios adicionales'
+
+        plan_txt = f"{reserva.plan.nombre} (${reserva.plan.precio})" if reserva.plan else 'Sin plan'
+        promo_txt = f"{reserva.promocion.nombre} ({reserva.promocion.descuento}% desc.)" if reserva.promocion else 'Sin promoción'
+
+        noches = 0
+        if reserva.check_in and reserva.check_out:
+            try:
+                noches = (reserva.check_out - reserva.check_in).days or 1
+            except Exception:
+                noches = 0
+
+        cuerpo = (
+            f"Hola {request.user.first_name or request.user.username},\n\n"
+            f"Tu reserva ha sido confirmada. Aquí tienes los detalles:\n\n"
+            f"- Número de reserva: {reserva.id}\n"
+            f"- Código de check-in: {reserva.codigo_checkin}\n"
+            f"- Habitación: {reserva.tipo_habitacion.nombre} (x{reserva.cantidad_habitaciones})\n"
+            f"- Huéspedes: {reserva.cantidad_huespedes}\n"
+            f"- Check-in: {reserva.check_in.strftime('%d/%m/%Y') if reserva.check_in else '-'}\n"
+            f"- Check-out: {reserva.check_out.strftime('%d/%m/%Y') if reserva.check_out else '-'}\n"
+            f"- Noches: {noches}\n"
+            f"- Método de pago: {reserva.metodo_pago or '-'}\n"
+            f"- Total: ${reserva.monto}\n\n"
+            f"Extras:\n"
+            f"- Plan: {plan_txt}\n"
+            f"- Promoción: {promo_txt}\n"
+            f"- Servicios:\n{servicios_txt}\n\n"
+            f"Conserva tu código de check-in, lo necesitarás al llegar al hotel.\n"
+            f"Gracias por elegirnos.\n"
+        )
+
+        send_mail(
+            "Reserva confirmada: código de check-in",
+            cuerpo,
+            settings.DEFAULT_FROM_EMAIL,
+            [request.user.email],
+            fail_silently=False,
+        )
+    except Exception:
+        # No bloquear la confirmación si falla el envío de email
+        pass
     
     # Procesar tipos adicionales si existen
     tipos_adicionales = request.session.get('tipos_adicionales', [])
@@ -450,6 +569,37 @@ def confirmar_reserva_token(request, token):
                 
                 # Reservar stock
                 tipo.reservar_stock(qty)
+                
+                # Copiar huéspedes de la reserva principal a la nueva
+                try:
+                    for h in Huesped.objects.filter(reserva=reserva):
+                        Huesped.objects.create(
+                            reserva=nueva_reserva,
+                            nombre=h.nombre,
+                            apellido=h.apellido,
+                            edad=h.edad,
+                            genero=h.genero,
+                            dni=h.dni,
+                        )
+                        # asegurar que exista el huésped en administración por DNI
+                        try:
+                            if h.dni:
+                                admin_h, _ = AdminHuesped.objects.get_or_create(
+                                    dni=h.dni,
+                                    defaults={
+                                        'nombre': h.nombre,
+                                        'apellido': h.apellido,
+                                        'telefono': '',
+                                        'email': '',
+                                    }
+                                )
+                                admin_h.nombre = h.nombre
+                                admin_h.apellido = h.apellido
+                                admin_h.save()
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
             except TipoHabitacion.DoesNotExist:
                 pass
         
@@ -470,7 +620,7 @@ def cancelar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
     reserva.delete()
     messages.success(request, "La reserva fue cancelada exitosamente.")
-    return redirect('mis_reservas')
+    return redirect('reservas:mis_reservas')
 
 
 # ===============================
@@ -566,16 +716,21 @@ def agregar_reservas_multiples(request):
 
         created_ids.append(nueva.id)
 
-    # Si viene desde formulario HTML, redirigimos con mensajes
-    if request.content_type != 'application/json':
+    # Respuesta según tipo de petición
+    if request.content_type == 'application/json':
+        return JsonResponse({
+            'success': True,
+            'creadas': created_ids,
+            'errores': errors,
+            'redirect_url': reverse('reservas:mis_reservas')
+        }, status=200)
+    else:
         if created_ids:
             messages.success(request, f"Se crearon {len(created_ids)} reservas adicionales.")
         if errors:
             for e in errors:
                 messages.warning(request, e)
-        return redirect('mis_reservas')
-
-    return JsonResponse({'success': True, 'creadas': created_ids, 'errores': errors, 'redirect_url': reverse('mis_reservas')}, status=200)
+        return redirect('reservas:mis_reservas')
 
 
 @login_required
@@ -591,7 +746,7 @@ def seleccionar_tipos(request):
 
     if not (numero_huespedes and fecha_entrada and fecha_salida):
         messages.error(request, 'Primero selecciona las fechas y el número de huéspedes.')
-        return redirect('seleccionar_huespedes')
+        return redirect('reservas:seleccionar_huespedes')
 
     # Parsear fechas
     try:
@@ -599,14 +754,16 @@ def seleccionar_tipos(request):
         check_out = datetime.strptime(fecha_salida, '%Y-%m-%d').date()
     except Exception:
         messages.error(request, 'Fechas inválidas.')
-        return redirect('seleccionar_huespedes')
+        return redirect('reservas:seleccionar_huespedes')
 
     # Obtener todos los tipos de habitaciones activos
     tipos = TipoHabitacion.objects.filter(activo=True).order_by('precio')
 
     # Calcular disponibilidad por tipo en el rango de fechas
     disponibles = {}
-    for tipo in tipos:
+    # Asegurar lista para anotación y filtrado posterior
+    tipos_list = list(tipos)
+    for tipo in tipos_list:
         # Contar reservas que se solapan con las fechas solicitadas
         reservas_solapadas = Reserva.objects.filter(
             tipo_habitacion=tipo,
@@ -614,12 +771,14 @@ def seleccionar_tipos(request):
             check_out__gt=check_in,
             estado__in=['confirmada', 'activa']
         ).aggregate(total=models.Sum('cantidad_habitaciones'))['total'] or 0
-        
         disponibles[tipo.id] = max(0, tipo.stock_disponible - reservas_solapadas)
 
     # Anotar cada tipo con su stock disponible para el template
-    for tipo in tipos:
+    for tipo in tipos_list:
         tipo.stock_disponible_fechas = disponibles.get(tipo.id, 0)
+
+    # Filtrar para mostrar solo tipos con stock en las fechas
+    tipos = [t for t in tipos_list if t.stock_disponible_fechas > 0]
     if request.method == 'POST':
         # Recoger cantidades solicitadas
         seleccion = []  # lista de (tipo_habitacion_obj, cantidad)
@@ -694,6 +853,46 @@ def seleccionar_tipos(request):
         # Reservar stock
         tipo.reservar_stock(qty)
         
+        # Guardar huéspedes capturados en sesión dentro de la reserva
+        try:
+            huespedes_session = request.session.get('huespedes', [])
+            if huespedes_session:
+                for data in huespedes_session:
+                    if not data:
+                        continue
+                    Huesped.objects.create(
+                        reserva=reserva,
+                        nombre=data.get('nombre', ''),
+                        apellido=data.get('apellido', ''),
+                        edad=data.get('edad') or 0,
+                        genero=data.get('genero', 'O'),
+                        dni=data.get('dni', ''),
+                    )
+                    # asegurar que exista el huésped en administración por DNI
+                    try:
+                        dni_val = data.get('dni', '').strip()
+                        if dni_val:
+                            admin_h, _ = AdminHuesped.objects.get_or_create(
+                                dni=dni_val,
+                                defaults={
+                                    'nombre': data.get('nombre', ''),
+                                    'apellido': data.get('apellido', ''),
+                                    'telefono': '',
+                                    'email': '',
+                                }
+                            )
+                            # si existe, actualizar nombre/apellido si han cambiado
+                            admin_h.nombre = data.get('nombre', admin_h.nombre)
+                            admin_h.apellido = data.get('apellido', admin_h.apellido)
+                            admin_h.save()
+                    except Exception:
+                        pass
+            # limpiar dato de sesión para evitar duplicados
+            del request.session['huespedes']
+        except Exception:
+            # En caso de que no existan datos de huéspedes, continuar sin bloquear el flujo
+            pass
+        
         # Guardar el ID de la reserva en la sesión para el siguiente paso
         request.session['reserva_id'] = reserva.id
         
@@ -702,7 +901,7 @@ def seleccionar_tipos(request):
             request.session['tipos_adicionales'] = [(t.id, q) for t, q in seleccion[1:]]
         
         # Redirigir a la selección de servicios
-        return redirect('seleccionar_servicio_con_id', reserva_id=reserva.id)
+        return redirect('reservas:seleccionar_servicio_con_id', reserva_id=reserva.id)
 
     return render(request, 'reservas/seleccionar_tipos.html', {
         'tipos': tipos,

@@ -4,6 +4,24 @@
 {% block content %}
 <h2>Listado de reservas</h2>
 
+<form method="get" action="{% url 'administracion:ver_reservas' %}" class="row g-2 align-items-end mb-3">
+  <div class="col-auto">
+    <label for="id-buscar" class="form-label mb-0">Buscar por ID</label>
+    <input type="number" min="1" class="form-control" id="id-buscar" name="id" placeholder="ID de reserva" value="{{ query_id }}">
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Buscar</button>
+    <a href="{% url 'administracion:ver_reservas' %}" class="btn btn-outline-secondary ms-2">Limpiar</a>
+  </div>
+  {% if messages %}
+    <div class="col-12">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mt-2 mb-0">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</form>
+
 <table class="table table-striped">
   <thead>
     <tr>
@@ -49,6 +67,17 @@
                 Rechazar
               </button>
             </form>
+          {% elif reserva.estado == 'confirmada' and reserva.check_in == hoy %}
+            <form method="post" action="{% url 'administracion:activar_reserva' reserva.id %}" style="display:inline;">
+              {% csrf_token %}
+              <input type="text" name="codigo_checkin" placeholder="Código de check-in" class="form-control form-control-sm mb-2" required>
+              <button class="btn btn-sm btn-primary" type="submit">Activar reserva</button>
+            </form>
+          {% elif reserva.estado == 'activa' and reserva.check_out == hoy %}
+            <form method="post" action="{% url 'administracion:finalizar_reserva_admin' reserva.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-warning" type="submit">Checkout (finalizar)</button>
+            </form>
           {% else %}
             <span class="text-muted">Sin acciones</span>
           {% endif %}
@@ -62,3 +91,4 @@
   </tbody>
 </table>
 {% endblock %}
+

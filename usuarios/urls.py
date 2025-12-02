@@ -20,4 +20,12 @@ urlpatterns = [
     # Sistema de bloqueo de usuarios (solo para admin)
     path('admin/block-user/<int:user_id>/', views.block_user, name='block_user'),
     path('admin/unblock-user/<int:user_id>/', views.unblock_user, name='unblock_user'),
+    # 2FA
+    path('2fa/activar/', views.enable_two_factor, name='enable_two_factor'),
+    path('2fa/verificar/codigo/', views.two_factor_verify_page, name='verify_two_factor_page'),
+    path('2fa/verificar/exito/', views.two_factor_success_page, name='verify_two_factor_success_page'),
+    path('2fa/verificar/', views.verify_two_factor, name='verify_two_factor'),
+    path('2fa/desactivar/', views.disable_two_factor, name='disable_two_factor'),
+    # Notificaciones
+    path('notificaciones/toggle/', views.toggle_notifications, name='toggle_notifications'),
 ]

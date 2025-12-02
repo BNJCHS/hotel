@@ -14,6 +14,29 @@
 }
 
 /* ===============================
+   🧪 Tema oscuro global
+   =============================== */
+.theme-dark {
+  background-color: var(--negro);
+  color: #ffffff;
+}
+.theme-dark .section-header h2 {
+  color: var(--vino);
+}
+.theme-dark .section-header h2::after {
+  background-color: var(--dorado);
+}
+.theme-dark .section-header p,
+.theme-dark p,
+.theme-dark .text-muted {
+  color: #e6e6e6 !important;
+}
+.theme-dark .card {
+  background-color: #f2f2f2;
+  color: var(--texto);
+}
+
+/* ===============================
    📱 Optimizaciones para móviles
    =============================== */
 html {
@@ -147,7 +170,7 @@ html {
   letter-spacing: 1px;
 }
 .navbar .nav-link {
-  color: var(--beige) !important;
+  color: #ffffff !important;
   opacity: 0.9;
   transition: color 0.25s ease-in-out, opacity 0.25s ease-in-out, text-shadow 0.25s ease-in-out;
 }
@@ -157,7 +180,12 @@ html {
   text-shadow: 0 0 8px rgba(201, 166, 53, 0.35); /* efecto difuminado sutil */
 }
 .navbar.fixed-top + main {
-  margin-top: 0; /* eliminar separación bajo el navbar */
+  margin-top: 72px; /* separar contenido del navbar fijo */
+}
+@media (max-width: 991.98px) {
+  .navbar.fixed-top + main {
+    margin-top: 84px; /* navbar más alto en tablets/móviles */
+  }
 }
 
 /* ===============================
@@ -285,7 +313,7 @@ html {
   padding: 5rem 0;
 }
 .seccion-planes .card {
-  background-color: #fff;
+  background-color: #f2f2f2; /* unificar tarjetas en gris claro */
 }
 .seccion-planes .icon-placeholder {
   color: var(--vino);
@@ -329,6 +357,7 @@ html {
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   height: 100%;
+  background-color: #f2f2f2; /* gris claro para tarjetas */
 }
 .card:hover {
   transform: translateY(-5px);

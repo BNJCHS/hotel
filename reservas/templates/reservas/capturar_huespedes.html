@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Datos de Huéspedes{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4 bg-light rounded p-4 shadow-sm">
+        <div class="col-12 text-center">
+            <h1 class="display-5">Paso 2: Datos de Huéspedes</h1>
+            <p class="lead">Completa los datos de todas las personas que se hospedarán</p>
+        </div>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Fecha de Entrada</label>
+                <p class="form-control-static">{{ fecha_entrada }}</p>
+                <input type="hidden" name="fecha_entrada" value="{{ fecha_entrada }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Fecha de Salida</label>
+                <p class="form-control-static">{{ fecha_salida }}</p>
+                <input type="hidden" name="fecha_salida" value="{{ fecha_salida }}">
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Reservando para <strong>{{ numero_huespedes }} huésped{% if numero_huespedes > 1 %}es{% endif %}</strong>
+            <input type="hidden" name="numero_huespedes" value="{{ numero_huespedes }}">
+        </div>
+
+        {% if formset %}
+            <h4>Datos de los Huéspedes</h4>
+            {{ formset.management_form }}
+            {% for form in formset %}
+                <div class="card mb-3 p-3">
+                    <div class="card-header bg-light fw-bold">Huésped {{ forloop.counter }}</div>
+                    <div class="row g-3 mt-1">
+                        {% for field in form.visible_fields %}
+                            <div class="col-md-4">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">Continuar</button>
+    </form>
+</div>
+{% endblock %}

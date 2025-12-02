@@ -13,7 +13,7 @@
       <h1 class="display-4 fw-bold mb-4">Bienvenido  al hotel GOLD STAR</h1>
       <p class="lead mb-5">Experimenta el lujo y la comodidad en un entorno único</p>
       <div class="hero-buttons">
-        <a href="{% url 'seleccionar_huespedes' %}" class="btn btn-hotel-gold btn-lg px-5 py-3">Reservar Ahora</a>
+    <a href="{% url 'reservas:seleccionar_huespedes' %}" class="btn btn-hotel-gold btn-lg px-5 py-3">Reservar Ahora</a>
         <a href="{% url 'habitaciones_explorar' %}" class="btn btn-hotel-gray btn-lg">Ver Habitaciones</a>
       </div>
     </div>
@@ -52,38 +52,45 @@
   <div class="container">
     <div class="section-header text-center mb-5">
       <h2 class="fw-bold">Habitaciones Destacadas</h2>
-      <p class="text-muted">Descubre nuestras elegantes y confortables habitaciones</p>
+      <p class="text-muted">Elegancia, confort y detalles que hacen la diferencia</p>
     </div>
+
     <div class="row g-4">
       {% if habitaciones %}
         {% for habitacion in habitaciones %}
         <div class="col-md-6 col-lg-4">
           <div class="card h-100 border-0 shadow-sm overflow-hidden">
-            {% if habitacion.imagen %}
-            <div class="img-placeholder position-relative">
-              <img src="{{ imAGEN.jpg }}" class="card-img-top img-fluid" alt="{{ habitacion.nombre }}">
+            <div class="position-relative">
+              {% if habitacion.tipo_habitacion.imagen %}
+                <img src="{{ habitacion.tipo_habitacion.imagen.url }}" class="card-img-top img-fluid" alt="Habitación {{ habitacion.numero }} - {{ habitacion.tipo_habitacion.nombre }}">
+              {% else %}
+                <img src="{% static 'img/habitacion_pexels_1.jpg' %}" class="card-img-top img-fluid" alt="Habitación {{ habitacion.numero }} - {{ habitacion.tipo_habitacion.nombre }}">
+              {% endif %}
               <div class="position-absolute top-0 start-0 p-3">
-                <span class="room-name-overlay">{{ habitacion.nombre }}</span>
-              </div>
-              <div class="position-absolute bottom-0 end-0 p-3">
                 <span class="badge badge-hotel-beige-dark">Destacada</span>
               </div>
-            </div>
-            {% else %}
-            <div class="img-placeholder position-relative">
-              <img src="{% static 'img/habitacion_pexels_1.jpg' %}" class="card-img-top img-fluid" alt="{{ habitacion.nombre }}">
-              <div class="position-absolute top-0 start-0 p-3">
-                <span class="room-name-overlay">{{ habitacion.nombre }}</span>
-              </div>
-              <div class="position-absolute bottom-0 end-0 p-3">
-                <span class="badge badge-hotel-beige-dark">Destacada</span>
+              <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(0deg, rgba(26,26,26,0.65) 0%, rgba(26,26,26,0.0) 70%);">
+                <div class="d-flex align-items-center justify-content-between text-white">
+                  <span class="fw-semibold">{{ habitacion.tipo_habitacion.nombre }}</span>
+                  <span class="small">Capacidad {{ habitacion.capacidad }}</span>
+                </div>
               </div>
             </div>
-            {% endif %}
+
             <div class="card-body p-4">
-              <h3 class="card-title h5 mb-3">{{ habitacion.nombre }}</h3>
-              <p class="card-text text-muted mb-3">{{ habitacion.descripcion|truncatewords:20 }}</p>
-              <a href="{% url 'habitacion_detalle' habitacion.id %}" class="btn btn-outline-light w-100">Ver más</a>
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h3 class="card-title h5 mb-0">Habitación {{ habitacion.numero }}</h3>
+                <span class="fw-bold" style="color: var(--vino);">$ {{ habitacion.precio }} / noche</span>
+              </div>
+              <p class="card-text text-muted mb-3">{{ habitacion.tipo_habitacion.descripcion|default:"Una opción ideal para tu estadía."|truncatewords:22 }}</p>
+
+              <div class="d-flex gap-2 mb-3">
+                <span class="badge bg-light text-dark border">Wi‑Fi</span>
+                <span class="badge bg-light text-dark border">Smart TV</span>
+                <span class="badge bg-light text-dark border">Climatización</span>
+              </div>
+
+              <a href="{% url 'habitacion_detalle' habitacion.id %}" class="btn btn-hotel-beige-dark w-100">Ver detalles</a>
             </div>
           </div>
         </div>
@@ -92,6 +99,7 @@
         <p class="text-center">No hay habitaciones disponibles en este momento.</p>
       {% endif %}
     </div>
+
     <div class="text-center mt-5">
       <a href="{% url 'habitaciones_explorar' %}" class="btn btn-hotel-beige-dark">Ver todas las habitaciones</a>
     </div>

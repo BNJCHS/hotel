@@ -23,7 +23,7 @@
                     <h3 class="mb-0">Paso 1: Número de Huéspedes</h3>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" action="{% url 'seleccionar_huespedes' %}">
+    <form method="POST" action="{% url 'reservas:seleccionar_huespedes' %}">
                         {% csrf_token %}
                         
                         {% if numero_huespedes %}

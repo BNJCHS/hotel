@@ -785,129 +785,67 @@ function actualizarResumen() {
 }
 
 // Manejar click en botones agregar
-document.querySelectorAll(".agregar-servicio").forEach((btn) => {
-    btn.addEventListener("click", function() {
-        const servicioId = this.dataset.id;
+if (!(window && window.SERVICIOS_INLINE)) {
+  document.querySelectorAll(".agregar-servicio").forEach((btn) => {
+      btn.addEventListener("click", function() {
+          const servicioId = this.dataset.id;
 
-        // Debounce: evitar múltiples clics mientras la solicitud está en curso
-        const addButton = this;
-        if (addButton.dataset.loading === "true") {
-            return;
-        }
+          fetch("/reservas/servicio/agregar/", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": getCookie("csrftoken")
+              },
+              body: JSON.stringify({ servicio_id: servicioId })
+          })
+          .then(res => res.json())
+          .then(data => {
+              if (data.success) {
+                  showNotification(`Servicio "${data.servicio.nombre}" agregado`, "success");
 
-        // Evitar duplicados si el servicio ya está en la lista
-        const contenedorPrev = document.getElementById("servicios-seleccionados");
-        if (contenedorPrev && contenedorPrev.querySelector(`.servicio-agregado[data-id="${servicioId}"]`)) {
-            showNotification("Este servicio ya está agregado", "info");
-            return;
-        }
+                  // Actualizar la lista de servicios seleccionados
+                  const contenedor = document.getElementById("servicios-seleccionados");
+                  const emptyState = contenedor.querySelector(".empty-state");
+                  if (emptyState) emptyState.remove();
 
-        // Estado de carga en el botón
-        addButton.dataset.loading = "true";
-        addButton.disabled = true;
-        addButton.classList.add("disabled");
-        addButton.dataset.originalHtml = addButton.dataset.originalHtml || addButton.innerHTML;
-        addButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Agregando...';
+                  const servicioDiv = document.createElement("div");
+                  servicioDiv.className = "d-flex justify-content-between align-items-center mb-2 servicio-agregado";
+                  servicioDiv.dataset.id = data.servicio.id;
+                  servicioDiv.dataset.precio = data.servicio.precio;
+                  servicioDiv.innerHTML = `
+                      <span>${data.servicio.nombre}</span>
+                      <div>
+                          <span>$${data.servicio.precio}</span>
+                          <button class="btn btn-sm btn-outline-danger ms-2 eliminar-servicio">
+                              <i class="fas fa-trash"></i>
+                          </button>
+                      </div>
+                  `;
+                  contenedor.appendChild(servicioDiv);
 
-        fetch("/reservas/servicio/agregar/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken")
-            },
-            body: JSON.stringify({ servicio_id: servicioId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(`Servicio "${data.servicio.nombre}" agregado`, "success");
+                  // Manejar eliminar servicio
+                  servicioDiv.querySelector(".eliminar-servicio").addEventListener("click", function() {
+                      servicioDiv.remove();
+                      showNotification(`Servicio "${data.servicio.nombre}" eliminado`, "info");
+                      actualizarResumen();
 
-                // Actualizar la lista de servicios seleccionados
-                const contenedor = document.getElementById("servicios-seleccionados");
-                const emptyState = contenedor.querySelector(".empty-state");
-                if (emptyState) emptyState.remove();
+                      // Si no quedan servicios, mostrar estado vacío
+                      if (contenedor.querySelectorAll(".servicio-agregado").length === 0) {
+                          const emptyDiv = document.createElement("div");
+                          emptyDiv.className = "empty-state text-center py-4";
+                          emptyDiv.innerHTML = `
+                              <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
+                              <p class="text-muted mb-0">Selecciona servicios para personalizar tu experiencia</p>
+                          `;
+                          contenedor.appendChild(emptyDiv);
+                      }
+                  });
 
-                const servicioDiv = document.createElement("div");
-                servicioDiv.className = "d-flex justify-content-between align-items-center mb-2 servicio-agregado";
-                servicioDiv.dataset.id = data.servicio.id;
-                servicioDiv.dataset.precio = data.servicio.precio;
-                servicioDiv.innerHTML = `
-                    <span>${data.servicio.nombre}</span>
-                    <div>
-                        <span>${data.servicio.precio}</span>
-                        <button class="btn btn-sm btn-outline-danger ms-2 eliminar-servicio">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                contenedor.appendChild(servicioDiv);
-
-                // Manejar eliminar servicio
-                servicioDiv.querySelector(".eliminar-servicio").addEventListener("click", function() {
-                    servicioDiv.remove();
-                    showNotification(`Servicio "${data.servicio.nombre}" eliminado`, "info");
-                    const addBtnSel = document.querySelector(`.agregar-servicio[data-id="${data.servicio.id}"]`);
-                    if (addBtnSel) {
-                        addBtnSel.disabled = false;
-                        addBtnSel.classList.remove('disabled');
-                        addBtnSel.innerHTML = '<i class="fas fa-plus me-1"></i>Agregar';
-                        addBtnSel.removeAttribute('title');
-                        addBtnSel.removeAttribute('data-bs-toggle');
-                    }
-                    actualizarResumen();
-
-                    // Si no quedan servicios, mostrar estado vacío
-                    if (contenedor.querySelectorAll(".servicio-agregado").length === 0) {
-                        const emptyDiv = document.createElement("div");
-                        emptyDiv.className = "empty-state text-center py-4";
-                        emptyDiv.innerHTML = `
-                            <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
-                            <p class="text-muted mb-0">Selecciona servicios para personalizar tu experiencia</p>
-                        `;
-                        contenedor.appendChild(emptyDiv);
-                    }
-
-                    // Rehabilitar botón para volver a agregar el servicio si se elimina
-                    const relatedBtn = document.querySelector(`.agregar-servicio[data-id="${data.servicio.id}"]`);
-                    if (relatedBtn) {
-                        relatedBtn.dataset.loading = "false";
-                        relatedBtn.disabled = false;
-                        relatedBtn.classList.remove("disabled");
-                        relatedBtn.innerHTML = relatedBtn.dataset.originalHtml || '<i class="fas fa-plus me-1"></i>Agregar';
-                    }
-                });
-
-                // Actualizar contador y total
-                const addButton = this;
-                if (addButton) {
-                    addButton.disabled = true;
-                    addButton.classList.add('disabled');
-                    addButton.innerHTML = '<i class="fas fa-check me-1"></i>Agregado';
-                    addButton.setAttribute('title', 'Este servicio ya está agregado');
-                    addButton.setAttribute('data-bs-toggle', 'tooltip');
-                }
-                actualizarResumen();
-
-                // Establecer estado "Agregado" en el botón
-                addButton.dataset.loading = "false";
-                addButton.disabled = true;
-                addButton.classList.add("disabled");
-                addButton.innerHTML = '<i class="fas fa-check me-1"></i>Agregado';
-
-            } else {
-                showNotification(data.error || "Error al agregar servicio", "error");
-                addButton.dataset.loading = "false";
-                addButton.disabled = false;
-                addButton.classList.remove("disabled");
-                addButton.innerHTML = addButton.dataset.originalHtml || '<i class="fas fa-plus me-1"></i>Agregar';
-            }
-        })
-        .catch(() => {
-            showNotification("Error al agregar servicio", "error");
-            addButton.dataset.loading = "false";
-            addButton.disabled = false;
-            addButton.classList.remove("disabled");
-            addButton.innerHTML = addButton.dataset.originalHtml || '<i class="fas fa-plus me-1"></i>Agregar';
-        });
-    });
-});
+                  actualizarResumen();
+              }
+          })
+          .catch(() => {
+              showNotification("No se pudo agregar el servicio", "danger");
+          });
+      });
+  });

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.utils import timezone
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -10,16 +10,6 @@ from django.views.decorators.csrf import csrf_protect
 from django.urls import reverse
 from reservas.models import Reserva
 from .models import Empleado, Plan, Promocion, Servicio, Huesped, Rol, UsuarioRol, Permiso, RolPermiso
-from .forms import EmpleadoForm, PlanForm, PromocionForm, ServicioForm, HuespedForm, AdminLoginForm
-from reservas.models import Huesped as ReservaHuesped
-from django.http import JsonResponse
-
-from django.db.models import Sum
-# imports relacionados con reservas/huespedes
-from reservas.models import Reserva, HuespedActivo
-
-# imports de la app administracion
-from .models import Empleado, Plan, Promocion, Servicio  # NOTAR: no importamos Huesped de administracion para evitar choque de nombres
 from .forms import EmpleadoForm, PlanForm, PromocionForm, ServicioForm, HuespedForm
 
 # imports para gestión de usuarios
@@ -37,6 +27,13 @@ from .permissions import (
     usuario_tiene_permiso,
     obtener_permisos_usuario
 )
+
+# imports para envío de emails
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
+from django.http import HttpResponse
 
 # ===== VISTAS DE AUTENTICACIÓN PARA ADMINISTRACIÓN =====
 
@@ -173,30 +170,55 @@ def usuario_detail(request, user_id):
 
 @require_POST
 def activar_reserva(request, reserva_id):
-    """Activa una reserva y carga los huéspedes registrados por el usuario"""
+    from reservas.models import HuespedActivo
     reserva = get_object_or_404(Reserva, id=reserva_id)
-    
-    # Activar la reserva (solo desde administración)
-    reserva.activada = True
-    reserva.save()
-    
-    # Cargar huéspedes desde la información guardada por el usuario
-    huespedes = ReservaHuesped.objects.filter(reserva=reserva)
-    
-    # Crear huéspedes activos en el sistema
-    for huesped in huespedes:
-        HuespedActivo.objects.create(
+    hoy = timezone.now().date()
+
+    # Validaciones de estado y fecha
+    if reserva.estado != 'confirmada':
+        messages.error(request, 'Sólo se puede activar una reserva confirmada.')
+        return redirect('administracion:ver_reservas')
+
+    if not reserva.check_in:
+        messages.error(request, 'La reserva no tiene fecha de check-in definida.')
+        return redirect('administracion:ver_reservas')
+
+    if reserva.check_in != hoy:
+        messages.error(request, 'La reserva sólo puede activarse el primer día de check-in.')
+        return redirect('administracion:ver_reservas')
+
+    # Evitar activar si ya está activa
+    if reserva.estado == 'activa':
+        messages.info(request, 'La reserva ya está activa.')
+        return redirect('administracion:ver_reservas')
+
+    # Validar código de check-in
+    codigo_checkin_form = request.POST.get('codigo_checkin', '').strip()
+    if not codigo_checkin_form or codigo_checkin_form != reserva.codigo_checkin:
+        messages.error(request, 'El código de check-in es incorrecto.')
+        return redirect('administracion:ver_reservas')
+
+    # Activar estado y (opcionalmente) mantener la habitación asignada si ya existe
+    reserva.activar()
+
+    # Crear huéspedes activos para cada huésped de la reserva
+    creados = 0
+    for h in reserva.huespedes.all():
+        obj, creado = HuespedActivo.objects.get_or_create(
+            huesped=h,
             reserva=reserva,
-            nombre=huesped.nombre,
-            apellido=huesped.apellido,
-            documento=huesped.documento,
-            edad=huesped.edad,
-            telefono=huesped.telefono if hasattr(huesped, 'telefono') else '',
-            email=huesped.email if hasattr(huesped, 'email') else ''
+            defaults={
+                'habitacion': reserva.habitacion_asignada,
+                'fecha_checkin': hoy,
+                'fecha_checkout': reserva.check_out,
+                'activo': True,
+            }
         )
-    
-    messages.success(request, f'Reserva #{reserva_id} activada correctamente. {len(huespedes)} huéspedes registrados.')
-    return JsonResponse({'status': 'success', 'message': 'Reserva activada correctamente'})
+        if creado:
+            creados += 1
+
+    messages.success(request, f"Reserva activada. Huéspedes activos creados: {creados}.")
+    return redirect('administracion:ver_reservas')
 
 @requiere_staff_y_permiso('dashboard', 'ver')
 def dashboard(request):
@@ -291,51 +313,6 @@ def _paginate(request, queryset, per_page=10):
     paginator = Paginator(queryset, per_page)
     return paginator.get_page(page_number)
 
-# ===================== EMPLEADOS =====================
-@requiere_staff_y_permiso('empleados', 'ver')
-def empleados_list(request):
-    q = request.GET.get("q", "")
-    qs = Empleado.objects.all()
-    if q:
-        qs = qs.filter(
-            Q(nombre__icontains=q) | Q(apellido__icontains=q) | Q(dni__icontains=q) | Q(puesto__icontains=q)
-        )
-    page_obj = _paginate(request, qs, 10)
-    return render(request, "administracion/empleados_list.html", {"page_obj": page_obj, "q": q})
-
-@requiere_staff_y_permiso('empleados', 'crear')
-def empleados_create(request):
-    if request.method == "POST":
-        form = EmpleadoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Empleado creado correctamente.")
-            return redirect("empleados_list")
-    else:
-        form = EmpleadoForm()
-    return render(request, "administracion/empleados_form.html", {"form": form})
-
-@requiere_staff_y_permiso('empleados', 'editar')
-def empleados_edit(request, pk):
-    obj = get_object_or_404(Empleado, pk=pk)
-    if request.method == "POST":
-        form = EmpleadoForm(request.POST, instance=obj)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Empleado actualizado.")
-            return redirect("empleados_list")
-    else:
-        form = EmpleadoForm(instance=obj)
-    return render(request, "administracion/empleados_form.html", {"form": form})
-
-@requiere_staff_y_permiso('empleados', 'eliminar')
-def empleados_delete(request, pk):
-    obj = get_object_or_404(Empleado, pk=pk)
-    if request.method == "POST":
-        obj.delete()
-        messages.success(request, "Empleado eliminado.")
-        return redirect("empleados_list")
-    return render(request, "administracion/empleados_confirm_delete.html", {"empleado": obj})
 
 # ===================== PLANES =====================
 @requiere_staff_y_permiso('planes', 'ver')
@@ -358,6 +335,59 @@ def planes_create(request):
     else:
         form = PlanForm()
     return render(request, "administracion/planes_form.html", {"form": form})
+
+@requiere_staff_y_permiso('planes', 'editar')
+@require_POST
+def planes_send_email(request, pk):
+    """Envía el plan por email a usuarios con notificaciones activadas en el admin personalizado (HTML + CTA)."""
+    plan = get_object_or_404(Plan, pk=pk)
+
+    users = User.objects.filter(is_active=True).exclude(email="").select_related('profile')
+    recipients = []
+    excluidos = 0
+    for u in users:
+        try:
+            prefs = getattr(u.profile, 'preferences', {}) or {}
+            if prefs.get('notifications_enabled', True):
+                recipients.append(u.email)
+            else:
+                excluidos += 1
+        except Exception:
+            recipients.append(u.email)
+    recipients = list(dict.fromkeys(recipients))
+
+    if not recipients:
+        messages.warning(request, 'No hay usuarios con notificaciones activadas o emails válidos.')
+        return redirect('administracion:planes_list')
+
+    today = timezone.now().date()
+    plan_url = request.build_absolute_uri(reverse('detalle_plan', args=[plan.id]))
+    imagen_url = request.build_absolute_uri(plan.imagen.url) if getattr(plan, 'imagen', None) else None
+
+    subject = f"Plan: {plan.nombre}"
+
+    html_body = render_to_string('emails/plan_email.html', {
+        'plan': plan,
+        'plan_url': plan_url,
+        'imagen_url': imagen_url,
+        'year': today.year,
+    })
+    text_body = strip_tags(html_body)
+
+    try:
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_body,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            bcc=recipients,
+        )
+        email.attach_alternative(html_body, "text/html")
+        email.send(fail_silently=False)
+        messages.success(request, f'Plan "{plan.nombre}" enviado por email a {len(recipients)} usuarios. Excluidos por preferencia: {excluidos}.')
+    except Exception as e:
+        messages.error(request, f'Error al enviar "{plan.nombre}": {e}')
+
+    return redirect('administracion:planes_list')
 
 @requiere_staff_y_permiso('planes', 'editar')
 def planes_edit(request, pk):
@@ -425,7 +455,67 @@ def promociones_delete(request, pk):
         return redirect("administracion:promociones_list")
     return render(request, "administracion/promociones_confirm_delete.html", {"promocion": obj})
 
-# ===================== SERVICIOS =====================
+@requiere_staff_y_permiso('promociones', 'editar')
+@require_POST
+def promociones_send_email(request, pk):
+    """Envía la promoción por email a usuarios con notificaciones activadas en el admin personalizado (HTML + CTA)."""
+    promo = get_object_or_404(Promocion, pk=pk)
+
+    users = User.objects.filter(is_active=True).exclude(email="").select_related('profile')
+    recipients = []
+    excluidos = 0
+    for u in users:
+        try:
+            prefs = getattr(u.profile, 'preferences', {}) or {}
+            if prefs.get('notifications_enabled', True):
+                recipients.append(u.email)
+            else:
+                excluidos += 1
+        except Exception:
+            recipients.append(u.email)
+    recipients = list(dict.fromkeys(recipients))
+
+    if not recipients:
+        messages.warning(request, 'No hay usuarios con notificaciones activadas o emails válidos.')
+        return redirect('administracion:promociones_list')
+
+    today = timezone.now().date()
+    is_active = promo.fecha_inicio <= today <= promo.fecha_fin
+    estado = 'activa' if is_active else ('proxima' if today < promo.fecha_inicio else 'finalizada')
+    dias_restantes = (promo.fecha_fin - today).days if is_active else 0
+    dias_para_inicio = (promo.fecha_inicio - today).days if today < promo.fecha_inicio else 0
+
+    promo_url = request.build_absolute_uri(reverse('promocion_detalle', args=[promo.id]))
+    imagen_url = request.build_absolute_uri(promo.imagen.url) if getattr(promo, 'imagen', None) else None
+
+    subject = f"Promoción: {promo.nombre} ({promo.descuento}%)"
+
+    html_body = render_to_string('emails/promocion_email.html', {
+        'promocion': promo,
+        'estado': estado,
+        'dias_restantes': dias_restantes,
+        'dias_para_inicio': dias_para_inicio,
+        'promo_url': promo_url,
+        'imagen_url': imagen_url,
+        'year': today.year,
+    })
+    text_body = strip_tags(html_body)
+
+    try:
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_body,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            bcc=recipients,
+        )
+        email.attach_alternative(html_body, "text/html")
+        email.send(fail_silently=False)
+        messages.success(request, f'Promoción "{promo.nombre}" enviada por email a {len(recipients)} usuarios. Excluidos por preferencia: {excluidos}.')
+    except Exception as e:
+        messages.error(request, f'Error al enviar "{promo.nombre}": {e}')
+
+    return redirect('administracion:promociones_list')
+
 @requiere_staff_y_permiso('servicios', 'ver')
 def servicios_list(request):
     q = request.GET.get("q", "")
@@ -469,7 +559,6 @@ def servicios_delete(request, pk):
         return redirect("administracion:servicios_list")
     return render(request, "administracion/servicios_confirm_delete.html", {"servicio": obj})
 
-# ===================== HUÉSPEDES =====================
 @requiere_staff_y_permiso('huespedes', 'ver')
 def huespedes_list(request):
     q = request.GET.get("q", "")
@@ -481,6 +570,21 @@ def huespedes_list(request):
         )
     page_obj = _paginate(request, qs, 10)
     return render(request, "administracion/huespedes_list.html", {"page_obj": page_obj, "q": q})
+
+@requiere_staff_y_permiso('huespedes', 'ver')
+def huesped_detail(request, pk):
+    """Detalle de huésped del módulo administración, con reservas asociadas por DNI."""
+    obj = get_object_or_404(Huesped, pk=pk)
+    reservas_del_huesped = []
+    if obj.dni:
+        reservas_del_huesped = ReservaHuesped.objects.filter(dni=obj.dni).select_related('reserva')
+    # también buscar por nombre+apellido si no hay DNI
+    elif obj.nombre and obj.apellido:
+        reservas_del_huesped = ReservaHuesped.objects.filter(nombre=obj.nombre, apellido=obj.apellido).select_related('reserva')
+    return render(request, 'administracion/huesped_detail.html', {
+        'huesped': obj,
+        'reservas_huesped': reservas_del_huesped,
+    })
 
 @requiere_staff_y_permiso('huespedes', 'crear')
 def huespedes_create(request):
@@ -518,10 +622,25 @@ def huespedes_delete(request, pk):
 
 @requiere_staff_y_permiso('reservas', 'ver')
 def ver_reservas(request):
-    reservas = Reserva.objects.select_related('usuario', 'tipo_habitacion', 'habitacion_asignada', 'plan', 'promocion') \
-                              .prefetch_related('servicios') \
-                              .order_by('-fecha_reserva')
-    return render(request, 'administracion/ver_reservas.html', {'reservas': reservas})
+    reservas_qs = Reserva.objects.select_related('usuario', 'tipo_habitacion', 'habitacion_asignada', 'plan', 'promocion') \
+                                 .prefetch_related('servicios') \
+                                 .order_by('-fecha_reserva')
+
+    # Buscar por ID de reserva (GET param 'id' o 'q')
+    query_id = (request.GET.get('id') or request.GET.get('q') or '').strip()
+    if query_id:
+        try:
+            id_num = int(query_id)
+            reservas_qs = reservas_qs.filter(id=id_num)
+        except ValueError:
+            messages.error(request, 'El ID debe ser un número entero.')
+
+    hoy = timezone.now().date()
+    return render(request, 'administracion/ver_reservas.html', {
+        'reservas': reservas_qs,
+        'hoy': hoy,
+        'query_id': query_id,
+    })
 
 @requiere_staff_y_permiso('reservas', 'confirmar')
 @require_POST
@@ -534,28 +653,106 @@ def confirmar_reserva_admin(request, reserva_id):
     reserva.estado = 'confirmada'
     reserva.save()
 
-    # Creamos HuespedActivo para cada Huesped asociado a la reserva
-    huespedes = reserva.huespedes.all()  # related_name definido en reservas.models.Huesped
+    # Reservar las habitaciones del tipo solicitado
+    tipo_habitacion = reserva.tipo_habitacion
+    tipo_habitacion.reservar_stock(reserva.cantidad_habitaciones)
+
+    messages.success(request, f"Reserva confirmada.")
+    return redirect('administracion:ver_reservas')
+
+@requiere_staff_y_permiso('reservas', 'confirmar')
+@require_POST
+def finalizar_reserva_admin(request, reserva_id):
+    """Finaliza (checkout) una reserva activa sólo en su último día.
+    Desactiva todos los HuespedActivo asociados y completa la reserva."""
+    from reservas.models import HuespedActivo
+
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+    hoy = timezone.now().date()
+
+    if reserva.estado != 'activa':
+        messages.error(request, 'Sólo se puede finalizar una reserva activa.')
+        return redirect('administracion:ver_reservas')
+
+    if not reserva.check_out:
+        messages.error(request, 'La reserva no tiene fecha de check-out definida.')
+        return redirect('administracion:ver_reservas')
+
+    if reserva.check_out != hoy:
+        messages.error(request, 'El checkout sólo se puede realizar el último día de la reserva.')
+        return redirect('administracion:ver_reservas')
+
+    # Finalizar huéspedes activos vinculados
+    activos = HuespedActivo.objects.filter(reserva=reserva, activo=True)
+    count = 0
+    for ha in activos:
+        ha.finalizar(fecha=hoy)
+        count += 1
+
+    # Marcar habitación disponible si no quedan activos
+    habit = reserva.habitacion_asignada
+    if habit:
+        otras = HuespedActivo.objects.filter(habitacion=habit, activo=True).exists()
+        if not otras and hasattr(habit, 'disponible'):
+            habit.disponible = True
+            habit.save()
+
+    # Completar la reserva (libera stock)
+    reserva.completar()
+    messages.success(request, f'Reserva finalizada. Huéspedes desactivados: {count}.')
+    return redirect('administracion:ver_reservas')
+
+@requiere_staff_y_permiso('reservas', 'confirmar')
+@require_POST
+def activar_reserva(request, reserva_id):
+    from reservas.models import HuespedActivo
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+    hoy = timezone.now().date()
+
+    # Validaciones de estado y fecha
+    if reserva.estado != 'confirmada':
+        messages.error(request, 'Sólo se puede activar una reserva confirmada.')
+        return redirect('administracion:ver_reservas')
+
+    if not reserva.check_in:
+        messages.error(request, 'La reserva no tiene fecha de check-in definida.')
+        return redirect('administracion:ver_reservas')
+
+    if reserva.check_in != hoy:
+        messages.error(request, 'La reserva sólo puede activarse el primer día de check-in.')
+        return redirect('administracion:ver_reservas')
+
+    # Evitar activar si ya está activa
+    if reserva.estado == 'activa':
+        messages.info(request, 'La reserva ya está activa.')
+        return redirect('administracion:ver_reservas')
+
+    # Validar código de check-in
+    codigo_checkin_form = request.POST.get('codigo_checkin', '').strip()
+    if not codigo_checkin_form or codigo_checkin_form != reserva.codigo_checkin:
+        messages.error(request, 'El código de check-in es incorrecto.')
+        return redirect('administracion:ver_reservas')
+
+    # Activar estado y (opcionalmente) mantener la habitación asignada si ya existe
+    reserva.activar()
+
+    # Crear huéspedes activos para cada huésped de la reserva
     creados = 0
-    for h in huespedes:
-        # get_or_create evita duplicados si ya se creó antes
+    for h in reserva.huespedes.all():
         obj, creado = HuespedActivo.objects.get_or_create(
             huesped=h,
             reserva=reserva,
             defaults={
-                'habitacion': reserva.habitacion_asignada,  # Usar habitacion_asignada
-                'fecha_checkin': reserva.check_in,
-                'fecha_checkout': reserva.check_out
+                'habitacion': reserva.habitacion_asignada,
+                'fecha_checkin': hoy,
+                'fecha_checkout': reserva.check_out,
+                'activo': True,
             }
         )
         if creado:
             creados += 1
 
-    # Reservar las habitaciones del tipo solicitado
-    tipo_habitacion = reserva.tipo_habitacion
-    tipo_habitacion.reservar_stock(reserva.cantidad_habitaciones)
-
-    messages.success(request, f"Reserva confirmada. {creados} huésped(es) activado(s).")
+    messages.success(request, f"Reserva activada. Huéspedes activos creados: {creados}.")
     return redirect('administracion:ver_reservas')
 
 
@@ -570,11 +767,12 @@ def rechazar_reserva_admin(request, reserva_id):
         reserva.delete()
         messages.success(request, "Reserva rechazada y eliminada.")
         # opción B) podrías preferir marcar un campo 'rechazada' en lugar de borrarla
-    return redirect('administracion/ver_reservas')
+    return redirect('administracion:ver_reservas')
 
 
 @requiere_staff_y_permiso('huespedes', 'ver')
 def huespedes_activos(request):
+    from reservas.models import HuespedActivo
     hoy = timezone.now().date()
     activos_qs = HuespedActivo.objects.filter(
         activo=True
@@ -583,12 +781,25 @@ def huespedes_activos(request):
         Q(fecha_checkout__gte=hoy) | Q(fecha_checkout__isnull=True)
     ).select_related('huesped', 'reserva', 'habitacion')
 
-    return render(request, 'administracion/huespedes_activos.html', {'activos': activos_qs})
+    # Filtro por ID de reserva (GET ?reserva=<id>)
+    reserva_id = request.GET.get('reserva')
+    if reserva_id:
+        try:
+            reserva_id_int = int(reserva_id)
+            activos_qs = activos_qs.filter(reserva_id=reserva_id_int)
+        except ValueError:
+            messages.error(request, 'ID de reserva inválido.')
+
+    return render(request, 'administracion/huespedes_activos.html', {
+        'activos': activos_qs,
+        'reserva_id': reserva_id or '',
+    })
 
 
 @requiere_staff_y_permiso('huespedes', 'editar')
 @require_POST
 def finalizar_huesped_activo(request, activo_id):
+    from reservas.models import HuespedActivo
     ha = get_object_or_404(HuespedActivo, id=activo_id)
     ha.finalizar()
     # Si no hay otros huéspedes activos en esa habitación, marcar disponible
@@ -599,7 +810,7 @@ def finalizar_huesped_activo(request, activo_id):
             habit.disponible = True
             habit.save()
     messages.success(request, "Huésped finalizado (checkout).")
-    return redirect('administracion/huespedes_activos')
+    return redirect('administracion:huespedes_activos')
 
 
 # ============ GESTIÓN DE ROLES Y PERMISOS ============
@@ -931,3 +1142,50 @@ def unblock_user(request, user_id):
         messages.error(request, f"Error al desbloquear el usuario: {str(e)}")
     
     return redirect('administracion:usuario_detail', user_id=user_id)
+
+
+@requiere_staff_y_permiso('promociones', 'ver')
+def promociones_preview_email(request, pk):
+    """Previsualiza el email HTML de una promoción en el navegador."""
+    promo = get_object_or_404(Promocion, pk=pk)
+    today = timezone.now().date()
+    is_active = promo.fecha_inicio <= today <= promo.fecha_fin
+    estado = 'activa' if is_active else ('proxima' if today < promo.fecha_inicio else 'finalizada')
+    dias_restantes = (promo.fecha_fin - today).days if is_active else 0
+    dias_para_inicio = (promo.fecha_inicio - today).days if today < promo.fecha_inicio else 0
+
+    promo_url = request.build_absolute_uri(reverse('promocion_detalle', args=[promo.id]))
+    imagen_url = request.build_absolute_uri(promo.imagen.url) if getattr(promo, 'imagen', None) else None
+
+    html = render_to_string('emails/promocion_email.html', {
+        'promocion': promo,
+        'estado': estado,
+        'dias_restantes': dias_restantes,
+        'dias_para_inicio': dias_para_inicio,
+        'promo_url': promo_url,
+        'imagen_url': imagen_url,
+        'year': today.year,
+    })
+    return HttpResponse(html)
+
+@requiere_staff_y_permiso('planes', 'ver')
+def planes_preview_email(request, pk):
+    """Previsualiza el email HTML de un plan en el navegador."""
+    plan = get_object_or_404(Plan, pk=pk)
+    today = timezone.now().date()
+
+    plan_url = request.build_absolute_uri(reverse('detalle_plan', args=[plan.id]))
+    imagen_url = request.build_absolute_uri(plan.imagen.url) if getattr(plan, 'imagen', None) else None
+
+    html = render_to_string('emails/plan_email.html', {
+        'plan': plan,
+        'plan_url': plan_url,
+        'imagen_url': imagen_url,
+        'year': today.year,
+    })
+    return HttpResponse(html)
+
+
+
+
+

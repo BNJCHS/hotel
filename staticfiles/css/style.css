@@ -14,6 +14,29 @@
 }
 
 /* ===============================
+   🧪 Tema oscuro global
+   =============================== */
+.theme-dark {
+  background-color: var(--negro);
+  color: #ffffff;
+}
+.theme-dark .section-header h2 {
+  color: var(--vino);
+}
+.theme-dark .section-header h2::after {
+  background-color: var(--dorado);
+}
+.theme-dark .section-header p,
+.theme-dark p,
+.theme-dark .text-muted {
+  color: #e6e6e6 !important;
+}
+.theme-dark .card {
+  background-color: #f2f2f2;
+  color: var(--texto);
+}
+
+/* ===============================
    📱 Optimizaciones para móviles
    =============================== */
 html {
@@ -81,11 +104,64 @@ html {
   color: var(--vino);
 }
 
+/* Botón dorado del hotel */
+.btn-hotel-gold {
+  background-color: rgba(201, 166, 53, 0.85) !important; /* dorado con ligera transparencia */
+  color: #fff !important;
+  border: none;
+  transition: all 0.3s ease;
+}
+.btn-hotel-gold:hover,
+.btn-hotel-gold:focus {
+  background-color: rgba(181, 150, 48, 0.95) !important; /* un poco más intenso al hover */
+  color: #fff !important;
+}
+.btn-hotel-gold:active {
+  background-color: rgba(156, 122, 39, 1) !important; /* más oscuro al presionar */
+}
+
+/* Botón gris translúcido para "Ver Habitaciones" */
+.btn-hotel-gray {
+  background-color: rgba(108, 117, 125, 0.85) !important; /* gris Bootstrap con transparencia */
+  color: #fff !important;
+  border: none;
+  transition: all 0.3s ease;
+}
+.btn-hotel-gray:hover,
+.btn-hotel-gray:focus {
+  background-color: rgba(108, 117, 125, 0.95) !important; /* más intenso al hover */
+  color: #fff !important;
+}
+.btn-hotel-gray:active {
+  background-color: rgba(90, 99, 107, 1) !important; /* más oscuro al presionar */
+}
+
+/* Botón beige oscuro para "Ver más" en Habitaciones */
+.btn-hotel-beige-dark {
+  background-color: #e2d7b5 !important; /* beige más oscuro */
+  color: var(--vino) !important;
+  border: 1px solid var(--vino);
+  transition: all 0.3s ease;
+}
+.btn-hotel-beige-dark:hover {
+  background-color: #d6cca8 !important; /* un tono más profundo en hover */
+  color: var(--vino) !important;
+}
+
+/* Hover para toggle del chatbot en color bordó translúcido */
+#chatbot-toggle:hover,
+#chatbot-toggle:focus {
+  background-color: rgba(110, 11, 20, 0.95) !important;
+}
+
 /* ===============================
    🧭 Navbar
    =============================== */
 .navbar {
-  background-color: var(--negro) !important;
+  background-color: rgba(26, 26, 26, 0.65) !important; /* negro translúcido */
+  backdrop-filter: saturate(120%) blur(8px);
+  -webkit-backdrop-filter: saturate(120%) blur(8px);
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
 }
 .navbar .navbar-brand {
   color: var(--dorado) !important;
@@ -94,14 +170,22 @@ html {
   letter-spacing: 1px;
 }
 .navbar .nav-link {
-  color: var(--beige) !important;
-  transition: color 0.3s ease;
+  color: #ffffff !important;
+  opacity: 0.9;
+  transition: color 0.25s ease-in-out, opacity 0.25s ease-in-out, text-shadow 0.25s ease-in-out;
 }
 .navbar .nav-link:hover {
-  color: var(--dorado) !important;
+  color: rgba(201, 166, 53, 0.85) !important; /* dorado más suave */
+  opacity: 1;
+  text-shadow: 0 0 8px rgba(201, 166, 53, 0.35); /* efecto difuminado sutil */
 }
 .navbar.fixed-top + main {
-  margin-top: 76px; /* compensar la altura aproximada del navbar */
+  margin-top: 72px; /* separar contenido del navbar fijo */
+}
+@media (max-width: 991.98px) {
+  .navbar.fixed-top + main {
+    margin-top: 84px; /* navbar más alto en tablets/móviles */
+  }
 }
 
 /* ===============================
@@ -127,6 +211,9 @@ html {
   width: 100%;
   height: 100%;
   z-index: 1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .hero-image {
@@ -154,6 +241,22 @@ html {
   font-family: "Playfair Display", serif;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   margin-bottom: 1.5rem;
+}
+
+/* Override solo para el título del hero en la página de inicio */
+#hero h1 {
+  color: #000000;
+  text-shadow: 0 2px 6px rgba(201, 166, 53, 0.6);
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+}
+
+/* Subtítulo del hero solo en la página de inicio */
+#hero p {
+  color: #000000;
+  text-shadow: 0 2px 6px rgba(201, 166, 53, 0.6);
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
 }
 
 .hero p {
@@ -210,7 +313,7 @@ html {
   padding: 5rem 0;
 }
 .seccion-planes .card {
-  background-color: #fff;
+  background-color: #f2f2f2; /* unificar tarjetas en gris claro */
 }
 .seccion-planes .icon-placeholder {
   color: var(--vino);
@@ -254,6 +357,7 @@ html {
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   height: 100%;
+  background-color: #f2f2f2; /* gris claro para tarjetas */
 }
 .card:hover {
   transform: translateY(-5px);
@@ -398,16 +502,9 @@ html {
 .footer a:hover {
   color: var(--beige);
 }
-
-/* Botón beige oscuro para "Ver más" en Habitaciones y Planes */
-.btn-hotel-beige-dark {
+/* Badge con el mismo esquema de color que “Ver más” */
+.badge-hotel-beige-dark {
   background-color: #e2d7b5 !important;
   color: var(--vino) !important;
-  border: 1px solid var(--vino);
-  transition: all 0.3s ease;
-}
-.btn-hotel-beige-dark:hover,
-.btn-hotel-beige-dark:focus {
-  background-color: #d6cca8 !important;
-  color: var(--vino) !important;
+  border: 1px solid var(--vino) !important;
 }

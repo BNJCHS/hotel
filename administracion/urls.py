@@ -18,23 +18,22 @@ urlpatterns = [
     path("usuarios/<int:user_id>/desbloquear/", views.unblock_user, name="unblock_user"),
     path('reservas/activar/<int:reserva_id>/', views.activar_reserva, name='activar_reserva'),
 
-    # Empleados
-    path("empleados/", views.empleados_list, name="empleados_list"),
-    path("empleados/nuevo/", views.empleados_create, name="empleados_create"),
-    path("empleados/editar/<int:pk>/", views.empleados_edit, name="empleados_edit"),
-    path("empleados/eliminar/<int:pk>/", views.empleados_delete, name="empleados_delete"),
 
     # Planes
     path("planes/", views.planes_list, name="planes_list"),
     path("planes/nuevo/", views.planes_create, name="planes_create"),
     path("planes/editar/<int:pk>/", views.planes_edit, name="planes_edit"),
     path("planes/eliminar/<int:pk>/", views.planes_delete, name="planes_delete"),
+    path("planes/enviar/<int:pk>/", views.planes_send_email, name="planes_send_email"),
+    path("planes/previsualizar/<int:pk>/", views.planes_preview_email, name="planes_preview_email"),
 
     # Promociones
     path("promociones/", views.promociones_list, name="promociones_list"),
     path("promociones/nuevo/", views.promociones_create, name="promociones_create"),
     path("promociones/editar/<int:pk>/", views.promociones_edit, name="promociones_edit"),
     path("promociones/eliminar/<int:pk>/", views.promociones_delete, name="promociones_delete"),
+    path("promociones/enviar/<int:pk>/", views.promociones_send_email, name="promociones_send_email"),
+    path("promociones/previsualizar/<int:pk>/", views.promociones_preview_email, name="promociones_preview_email"),
 
     # Servicios
     path("servicios/", views.servicios_list, name="servicios_list"),
@@ -44,6 +43,7 @@ urlpatterns = [
 
     # Huéspedes
     path("huespedes/", views.huespedes_list, name="huespedes_list"),
+    path("huespedes/detalle/<int:pk>/", views.huesped_detail, name="huesped_detail"),
     path("huespedes/nuevo/", views.huespedes_create, name="huespedes_create"),
     path("huespedes/editar/<int:pk>/", views.huespedes_edit, name="huespedes_edit"),
     path("huespedes/eliminar/<int:pk>/", views.huespedes_delete, name="huespedes_delete"),
@@ -52,6 +52,7 @@ urlpatterns = [
         # acciones sobre reservas (confirmar / rechazar)
     path('reservas/confirmar/<int:reserva_id>/', views.confirmar_reserva_admin, name='confirmar_reserva_admin'),
     path('reservas/rechazar/<int:reserva_id>/', views.rechazar_reserva_admin, name='rechazar_reserva_admin'),
+    path('reservas/finalizar/<int:reserva_id>/', views.finalizar_reserva_admin, name='finalizar_reserva_admin'),
 
     # listado y control de huéspedes activos
     path('huespedes-activos/', views.huespedes_activos, name='huespedes_activos'),

@@ -5,8 +5,8 @@ from .models import Reserva, Huesped
 class ReservaAdmin(admin.ModelAdmin):
     list_display = ['id', 'usuario', 'tipo_habitacion', 'cantidad_habitaciones', 'check_in', 'check_out', 'estado', 'precio_total', 'fecha_reserva']
     list_filter = ['estado', 'tipo_habitacion', 'check_in', 'check_out', 'fecha_reserva']
-    search_fields = ['usuario__username', 'usuario__email', 'tipo_habitacion__nombre', 'token']
-    readonly_fields = ['precio_total', 'fecha_reserva', 'token']
+    search_fields = ['usuario__username', 'usuario__email', 'tipo_habitacion__nombre', 'token', 'codigo_checkin']
+    readonly_fields = ['precio_total', 'fecha_reserva', 'token', 'codigo_checkin']
     
     fieldsets = (
         ('Información del Cliente', {
@@ -25,7 +25,7 @@ class ReservaAdmin(admin.ModelAdmin):
             'fields': ('estado', 'metodo_pago', 'monto', 'precio_total')
         }),
         ('Sistema', {
-            'fields': ('token',),
+            'fields': ('token', 'codigo_checkin'),
             'classes': ('collapse',)
         }),
     )

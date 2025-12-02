@@ -1,20 +1,33 @@
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import login,logout, update_session_auth_hash
+from django.contrib.auth import login, logout, update_session_auth_hash, authenticate
 from django.contrib.auth.models import User
-from .forms import RegistroForm, ProfileForm, UserPreferencesForm
+from .forms import RegistroForm, ProfileForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils import timezone
+import random
+
 def register(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
             print("Formulario válido")  # <---
             user = form.save()
-            login(request, user)
+            # Autenticar para establecer el backend y evitar el error con múltiples backends
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            authenticated_user = authenticate(request, username=username, password=raw_password)
+            if authenticated_user is not None:
+                login(request, authenticated_user)
+            else:
+                # En caso extremo, usar explícitamente el backend por defecto de Django
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('index')
         else:
             print("Formulario inválido")  # <---
@@ -40,7 +53,6 @@ def profile(request):
     
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
-        preferences_form = UserPreferencesForm(request.POST, user_profile=profile)
         
         if 'update_profile' in request.POST and form.is_valid():
             # Actualizar datos del usuario
@@ -57,61 +69,61 @@ def profile(request):
             profile_form.save()
             
             messages.success(request, 'Perfil actualizado correctamente')
-            return redirect('profile')
-            
-        elif 'update_preferences' in request.POST and preferences_form.is_valid():
-            # Actualizar preferencias
-            profile.preferences = preferences_form.get_preferences_data()
-            profile.save()
-            
-            messages.success(request, 'Preferencias actualizadas correctamente')
-            return redirect('profile')
+            return redirect('usuarios:profile')
     else:
         form = ProfileForm(instance=profile)
-        preferences_form = UserPreferencesForm(user_profile=profile)
     
     # Obtener reservas del usuario y calcular estadísticas
     try:
         from reservas.models import Reserva
-        from django.db.models import Sum, Count, Q
+        from django.db.models import Sum, Count
         from decimal import Decimal
-        from datetime import datetime, timedelta
-        
-        reservations = Reserva.objects.filter(usuario=request.user).order_by('-fecha_reserva')[:5]
+        from datetime import timedelta
+        from django.utils import timezone
+
+        reservations = (
+            Reserva.objects
+            .filter(usuario=request.user)
+            .select_related('tipo_habitacion', 'habitacion_asignada')
+            .order_by('-fecha_reserva')
+        )
         all_reservations = Reserva.objects.filter(usuario=request.user)
-        
-        # Calcular estadísticas
+
+        # Calcular estadísticas con campos reales del modelo
         stats = {
             'total_reservations': all_reservations.count(),
-            'confirmed_reservations': all_reservations.filter(confirmada=True).count(),
-            'pending_reservations': all_reservations.filter(confirmada=False).count(),
-            'total_spent': all_reservations.filter(confirmada=True).aggregate(
-                total=Sum('monto_total')
+            'confirmed_reservations': all_reservations.filter(estado='confirmada').count(),
+            'pending_reservations': all_reservations.filter(estado='pendiente').count(),
+            'total_spent': (
+                all_reservations
+                .filter(estado__in=['confirmada', 'completada'])
+                .aggregate(total=Sum('monto'))
             )['total'] or Decimal('0'),
             'current_year_reservations': all_reservations.filter(
-                fecha_reserva__year=datetime.now().year
+                fecha_reserva__year=timezone.now().year
             ).count(),
             'last_30_days_reservations': all_reservations.filter(
-                fecha_reserva__gte=datetime.now() - timedelta(days=30)
+                fecha_reserva__gte=timezone.now() - timedelta(days=30)
             ).count(),
         }
-        
+
         # Método de pago más usado
-        payment_methods = all_reservations.filter(
-            metodo_pago__isnull=False
-        ).values('metodo_pago').annotate(
-            count=Count('metodo_pago')
-        ).order_by('-count')
-        
+        payment_methods = (
+            all_reservations
+            .filter(metodo_pago__isnull=False)
+            .values('metodo_pago')
+            .annotate(count=Count('metodo_pago'))
+            .order_by('-count')
+        )
         stats['favorite_payment_method'] = payment_methods.first()['metodo_pago'] if payment_methods else None
-        
+
         # Promedio de gasto por reserva
         if stats['confirmed_reservations'] > 0:
             stats['average_spent'] = stats['total_spent'] / stats['confirmed_reservations']
         else:
             stats['average_spent'] = Decimal('0')
-            
-    except Exception as e:
+
+    except Exception:
         # Si hay algún error (tabla no existe, etc.), simplemente no mostramos reservas
         reservations = []
         stats = {
@@ -125,13 +137,20 @@ def profile(request):
             'average_spent': Decimal('0'),
         }
     
+    # Estado actual de notificaciones (desde JSON preferences)
+    try:
+        prefs = profile.preferences or {}
+    except Exception:
+        prefs = {}
+    notifications_enabled = prefs.get('notifications_enabled', True)
+    
     context = {
         'page_title': 'Mi Perfil - Hotel Elegante',
         'meta_description': 'Gestiona tu perfil, revisa tus reservas y configura tu cuenta en Hotel Elegante.',
         'reservations': reservations,
         'form': form,
-        'preferences_form': preferences_form,
         'stats': stats,
+        'notifications_enabled': notifications_enabled,
     }
     return render(request, 'perfil.html', context)
 
@@ -146,7 +165,7 @@ def password_change(request):
             user = form.save()
             update_session_auth_hash(request, user)
             messages.success(request, 'Tu contraseña ha sido cambiada exitosamente.')
-            return redirect('profile')
+            return redirect('usuarios:profile')
         else:
             for field, errors in form.errors.items():
                 for error in errors:
@@ -257,3 +276,110 @@ def unblock_user(request, user_id):
     except User.DoesNotExist:
         messages.error(request, 'Usuario no encontrado.')
         return redirect('admin:auth_user_changelist')
+
+# ===== VISTAS 2FA =====
+@login_required
+def enable_two_factor(request):
+    if request.method == 'POST':
+        profile = request.user.profile
+        code = f"{random.randint(0, 999999):06d}"
+        profile.two_factor_pending_code = code
+        profile.two_factor_enabled = False
+        profile.two_factor_last_sent_at = timezone.now()
+        profile.save()
+        # Enviar email con el código si hay email
+        if request.user.email:
+            try:
+                send_mail(
+                    subject='Código de verificación 2FA - Hotel Elegante',
+                    message=f'Tu código de verificación es: {code}',
+                    from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                    recipient_list=[request.user.email],
+                    fail_silently=True,
+                )
+                messages.info(request, 'Te enviamos un código a tu correo.')
+            except Exception:
+                messages.warning(request, 'No se pudo enviar el email. Ingresa el código mostrado si aplica.')
+        else:
+            messages.warning(request, 'No tienes email configurado. Contacta soporte para completar 2FA.')
+        return redirect('usuarios:verify_two_factor_page')
+    return redirect('usuarios:profile')
+
+@login_required
+def two_factor_verify_page(request):
+    profile = request.user.profile
+    if not profile.two_factor_pending_code:
+        messages.info(request, 'No tienes una verificación 2FA pendiente.')
+        return redirect('usuarios:profile')
+    context = {
+        'page_title': 'Verificar 2FA - Hotel Elegante',
+        'meta_description': 'Introduce el código para activar la autenticación de dos factores.',
+    }
+    return render(request, 'two_factor_verify.html', context)
+
+@login_required
+def verify_two_factor(request):
+    if request.method == 'POST':
+        code = request.POST.get('code', '').strip()
+        profile = request.user.profile
+        if code and profile.two_factor_pending_code and code == profile.two_factor_pending_code:
+            profile.two_factor_enabled = True
+            profile.two_factor_pending_code = ''
+            profile.save()
+            messages.success(request, 'Autenticación de dos factores activada.')
+            return redirect('usuarios:verify_two_factor_success_page')
+        else:
+            messages.error(request, 'Código incorrecto o expirado. Intenta nuevamente.')
+            return redirect('usuarios:verify_two_factor_page')
+    return redirect('usuarios:profile')
+
+@login_required
+def two_factor_success_page(request):
+    profile = request.user.profile
+    if not profile.two_factor_enabled:
+        messages.info(request, 'Aún no has activado 2FA. Ingresa el código para completarlo.')
+        return redirect('usuarios:verify_two_factor_page')
+    context = {
+        'page_title': '2FA Activada - Hotel Elegante',
+        'meta_description': 'Confirmación de activación de la autenticación de dos factores.',
+    }
+    return render(request, 'two_factor_success.html', context)
+
+@login_required
+def disable_two_factor(request):
+    if request.method == 'POST':
+        profile = request.user.profile
+        profile.two_factor_enabled = False
+        profile.two_factor_pending_code = ''
+        profile.save()
+        messages.success(request, 'Autenticación de dos factores desactivada.')
+        return redirect('usuarios:profile')
+    return redirect('usuarios:profile')
+
+
+@login_required
+def toggle_notifications(request):
+    """Actualiza la preferencia de notificaciones del perfil del usuario."""
+    if request.method == 'POST':
+        user = request.user
+        try:
+            profile = user.profile
+        except Exception:
+            from .models import Profile
+            profile = Profile.objects.create(user=user)
+        
+        prefs = profile.preferences or {}
+        new_value = request.POST.get('notifications_enabled')
+        enabled = new_value == 'on' or new_value == 'true' or new_value == '1'
+        prefs['notifications_enabled'] = enabled
+        profile.preferences = prefs
+        profile.save()
+        
+        if enabled:
+            messages.success(request, 'Has activado las notificaciones y promociones por email.')
+        else:
+            messages.info(request, 'Has desactivado las notificaciones y promociones por email.')
+        return redirect('usuarios:profile')
+    
+    messages.error(request, 'Solicitud inválida.')
+    return redirect('usuarios:profile')

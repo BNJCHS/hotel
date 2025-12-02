@@ -8,6 +8,15 @@
   {% endif %}
 </div>
 
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'administracion:huespedes_list' %}">Inactivos</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'administracion:huespedes_activos' %}">Activos</a>
+  </li>
+</ul>
+
 {% include "administracion/_list_toolbar.html" %}
 
 <table class="table table-striped align-middle">
@@ -22,7 +31,7 @@
   <tbody>
     {% for h in page_obj.object_list %}
     <tr>
-      <td>{{ h.apellido }}, {{ h.nombre }}</td>
+      <td><a href="{% url 'administracion:huesped_detail' h.id %}">{{ h.apellido }}, {{ h.nombre }}</a></td>
       <td>{{ h.dni }}</td>
       <td>
         {% if h.email %}{{ h.email }}{% endif %}

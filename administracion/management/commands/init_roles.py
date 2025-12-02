@@ -108,6 +108,7 @@ class Command(BaseCommand):
             ('admin_general', 'Administrador del hotel con acceso a la mayoría de funciones'),
             ('recepcionista', 'Manejo de reservas y huéspedes'),
             ('solo_lectura', 'Acceso básico de solo lectura'),
+            ('marketing', 'Gestión de promociones, planes y servicios'),
         ]
 
         self.stdout.write('Creando roles...')
@@ -166,6 +167,20 @@ class Command(BaseCommand):
         for permiso_key in permisos_solo_lectura:
             if permiso_key in permisos_creados:
                 RolPermiso.objects.get_or_create(rol=solo_lectura, permiso=permisos_creados[permiso_key])
+
+        # Marketing - gestionar sólo promociones, planes y servicios
+        marketing = roles_creados['marketing']
+        permisos_marketing = [
+            # Servicios
+            'servicios_ver', 'servicios_crear', 'servicios_editar', 'servicios_eliminar',
+            # Planes
+            'planes_ver', 'planes_crear', 'planes_editar', 'planes_eliminar',
+            # Promociones
+            'promociones_ver', 'promociones_crear', 'promociones_editar', 'promociones_eliminar',
+        ]
+        for permiso_key in permisos_marketing:
+            if permiso_key in permisos_creados:
+                RolPermiso.objects.get_or_create(rol=marketing, permiso=permisos_creados[permiso_key])
 
         # Asignar rol de super admin al primer superusuario
         try:

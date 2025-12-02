@@ -1,0 +1,28 @@
+=== CREDENCIALES DE CUENTAS BENJA ===
+URL acceso admin: http://127.0.0.1:8000/administracion/login/
+URL sitio hotel: http://127.0.0.1:8000/
+
+Usuario: benja_usuario
+Email: benjaminchaves34@gmail.com
+Contraseña: cS0Jvw7QsWE
+Staff: False
+Rol: N/A
+
+Usuario: benja_recepcionista
+Email: benjaminchaves34@gmail.com
+Contraseña: 0DZWGKOnKP0
+Staff: True
+Rol: recepcionista
+
+Usuario: benja_lectura
+Email: benjaminchaves34@gmail.com
+Contraseña: 5dSHglJ1Ncs
+Staff: True
+Rol: solo_lectura
+
+Usuario: benja_marketing
+Email: benjaminchaves34@gmail.com
+Contraseña: kd6wgTgPt7w
+Staff: True
+Rol: marketing
+

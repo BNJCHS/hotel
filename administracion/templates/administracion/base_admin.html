@@ -135,14 +135,7 @@
             </div>
           </li>
           {% endif %}
-          
-          {% if permisos.empleados.ver %}
-          <li class="nav-item">
-            <a class="nav-link ps-3" href="{% url 'administracion:empleados_list' %}">
-              <i class="fas fa-users me-2"></i>Empleados
-            </a>
-          </li>
-          {% endif %}
+    
           
           {% if permisos.planes.ver %}
           <li class="nav-item">

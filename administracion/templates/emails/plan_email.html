@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ plan.nombre }} · Hotel Elegante</title>
+  <style>
+    /* Layout base compatible con la mayoría de clientes */
+    body { margin:0; padding:0; background:#F5F5DC; font-family: Arial, sans-serif; color:#2A2A2A; }
+    .container { width:100%; max-width:600px; margin:0 auto; background:#ffffff; }
+    .header { background:#6E0B14; color:#F5F5DC; padding:20px; text-align:center; }
+    .brand { font-size:20px; font-weight:700; letter-spacing: .3px; }
+    .content { padding:24px; }
+    .title { font-size:22px; font-weight:bold; margin:0 0 8px; color:#1A1A1A; }
+    .subtitle { font-size:14px; color:#555; margin:0 0 16px; }
+    .hero { width:100%; display:block; border-radius:8px; }
+    .card { border:1px solid #e9ecef; border-radius:8px; padding:16px; margin:16px 0; }
+    .cta { display:inline-block; background:#C9A635; color:#fff !important; text-decoration:none; padding:12px 18px; border-radius:6px; font-weight:bold; }
+    .muted { color:#6c757d; font-size:12px; }
+    .footer { text-align:center; padding:16px; color:#6c757d; font-size:12px; }
+    .price { font-size:18px; font-weight:bold; color:#C9A635; }
+    .room { font-size:13px; color:#555; }
+    .spacer { height:12px; }
+    @media (prefers-color-scheme: dark) {
+      body { background:#111; color:#ddd; }
+      .container { background:#1a1a1a; }
+      .header { background:#58080f; }
+      .title { color:#fff; }
+      .subtitle, .muted, .room { color:#bbb; }
+      .card { border-color:#333; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">Hotel Elegante</div>
+    </div>
+    <div class="content">
+      <h1 class="title">Nuevo plan: {{ plan.nombre }}</h1>
+      <p class="subtitle">Disfruta una experiencia especial con nuestro plan para {{ plan.habitacion.tipo|title }}.</p>
+
+      {% if imagen_url %}
+      <img class="hero" src="{{ imagen_url }}" alt="{{ plan.nombre }}" />
+      <div class="spacer"></div>
+      {% endif %}
+
+      <div class="card">
+        <p>{{ plan.descripcion }}</p>
+        <p>
+          <span class="price">Precio: ${{ plan.precio }}</span>
+          <br>
+          <span class="room">Habitación incluida: {{ plan.habitacion.numero }} ({{ plan.habitacion.tipo|title }})</span>
+        </p>
+      </div>
+
+      <p style="margin: 16px 0;">Puedes ver los detalles y reservar desde el siguiente enlace:</p>
+      <p>
+        <a href="{{ plan_url }}" class="cta" target="_blank">Ver plan y reservar</a>
+      </p>
+
+      <p class="muted" style="margin-top:16px;">Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
+        <a href="{{ plan_url }}" style="color:#6E0B14;">{{ plan_url }}</a>
+      </p>
+    </div>
+    <div class="footer">
+      © {{ year }} Hotel Elegante — Gracias por elegirnos.
+    </div>
+  </div>
+</body>
+</html>

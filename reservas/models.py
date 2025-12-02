@@ -6,6 +6,7 @@ from django.core.validators import MinValueValidator
 from habitaciones.models import TipoHabitacion, Habitacion
 from administracion.models import Servicio, Plan, Promocion
 from decimal import Decimal
+from django.utils import timezone
 
 
 class Reserva(models.Model):
@@ -41,6 +42,7 @@ class Reserva(models.Model):
     estado = models.CharField(max_length=20, choices=ESTADOS_RESERVA, default='pendiente')
     metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, blank=True, null=True)
     token = models.CharField(max_length=64, default=uuid.uuid4, editable=False, unique=True)
+    codigo_checkin = models.CharField(max_length=10, null=True, blank=True, help_text="Código de seguridad para realizar el check-in")
     monto = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     check_in = models.DateField(null=True, blank=True)
     check_out = models.DateField(null=True, blank=True)

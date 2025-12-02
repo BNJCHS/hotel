@@ -17,25 +17,36 @@
                     {% if simulate_payments %}
                     <div class="alert alert-success" role="alert">
                         <i class="fas fa-shield-alt me-2"></i>
-                        Modo simulación activo: no se ha realizado ningún cobro real. ID de transacción: <strong>{{ sim_tx_id }}</strong>.
+                        Modo simulación activo: no se ha realizado ningún cobro real.
                     </div>
                     {% endif %}
 
                     <h5 class="mb-3">Detalles de la Reserva</h5>
                     <ul class="list-group list-group-flush mb-4">
-                        <li class="list-group-item d-flex justify-content-between"><span><strong>Nombre:</strong></span> <span>{{ reserva.nombre }} {{ reserva.apellido }}</span></li>
-                        <li class="list-group-item d-flex justify-content-between"><span><strong>Email:</strong></span> <span>{{ reserva.email }}</span></li>
-                        <li class="list-group-item d-flex justify-content-between"><span><strong>Teléfono:</strong></span> <span>{{ reserva.telefono }}</span></li>
-                        <li class="list-group-item d-flex justify-content-between"><span><strong>Fecha de entrada:</strong></span> <span>{{ reserva.fecha_entrada }}</span></li>
-                        <li class="list-group-item d-flex justify-content-between"><span><strong>Fecha de salida:</strong></span> <span>{{ reserva.fecha_salida }}</span></li>
-                        <li class="list-group-item d-flex justify-content-between"><span><strong>Método de pago:</strong></span> <span>{{ reserva.get_metodo_pago_display }}</span></li>
+                        <li class="list-group-item d-flex justify-content-between"><span><strong>N.º de reserva:</strong></span> <span>{{ reserva.id }}</span></li>
+                        <li class="list-group-item d-flex justify-content-between"><span><strong>Cliente:</strong></span> <span>{{ reserva.usuario.get_full_name|default:reserva.usuario.username }}</span></li>
+                        <li class="list-group-item d-flex justify-content-between"><span><strong>Tipo de habitación:</strong></span> <span>{{ reserva.tipo_habitacion.nombre }}</span></li>
+                        <li class="list-group-item d-flex justify-content-between"><span><strong>Cantidad de habitaciones:</strong></span> <span>{{ reserva.cantidad_habitaciones }}</span></li>
+                        <li class="list-group-item d-flex justify-content-between"><span><strong>Huéspedes:</strong></span> <span>{{ reserva.cantidad_huespedes }}</span></li>
+                        <li class="list-group-item d-flex justify-content-between"><span><strong>Check-in:</strong></span> <span>{{ reserva.check_in }}</span></li>
+                        <li class="list-group-item d-flex justify-content-between"><span><strong>Check-out:</strong></span> <span>{{ reserva.check_out }}</span></li>
+                        <li class="list-group-item d-flex justify-content-between"><span><strong>Estado:</strong></span> <span>{{ reserva.get_estado_display|default:reserva.estado }}</span></li>
+                        {% if reserva.metodo_pago %}
+                        <li class="list-group-item d-flex justify-content-between"><span><strong>Método de pago:</strong></span> <span>{{ reserva.get_metodo_pago_display|default:reserva.metodo_pago }}</span></li>
+                        {% endif %}
                     </ul>
 
-                    {% if reserva.servicios.exists %}
-                    <h5 class="mb-3">Servicios Incluidos</h5>
+                    {% if reserva.plan or reserva.promocion or reserva.servicios.exists %}
+                    <h5 class="mb-3">Extras de la reserva</h5>
                     <ul class="list-group list-group-flush mb-4">
+                        {% if reserva.plan %}
+                        <li class="list-group-item d-flex justify-content-between"><span>Plan: {{ reserva.plan.nombre }}</span> <span>${{ reserva.plan.precio }}</span></li>
+                        {% endif %}
+                        {% if reserva.promocion %}
+                        <li class="list-group-item d-flex justify-content-between"><span>Promoción: {{ reserva.promocion.nombre }}</span> <span>-{{ reserva.promocion.descuento }}%</span></li>
+                        {% endif %}
                         {% for servicio in reserva.servicios.all %}
-                        <li class="list-group-item d-flex justify-content-between"><span>{{ servicio.nombre }}</span> <span>${{ servicio.precio }}</span></li>
+                        <li class="list-group-item d-flex justify-content-between"><span>Servicio: {{ servicio.nombre }}</span> <span>${{ servicio.precio }}</span></li>
                         {% endfor %}
                     </ul>
                     {% endif %}
@@ -43,11 +54,16 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h5>Total Pagado</h5>
-                            <div class="h4 text-primary mb-0">${{ reserva.total_con_impuestos }}</div>
+                            <div class="h4 text-primary mb-0">${{ reserva.monto }}</div>
                         </div>
-                        <a href="{% url 'index' %}" class="btn btn-outline-primary">
+                        <div class="d-flex gap-2">
+                          <a href="{% url 'reservas:mis_reservas' %}" class="btn btn-primary">
+                            <i class="fas fa-list me-2"></i>Ver mis reservas
+                          </a>
+                          <a href="{% url 'index' %}" class="btn btn-outline-primary">
                             <i class="fas fa-home me-2"></i>Volver al Inicio
-                        </a>
+                          </a>
+                        </div>
                     </div>
 
                 </div>

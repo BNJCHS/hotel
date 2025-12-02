@@ -1,0 +1,45 @@
+{% extends "administracion/base_admin.html" %}
+{% block title %}Detalle Huésped{% endblock %}
+{% block content %}
+<h2>Detalle de Huésped</h2>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ huesped.apellido }}, {{ huesped.nombre }}</h5>
+    <p class="card-text">
+      <b>DNI:</b> {{ huesped.dni|default:"-" }}<br/>
+      <b>Email:</b> {{ huesped.email|default:"-" }}<br/>
+      <b>Teléfono:</b> {{ huesped.telefono|default:"-" }}
+    </p>
+    {% if permisos.huespedes.editar %}
+    <a href="{% url 'administracion:huespedes_edit' huesped.id %}" class="btn btn-sm btn-warning">Editar</a>
+    {% endif %}
+  </div>
+</div>
+
+<h4>Reservas asociadas</h4>
+<table class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th>Reserva</th>
+      <th>Tipo de habitación</th>
+      <th>Check-in</th>
+      <th>Check-out</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for rh in reservas_huesped %}
+    <tr>
+      <td>#{{ rh.reserva.id }}</td>
+      <td>{{ rh.reserva.tipo_habitacion.nombre }}</td>
+      <td>{{ rh.reserva.check_in|default:"-" }}</td>
+      <td>{{ rh.reserva.check_out|default:"-" }}</td>
+      <td>{{ rh.reserva.estado }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="text-center text-muted">Sin reservas asociadas.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -54,7 +54,7 @@ main{padding-top:84px}
         </li>
       </ul>
       <div class="d-flex gap-2 mb-4">
-        <a href="{% url 'reservar_habitacion' habitacion.id %}" class="btn btn-primary">
+        <a href="{% url 'reservas:reservar_habitacion' habitacion.id %}" class="btn btn-primary">
           <i class="fas fa-calendar-check me-1"></i> Reservar
         </a>
         <a href="{% url 'habitaciones:list_habitaciones_reserva' %}" class="btn btn-outline-secondary">← Volver a la lista</a>
@@ -81,3 +81,4 @@ main{padding-top:84px}
   </div>
 </div>
 {% endblock %}
+

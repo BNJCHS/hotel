@@ -785,68 +785,67 @@ function actualizarResumen() {
 }
 
 // Manejar click en botones agregar
-document.querySelectorAll(".agregar-servicio").forEach((btn) => {
-    btn.addEventListener("click", function() {
-        const servicioId = this.dataset.id;
+if (!(window && window.SERVICIOS_INLINE)) {
+  document.querySelectorAll(".agregar-servicio").forEach((btn) => {
+      btn.addEventListener("click", function() {
+          const servicioId = this.dataset.id;
 
-        fetch("/reservas/servicio/agregar/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken")
-            },
-            body: JSON.stringify({ servicio_id: servicioId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(`Servicio "${data.servicio.nombre}" agregado`, "success");
+          fetch("/reservas/servicio/agregar/", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": getCookie("csrftoken")
+              },
+              body: JSON.stringify({ servicio_id: servicioId })
+          })
+          .then(res => res.json())
+          .then(data => {
+              if (data.success) {
+                  showNotification(`Servicio "${data.servicio.nombre}" agregado`, "success");
 
-                // Actualizar la lista de servicios seleccionados
-                const contenedor = document.getElementById("servicios-seleccionados");
-                const emptyState = contenedor.querySelector(".empty-state");
-                if (emptyState) emptyState.remove();
+                  // Actualizar la lista de servicios seleccionados
+                  const contenedor = document.getElementById("servicios-seleccionados");
+                  const emptyState = contenedor.querySelector(".empty-state");
+                  if (emptyState) emptyState.remove();
 
-                const servicioDiv = document.createElement("div");
-                servicioDiv.className = "d-flex justify-content-between align-items-center mb-2 servicio-agregado";
-                servicioDiv.dataset.id = data.servicio.id;
-                servicioDiv.dataset.precio = data.servicio.precio;
-                servicioDiv.innerHTML = `
-                    <span>${data.servicio.nombre}</span>
-                    <div>
-                        <span>$${data.servicio.precio}</span>
-                        <button class="btn btn-sm btn-outline-danger ms-2 eliminar-servicio">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                contenedor.appendChild(servicioDiv);
+                  const servicioDiv = document.createElement("div");
+                  servicioDiv.className = "d-flex justify-content-between align-items-center mb-2 servicio-agregado";
+                  servicioDiv.dataset.id = data.servicio.id;
+                  servicioDiv.dataset.precio = data.servicio.precio;
+                  servicioDiv.innerHTML = `
+                      <span>${data.servicio.nombre}</span>
+                      <div>
+                          <span>$${data.servicio.precio}</span>
+                          <button class="btn btn-sm btn-outline-danger ms-2 eliminar-servicio">
+                              <i class="fas fa-trash"></i>
+                          </button>
+                      </div>
+                  `;
+                  contenedor.appendChild(servicioDiv);
 
-                // Manejar eliminar servicio
-                servicioDiv.querySelector(".eliminar-servicio").addEventListener("click", function() {
-                    servicioDiv.remove();
-                    showNotification(`Servicio "${data.servicio.nombre}" eliminado`, "info");
-                    actualizarResumen();
+                  // Manejar eliminar servicio
+                  servicioDiv.querySelector(".eliminar-servicio").addEventListener("click", function() {
+                      servicioDiv.remove();
+                      showNotification(`Servicio "${data.servicio.nombre}" eliminado`, "info");
+                      actualizarResumen();
 
-                    // Si no quedan servicios, mostrar estado vacío
-                    if (contenedor.querySelectorAll(".servicio-agregado").length === 0) {
-                        const emptyDiv = document.createElement("div");
-                        emptyDiv.className = "empty-state text-center py-4";
-                        emptyDiv.innerHTML = `
-                            <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
-                            <p class="text-muted mb-0">Selecciona servicios para personalizar tu experiencia</p>
-                        `;
-                        contenedor.appendChild(emptyDiv);
-                    }
-                });
+                      // Si no quedan servicios, mostrar estado vacío
+                      if (contenedor.querySelectorAll(".servicio-agregado").length === 0) {
+                          const emptyDiv = document.createElement("div");
+                          emptyDiv.className = "empty-state text-center py-4";
+                          emptyDiv.innerHTML = `
+                              <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
+                              <p class="text-muted mb-0">Selecciona servicios para personalizar tu experiencia</p>
+                          `;
+                          contenedor.appendChild(emptyDiv);
+                      }
+                  });
 
-                // Actualizar contador y total
-                actualizarResumen();
-
-            } else {
-                showNotification(data.error || "Error al agregar servicio", "error");
-            }
-        })
-        .catch(() => showNotification("Error al agregar servicio", "error"));
-    });
-});
+                  actualizarResumen();
+              }
+          })
+          .catch(() => {
+              showNotification("No se pudo agregar el servicio", "danger");
+          });
+      });
+  });

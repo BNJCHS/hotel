@@ -19,6 +19,11 @@ except Exception:
 
 _client = None
 
+# Modo de operación: solo informar sobre el hotel
+# Si está en True, el chatbot responde únicamente preguntas sobre el hotel
+# y no ejecuta el flujo de reservas ni crea reservas.
+INFO_ONLY = True
+
 def get_openai_client():
     global _client
     if _client is None and OpenAI is not None:
@@ -264,9 +269,8 @@ def answer_hotel_question(message: str) -> str | None:
     # Comunes de reserva: redirigir a flujo
     if any(k in txt for k in ["precio", "coste", "cuanto cuesta", "tarifa", "valor"]):
         return (
-            "Los precios varían según fechas, tipo de habitación y disponibilidad. "
-            "Si quieres, te ayudo a consultarlo: dime tus fechas (YYYY-MM-DD a YYYY-MM-DD), "
-            "el tipo (simple/doble/suite/presidencial) y la cantidad de huéspedes."
+            "Los precios varían según fechas y tipo de habitación. "
+            "Puedes consultar las tarifas en la sección de Habitaciones del sitio o comunicarte con recepción para información actualizada."
         )
 
     # Check-in / Check-out
@@ -280,8 +284,7 @@ def answer_hotel_question(message: str) -> str | None:
     # Ubicación / contacto
     if any(k in txt for k in ["direccion", "dirección", "donde estan", "dónde están", "ubicacion", "ubicación", "como llegar", "cómo llegar", "telefono", "teléfono", "contacto"]):
         return (
-            "Puedes encontrar nuestra dirección, mapa y datos de contacto en la página de Contacto: "
-            "/contacto/. Si deseas, puedo ayudarte con una reserva ahora mismo."
+            "Puedes encontrar nuestra dirección, mapa y datos de contacto en la página de Contacto: /contacto/."
         )
 
     # Servicios y amenidades
@@ -289,8 +292,8 @@ def answer_hotel_question(message: str) -> str | None:
         servicios = _list_servicios()
         if servicios:
             listado = ", ".join(servicios[:15]) + ("…" if len(servicios) > 15 else "")
-            return f"Ofrecemos: {listado}. ¿Te gustaría reservar o conocer disponibilidad?"
-        return "Contamos con Wi‑Fi gratuito, desayuno disponible, estacionamiento sujeto a disponibilidad y piscina. ¿Te ayudo a reservar?"
+            return f"Ofrecemos: {listado}. ¿Deseas más detalles de algún servicio?"
+        return "Contamos con Wi‑Fi gratuito, desayuno disponible, estacionamiento sujeto a disponibilidad y piscina."
 
     # Wi‑Fi
     if any(k in txt for k in ["wifi", "wi-fi", "wi fi"]):
@@ -311,7 +314,7 @@ def answer_hotel_question(message: str) -> str | None:
     if any(k in txt for k in ["piscina", "pileta"]):
         return "Sí, contamos con piscina. Los horarios pueden variar según la temporada."
     if any(k in txt for k in ["spa", "masajes"]):
-        return "Disponemos de spa con servicios bajo reserva. ¿Te gustaría agendar durante tu estadía?"
+        return "Disponemos de spa con servicios bajo reserva. Puedes solicitar información en recepción."
     if any(k in txt for k in ["gimnasio", "gym", "fitness"]):
         return "Tenemos gimnasio disponible para huéspedes."
 
@@ -346,7 +349,7 @@ def chat(request):
         if not message:
             return JsonResponse({"success": False, "message": "Mensaje vacío"}, status=400)
 
-        # Cargar/actualizar estado
+        # Cargar/actualizar estado (no se usará en modo solo información)
         state = get_state(request)
         data = state['data']
 
@@ -384,8 +387,16 @@ def chat(request):
                 "message": "Claro, ¿sobre qué te gustaría saber del hotel? Por ejemplo: horarios de check‑in/out, servicios, ubicación/contacto, desayuno o estacionamiento.",
             })
 
-        # Si no se reconoce la pregunta en modo Q&A, continuar al flujo de reserva
-        # (no retornamos aquí para permitir extracción de entidades y pasos siguientes)
+        # Si está activado el modo solo información, evitar cualquier otro flujo
+        if INFO_ONLY:
+            return JsonResponse({
+                "success": True,
+                "stage": "greeting",
+                "message": "Puedo ayudarte únicamente con información del hotel: servicios, horarios de check‑in/out, ubicación/contacto, desayuno y estacionamiento. ¿Qué tema te interesa?",
+            })
+
+        # En modo normal (no INFO_ONLY), si no se reconoce la pregunta,
+        # continuar al flujo de reserva.
 
         # Extraer entidades del mensaje
         extracted = extract_intent_and_entities(message)
@@ -598,7 +609,7 @@ def chat(request):
         return JsonResponse({
             "success": True,
             "stage": state['stage'],
-            "message": "¿En qué puedo ayudarte? Puedo asistirte a reservar si me das fechas (YYYY-MM-DD), tipo(s) (simple/doble/suite/presidencial) y cantidad de huéspedes.",
+            "message": "¿En qué puedo ayudarte? Puedo responder consultas sobre servicios, horarios de check‑in/out, ubicación/contacto, desayuno o estacionamiento.",
             "entities": extracted,
             "data": data,
         })

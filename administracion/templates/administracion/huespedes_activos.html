@@ -4,6 +4,28 @@
 {% block content %}
 <h2>Huéspedes activos en el hotel</h2>
 
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'administracion:huespedes_list' %}">Inactivos</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="{% url 'administracion:huespedes_activos' %}">Activos</a>
+  </li>
+</ul>
+
+<form method="get" class="row g-2 mb-3" action="{% url 'administracion:huespedes_activos' %}">
+  <div class="col-auto">
+    <label for="reserva" class="col-form-label">ID de reserva</label>
+  </div>
+  <div class="col-auto">
+    <input type="number" min="1" class="form-control" id="reserva" name="reserva" value="{{ reserva_id }}" placeholder="Ej: 123">
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+    <a href="{% url 'administracion:huespedes_activos' %}" class="btn btn-outline-secondary">Limpiar</a>
+  </div>
+</form>
+
 <table class="table table-striped">
   <thead>
     <tr>
@@ -12,7 +34,6 @@
       <th>Habitación</th>
       <th>Check-in</th>
       <th>Check-out</th>
-      <th>Acciones</th>
     </tr>
   </thead>
   <tbody>
@@ -20,18 +41,12 @@
       <tr>
         <td>{{ activo.huesped.nombre }} {{ activo.huesped.apellido }}</td>
         <td>{{ activo.huesped.dni }}</td>
-        <td>{{ activo.habitacion.numero if activo.habitacion else '-' }}</td>
+        <td>{% if activo.habitacion %}{{ activo.habitacion.numero }}{% else %}-{% endif %}</td>
         <td>{{ activo.fecha_checkin }}</td>
         <td>{{ activo.fecha_checkout }}</td>
-        <td>
-          <form method="post" action="{% url 'administracion:finalizar_huesped_activo' activo.id %}">
-            {% csrf_token %}
-            <button class="btn btn-sm btn-warning" type="submit">Checkout</button>
-          </form>
-        </td>
       </tr>
     {% empty %}
-      <tr><td colspan="6">No hay huéspedes activos</td></tr>
+      <tr><td colspan="6">No hay huéspedes activos{% if reserva_id %} para la reserva {{ reserva_id }}{% endif %}</td></tr>
     {% endfor %}
   </tbody>
 </table>

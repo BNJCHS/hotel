@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Promoción - Hotel Elegante</title>
+  <style>
+    /* Estilos inline-friendly para clientes de email */
+    body { margin: 0; padding: 0; background-color: #F5F5DC; font-family: Arial, Helvetica, sans-serif; }
+    .container { width: 100%; max-width: 640px; margin: 0 auto; background: #ffffff; }
+    .header { background: #6E0B14; color: #F5F5DC; text-align: center; padding: 24px; }
+    .logo { font-size: 20px; font-weight: bold; letter-spacing: 0.5px; }
+    .hero { padding: 0; }
+    .hero img { width: 100%; height: auto; display: block; }
+    .content { padding: 24px; color: #2A2A2A; }
+    .title { font-size: 22px; margin: 0 0 8px; color: #1A1A1A; }
+    .subtitle { font-size: 16px; margin: 0 0 16px; color: #C9A635; }
+    .description { font-size: 15px; line-height: 1.6; margin: 0 0 16px; }
+    .details { background: #FBF8ED; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+    .detail-item { font-size: 14px; color: #2A2A2A; margin: 4px 0; }
+    .cta { text-align: center; margin: 24px 0; }
+    .cta a { background: #C9A635; color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; display: inline-block; }
+    .footer { font-size: 12px; color: #666; text-align: center; padding: 16px 24px 24px; }
+    .small { font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container" role="article" aria-label="Promoción Hotel Elegante">
+    <div class="header">
+      <div class="logo">Hotel Elegante</div>
+    </div>
+
+    {% if imagen_url %}
+    <div class="hero">
+      <img src="{{ imagen_url }}" alt="Imagen de la promoción {{ promocion.nombre }}" />
+    </div>
+    {% endif %}
+
+    <div class="content">
+      <h1 class="title">{{ promocion.nombre }}</h1>
+      <p class="subtitle">Descuento: <strong>{{ promocion.descuento }}%</strong></p>
+      <p class="description">{{ promocion.descripcion }}</p>
+
+      <div class="details">
+        <p class="detail-item">Vigencia: <strong>{{ promocion.fecha_inicio }} → {{ promocion.fecha_fin }}</strong></p>
+        {% if estado == 'activa' %}
+          <p class="detail-item">Quedan <strong>{{ dias_restantes }}</strong> días para aprovecharla.</p>
+        {% elif estado == 'proxima' %}
+          <p class="detail-item">Comienza en <strong>{{ dias_para_inicio }}</strong> días.</p>
+        {% else %}
+          <p class="detail-item">Esta promoción ha finalizado.</p>
+        {% endif %}
+      </div>
+
+      {% if promo_url %}
+      <div class="cta">
+        <a href="{{ promo_url }}" target="_blank" rel="noopener" aria-label="Ver promoción">
+          Ver promoción y reservar
+        </a>
+      </div>
+      {% endif %}
+
+      <p class="small">Si no deseas recibir estas comunicaciones, puedes desactivar las notificaciones desde tu perfil.</p>
+    </div>
+
+    <div class="footer">
+      © {{ year }} Hotel Elegante · Todas las marcas registradas pertenecen a sus respectivos dueños.
+    </div>
+  </div>
+</body>
+</html>

@@ -48,8 +48,7 @@ INSTALLED_APPS = [
     'habitaciones',
     'reservas',
     'chatbot',
-
-
+    'social_django',
 ]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -93,6 +92,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'administracion.permissions.permisos_context',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -184,3 +185,12 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 SIMULATE_PAYMENTS = os.getenv('SIMULATE_PAYMENTS', 'true' if DEBUG else 'false').lower() == 'true'
+
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'social_core.backends.google.GoogleOAuth2',
+)
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', '')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', '')
+SOCIAL_AUTH_URL_NAMESPACE = 'social'

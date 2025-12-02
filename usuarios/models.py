@@ -12,6 +12,11 @@ class Profile(models.Model):
     city = models.CharField(max_length=100, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
     preferences = models.JSONField(default=dict, blank=True, null=True)
+
+    # Campos de 2FA
+    two_factor_enabled = models.BooleanField(default=False)
+    two_factor_pending_code = models.CharField(max_length=6, blank=True, null=True)
+    two_factor_last_sent_at = models.DateTimeField(blank=True, null=True)
     
     # Campos para el sistema de bloqueo
     is_blocked = models.BooleanField(default=False, verbose_name="Usuario bloqueado")
