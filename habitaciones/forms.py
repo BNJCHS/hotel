@@ -33,18 +33,7 @@ class HabitacionAdminForm(BaseAdminModelForm):
         }
 
 class TipoHabitacionForm(BaseAdminModelForm):
-    TIPO_CHOICES = [
-        ('simple', 'simple'),
-        ('doble', 'doble'),
-        ('familiar1', 'familiar1'),
-        ('familiar2', 'familiar2'),
-        ('familiar 3', 'familiar 3'),
-        ('suite', 'suite'),
-        ('suite premiun', 'suite premiun'),
-        ('suite precidencia', 'suite precidencia'),
-    ]
-
-    nombre = forms.ChoiceField(choices=TIPO_CHOICES, label='Tipo')
+    nombre = forms.CharField(label='Tipo', max_length=100)
 
     class Meta:
         model = TipoHabitacion

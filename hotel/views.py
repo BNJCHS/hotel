@@ -6,7 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from administracion.models import Plan, Promocion
 from django.contrib.auth.decorators import login_required
 from reservas.models import Reserva
-from habitaciones.models import Habitacion
+from habitaciones.models import Habitacion, TipoHabitacion
 from django.contrib import messages
 from usuarios.decorators import require_login_and_not_blocked
 import json
@@ -114,12 +114,14 @@ def index(request):
 
     # Traemos todas las habitaciones y servicios (o los primeros 6 si querés limitar)
     habitaciones = Habitacion.objects.all()[:6]
+    tipos = TipoHabitacion.objects.filter(activo=True)[:6]
     servicios = Servicio.objects.all()  # Podés limitar con [:6] si querés
 
     context = {
         'planes': planes,
         'promociones': promociones,
         'habitaciones': habitaciones,
+        'tipos': tipos,
         'servicios': servicios
     }
 

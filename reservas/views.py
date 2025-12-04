@@ -606,7 +606,34 @@ def confirmar_reserva_token(request, token):
         # Limpiar la sesión
         del request.session['tipos_adicionales']
     
-    return render(request, 'reservas/reserva_confirmada.html', {'reserva': reserva, 'simulate_payments': getattr(settings, "SIMULATE_PAYMENTS", False)})
+    noches = 1
+    if reserva.check_in and reserva.check_out:
+        try:
+            noches = (reserva.check_out - reserva.check_in).days or 1
+        except Exception:
+            noches = 1
+    precio_habitacion = reserva.tipo_habitacion.precio * reserva.cantidad_habitaciones * noches
+    precio_servicios = sum(s.precio for s in reserva.servicios.all())
+    subtotal = precio_habitacion + precio_servicios
+    if reserva.plan:
+        subtotal += reserva.plan.precio
+    descuento = 0
+    if reserva.promocion:
+        descuento = (subtotal * reserva.promocion.descuento) / 100
+        subtotal -= descuento
+    impuestos = subtotal * Decimal('0.18')
+    precio_total = subtotal + impuestos
+
+    return render(request, 'reservas/reserva_confirmada.html', {
+        'reserva': reserva,
+        'simulate_payments': getattr(settings, "SIMULATE_PAYMENTS", False),
+        'noches': noches,
+        'precio_habitacion': precio_habitacion,
+        'precio_servicios': precio_servicios,
+        'descuento': descuento,
+        'impuestos': impuestos,
+        'precio_total': precio_total,
+    })
 
 @login_required
 def mis_reservas(request):

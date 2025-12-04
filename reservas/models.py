@@ -147,17 +147,20 @@ class Reserva(models.Model):
             raise ValidationError("La reserva no puede tener un plan y una promoción al mismo tiempo.")
 
     def calcular_total(self, incluir_servicios=True):
-        """Calcula el monto total de la reserva en base a tipo de habitación, servicios, plan y promoción."""
-        # Calcular precio base según tipo de habitación y cantidad de habitaciones
         precio_base = Decimal('0')
-        if self.tipo_habitacion:
-            precio_base = self.tipo_habitacion.precio * self.cantidad_habitaciones
-        
-        precio_servicios = Decimal('0')
+        noches = 1
+        if self.check_in and self.check_out:
+            try:
+                noches = (self.check_out - self.check_in).days or 1
+            except Exception:
+                noches = 1
 
-        # Solo sumar servicios si la reserva ya existe en DB
+        if self.tipo_habitacion:
+            precio_base = (self.tipo_habitacion.precio * self.cantidad_habitaciones * noches)
+
+        precio_servicios = Decimal('0')
         if incluir_servicios:
-            precio_servicios = sum(Decimal(servicio.precio) for servicio in self.servicios.all())
+            precio_servicios = sum(Decimal(s.precio) for s in self.servicios.all())
 
         total = precio_base + precio_servicios
 
@@ -168,10 +171,12 @@ class Reserva(models.Model):
             descuento = (total * self.promocion.descuento) / 100
             total -= descuento
 
-        return total
+        impuestos = total * Decimal('0.18')
+        total_con_impuestos = total + impuestos
+
+        return total_con_impuestos
 
     def save(self, *args, **kwargs):
-        # Primer save sin servicios, luego recalcular con servicios
         if self.pk:
             self.monto = self.calcular_total(incluir_servicios=True)
         else:

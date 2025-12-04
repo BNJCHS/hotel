@@ -5,7 +5,7 @@
 {% block content %}
 <!-- Hero Section -->
 <section class="hero position-relative min-vh-100" id="hero">
-  <<div class="hero-background" style="background-image: url('{% static "img/luhotel.webp" %}');"></div>
+  <div class="hero-background" style="background-image: url('{% static "img/luhotel.webp" %}');"></div>
 
   <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
   <div class="container position-relative d-flex align-items-center justify-content-center" style="z-index: 3;">
@@ -51,38 +51,38 @@
 <section class="seccion-habitaciones py-5" id="habitaciones">
   <div class="container">
     <div class="section-header text-center mb-5">
-      <h2 class="fw-bold">Habitaciones Destacadas</h2>
+      <h2 class="fw-bold">Tipos de Habitaciones</h2>
       <p class="text-muted">Elegancia, confort y detalles que hacen la diferencia</p>
     </div>
 
     <div class="row g-4">
-      {% if habitaciones %}
-        {% for habitacion in habitaciones %}
+      {% if tipos %}
+        {% for tipo in tipos %}
         <div class="col-md-6 col-lg-4">
           <div class="card h-100 border-0 shadow-sm overflow-hidden">
             <div class="position-relative">
-              {% if habitacion.tipo_habitacion.imagen %}
-                <img src="{{ habitacion.tipo_habitacion.imagen.url }}" class="card-img-top img-fluid" alt="Habitación {{ habitacion.numero }} - {{ habitacion.tipo_habitacion.nombre }}">
+              {% if tipo.imagen %}
+                <img src="{{ tipo.imagen.url }}" class="card-img-top img-fluid" alt="{{ tipo.nombre }}">
               {% else %}
-                <img src="{% static 'img/habitacion_pexels_1.jpg' %}" class="card-img-top img-fluid" alt="Habitación {{ habitacion.numero }} - {{ habitacion.tipo_habitacion.nombre }}">
+                <img src="{% static 'img/habitacion_pexels_1.jpg' %}" class="card-img-top img-fluid" alt="{{ tipo.nombre }}">
               {% endif %}
               <div class="position-absolute top-0 start-0 p-3">
                 <span class="badge badge-hotel-beige-dark">Destacada</span>
               </div>
               <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(0deg, rgba(26,26,26,0.65) 0%, rgba(26,26,26,0.0) 70%);">
                 <div class="d-flex align-items-center justify-content-between text-white">
-                  <span class="fw-semibold">{{ habitacion.tipo_habitacion.nombre }}</span>
-                  <span class="small">Capacidad {{ habitacion.capacidad }}</span>
+                  <span class="fw-semibold">{{ tipo.nombre }}</span>
+                  <span class="small">Capacidad {{ tipo.capacidad }}</span>
                 </div>
               </div>
             </div>
 
             <div class="card-body p-4">
               <div class="d-flex justify-content-between align-items-start mb-2">
-                <h3 class="card-title h5 mb-0">Habitación {{ habitacion.numero }}</h3>
-                <span class="fw-bold" style="color: var(--vino);">$ {{ habitacion.precio }} / noche</span>
+                <h3 class="card-title h5 mb-0">{{ tipo.nombre }}</h3>
+                <span class="fw-bold" style="color: var(--vino);">$ {{ tipo.precio }} / noche</span>
               </div>
-              <p class="card-text text-muted mb-3">{{ habitacion.tipo_habitacion.descripcion|default:"Una opción ideal para tu estadía."|truncatewords:22 }}</p>
+              <p class="card-text text-muted mb-3">{{ tipo.descripcion|default:"Una opción ideal para tu estadía."|truncatewords:22 }}</p>
 
               <div class="d-flex gap-2 mb-3">
                 <span class="badge bg-light text-dark border">Wi‑Fi</span>
@@ -90,13 +90,16 @@
                 <span class="badge bg-light text-dark border">Climatización</span>
               </div>
 
-              <a href="{% url 'habitacion_detalle' habitacion.id %}" class="btn btn-hotel-beige-dark w-100">Ver detalles</a>
+              <div class="d-flex gap-2">
+                <a href="{% url 'habitaciones:detalle_tipo_publico' tipo.id %}" class="btn btn-hotel-beige-dark w-100">Ver detalles</a>
+                <a href="{% url 'reservas:seleccionar_huespedes' %}" class="btn btn-hotel-gray w-100">Reservar</a>
+              </div>
             </div>
           </div>
         </div>
         {% endfor %}
       {% else %}
-        <p class="text-center">No hay habitaciones disponibles en este momento.</p>
+        <p class="text-center">No hay tipos de habitación disponibles en este momento.</p>
       {% endif %}
     </div>
 
