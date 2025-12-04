@@ -25,8 +25,10 @@ urlpatterns = [
     path('administracion/', include(('administracion.urls', 'administracion'), namespace='administracion')),
     path('reservas/', include(('reservas.urls', 'reservas'), namespace='reservas')),
     path('chatbot/', include('chatbot.urls', namespace='chatbot')),
-    path('oauth/', include('social_django.urls', namespace='social')),
 ]
+
+if getattr(settings, 'ENABLE_SOCIAL_AUTH', False):
+    urlpatterns.append(path('oauth/', include('social_django.urls', namespace='social')))
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

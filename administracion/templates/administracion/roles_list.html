@@ -1,4 +1,5 @@
 {% extends "administracion/base_admin.html" %}
+{% load form_extras %}
 {% block title %}Gestión de Roles{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -58,12 +59,15 @@
   <div class="col-md-6">
     <div class="card">
       <div class="card-header">
-        <h5 class="mb-0">Asignar Roles a Usuarios</h5>
+        <h5 class="mb-0">Asignar/Cambiar Rol</h5>
       </div>
       <div class="card-body">
-        {% if permisos.roles.asignar %}
-        <form method="post" action="{% url 'administracion:asignar_rol' %}">
+        {% if is_super_admin or permisos.roles.asignar %}
+        <form method="post" action="{% url 'administracion:cambiar_rol' %}">
           {% csrf_token %}
+          <div class="mb-2">
+            <input type="text" id="buscarUsuario" class="form-control" placeholder="Buscar usuario...">
+          </div>
           <div class="mb-3">
             <label for="usuario" class="form-label">Usuario</label>
             <select name="usuario" id="usuario" class="form-select" required>
@@ -82,8 +86,25 @@
               {% endfor %}
             </select>
           </div>
-          <button type="submit" class="btn btn-primary">Asignar Rol</button>
+          <button type="submit" class="btn btn-primary">Guardar Rol</button>
         </form>
+        <script>
+          (function(){
+            const input=document.getElementById('buscarUsuario');
+            const select=document.getElementById('usuario');
+            const original=[...select.options].map(function(o){return {value:o.value,text:o.text};});
+            input.addEventListener('input',function(){
+              const q=this.value.toLowerCase();
+              select.innerHTML='';
+              original.forEach(function(opt){
+                if(!q||opt.text.toLowerCase().includes(q)){
+                  const o=document.createElement('option');
+                  o.value=opt.value; o.text=opt.text; select.appendChild(o);
+                }
+              });
+            });
+          })();
+        </script>
         {% else %}
         <p class="text-muted">No tienes permisos para asignar roles.</p>
         {% endif %}
@@ -108,12 +129,11 @@
                   <span class="badge bg-info">{{ asignacion.rol.nombre }}</span>
                 </td>
                 <td>
-                  {% if permisos.roles.revocar %}
-                  <a href="{% url 'administracion:revocar_rol' asignacion.id %}" 
-                     class="btn btn-sm btn-outline-danger"
-                     onclick="return confirm('¿Estás seguro de revocar este rol?')">
-                    Revocar
-                  </a>
+                  {% if is_super_admin or permisos.roles.revocar %}
+                  <form method="post" action="{% url 'administracion:revocar_rol' asignacion.id %}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de revocar este rol?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Revocar</button>
+                  </form>
                   {% endif %}
                 </td>
               </tr>
@@ -150,13 +170,15 @@
           <tr>
             <td><strong>{{ modulo|title }}</strong> - {{ accion|title }}</td>
             {% for rol in roles %}
+            {% with rol_perms=permisos_por_rol|dict_get:rol.id actions=rol_perms|dict_get:modulo %}
             <td class="text-center">
-              {% if rol.id in permisos_por_rol and modulo in permisos_por_rol.rol.id and accion in permisos_por_rol.rol.id.modulo %}
-              <i class="fas fa-check text-success"></i>
+              {% if actions|list_contains:accion %}
+                <i class="fas fa-check text-success"></i>
               {% else %}
-              <i class="fas fa-times text-danger"></i>
+                <i class="fas fa-times text-danger"></i>
               {% endif %}
             </td>
+            {% endwith %}
             {% endfor %}
           </tr>
           {% endfor %}

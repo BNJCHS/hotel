@@ -1,0 +1,385 @@
+{% extends "administracion/base_admin.html" %}
+{% block title %}Dashboard - Super Admin{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+<!-- Scripts y estilos para gráficos y widgets -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.dashboard-card { border: none; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+.dashboard-card:hover { transform: translateY(-2px); }
+.kpi-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem; }
+.kpi-card.success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+.kpi-card.warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.kpi-card.info { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.kpi-value { font-size: 2.5rem; font-weight: bold; margin: 0.5rem 0; }
+.kpi-title { font-size: 0.9rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+.quick-action { background: white; border: 2px solid #e9ecef; border-radius: 10px; padding: 1rem; text-align: center; transition: all 0.3s; text-decoration: none; color: #495057; }
+.quick-action:hover { border-color: #007bff; color: #007bff; transform: translateY(-2px); text-decoration: none; }
+.notification-item { border-left: 4px solid #007bff; background: #f8f9fa; padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 0 5px 5px 0; }
+.notification-item.warning { border-left-color: #ffc107; }
+.notification-item.danger { border-left-color: #dc3545; }
+.chart-container { position: relative; height: 300px; margin: 1rem 0; }
+.ocupacion-widget { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; padding: 1.5rem; }
+.ocupacion-bar { background: rgba(255,255,255,0.3); height: 10px; border-radius: 5px; overflow: hidden; margin: 1rem 0; }
+.ocupacion-fill { background: white; height: 100%; border-radius: 5px; transition: width 0.5s ease; }
+</style>
+
+<!-- Encabezado -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="mb-1">Dashboard Super Admin</h2>
+        <p class="text-muted mb-0">Panel de control del sistema hotelero</p>
+      </div>
+      <div class="d-flex gap-2">
+        <select class="form-select" id="filtro-periodo" style="width: auto;">
+          <option value="7">Últimos 7 días</option>
+          <option value="30" selected>Últimos 30 días</option>
+          <option value="90">Últimos 90 días</option>
+        </select>
+        <button class="btn btn-outline-primary" onclick="actualizarDashboard()">
+          <i class="fas fa-sync-alt"></i> Actualizar
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+
+<!-- KPIs principales -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-title">Total Reservas</div>
+      <div class="kpi-value">{{ total_reservas|default:0 }}</div>
+      <small><i class="fas fa-calendar-check"></i> Todas las reservas</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card success">
+      <div class="kpi-title">Ingresos (30 días)</div>
+      <div class="kpi-value">${{ ingresos_mes|default:0 }}</div>
+      <small><i class="fas fa-dollar-sign"></i> Últimos 30 días</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card info">
+      <div class="kpi-title">Huéspedes Activos</div>
+      <div class="kpi-value">{{ huespedes_activos|default:0 }}</div>
+      <small><i class="fas fa-users"></i> En el hotel ahora</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card warning">
+      <div class="kpi-title">Ocupación</div>
+      <div class="kpi-value">{{ ocupacion_porcentaje|default:0 }}%</div>
+      <small><i class="fas fa-bed"></i> {{ habitaciones_ocupadas|default:0 }}/{{ total_habitaciones|default:0 }} habitaciones</small>
+    </div>
+  </div>
+</div>
+
+<!-- Segunda fila de KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card dashboard-card text-center p-3">
+      <h6 class="text-muted">Pendientes</h6>
+      <h3 class="text-warning">{{ reservas_pendientes|default:0 }}</h3>
+      <small>Reservas por confirmar</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card dashboard-card text-center p-3">
+      <h6 class="text-muted">Confirmadas</h6>
+      <h3 class="text-info">{{ reservas_confirmadas|default:0 }}</h3>
+      <small>Listas para activar</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card dashboard-card text-center p-3">
+      <h6 class="text-muted">Activas</h6>
+      <h3 class="text-success">{{ reservas_activas|default:0 }}</h3>
+      <small>En curso</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card dashboard-card text-center p-3">
+      <h6 class="text-muted">Empleados</h6>
+      <h3 class="text-primary">{{ total_empleados|default:0 }}</h3>
+      <small>Personal activo</small>
+    </div>
+  </div>
+</div>
+
+<!-- Gráficos y widgets -->
+<div class="row g-4 mb-4">
+  <!-- Gráfico de reservas por día -->
+  <div class="col-lg-8">
+    <div class="card dashboard-card">
+      <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Reservas por Día</h5>
+      </div>
+      <div class="card-body">
+        <div class="chart-container">
+          <canvas id="reservasChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Widget de ocupación -->
+  <div class="col-lg-4">
+    <div class="ocupacion-widget">
+      <h5><i class="fas fa-bed me-2"></i>Estado de Habitaciones</h5>
+      <div class="ocupacion-bar">
+        <div class="ocupacion-fill" style="width: {{ ocupacion_porcentaje|default:0 }}%"></div>
+      </div>
+      <div class="row text-center mt-3">
+        <div class="col-6">
+          <div class="h4">{{ habitaciones_disponibles|default:0 }}</div>
+          <small>Disponibles</small>
+        </div>
+        <div class="col-6">
+          <div class="h4">{{ habitaciones_ocupadas|default:0 }}</div>
+          <small>Ocupadas</small>
+        </div>
+      </div>
+      {% if habitaciones_por_tipo %}
+      <div class="mt-3">
+        <h6>Por Tipo:</h6>
+        {% for tipo in habitaciones_por_tipo %}
+        <div class="d-flex justify-content-between mb-1">
+          <small>{{ tipo.tipo_habitacion__nombre|title }}</small>
+          <small>{{ tipo.disponibles }}/{{ tipo.total }}</small>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Gráfico de tipos y notificaciones -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card dashboard-card">
+      <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Reservas por Tipo de Habitación</h5>
+      </div>
+      <div class="card-body">
+        <div class="chart-container">
+          <canvas id="tiposChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notificaciones -->
+  <div class="col-lg-6">
+    <div class="card dashboard-card">
+      <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Notificaciones</h5>
+      </div>
+      <div class="card-body">
+        {% if reservas_pendientes > 0 %}
+        <div class="notification-item warning">
+          <strong>{{ reservas_pendientes }} reserva{{ reservas_pendientes|pluralize:"s" }} pendiente{{ reservas_pendientes|pluralize:"s" }}</strong>
+          <br><small>Requieren confirmación</small>
+        </div>
+        {% endif %}
+        {% if reservas_confirmadas > 0 %}
+        <div class="notification-item">
+          <strong>{{ reservas_confirmadas }} reserva{{ reservas_confirmadas|pluralize:"s" }} confirmada{{ reservas_confirmadas|pluralize:"s" }}</strong>
+          <br><small>Listas para activar</small>
+        </div>
+        {% endif %}
+        {% if ocupacion_porcentaje > 90 %}
+        <div class="notification-item danger">
+          <strong>Ocupación alta ({{ ocupacion_porcentaje }}%)</strong>
+          <br><small>Pocas habitaciones disponibles</small>
+        </div>
+        {% elif ocupacion_porcentaje < 30 %}
+        <div class="notification-item warning">
+          <strong>Ocupación baja ({{ ocupacion_porcentaje }}%)</strong>
+          <br><small>Muchas habitaciones disponibles</small>
+        </div>
+        {% endif %}
+        {% if not reservas_pendientes and not reservas_confirmadas %}
+        <div class="notification-item">
+          <strong>Todo al día</strong>
+          <br><small>No hay notificaciones pendientes</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Accesos rápidos -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card dashboard-card">
+      <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Accesos Rápidos</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% if permisos.reservas.crear %}
+          <div class="col-md-2">
+            <a href="{% url 'administracion:reservas_nueva' %}" class="quick-action d-block">
+              <i class="fas fa-calendar-plus fa-2x mb-2"></i>
+              <div>Nueva Reserva</div>
+            </a>
+          </div>
+          {% endif %}
+          {% if permisos.habitaciones.ver %}
+          <div class="col-md-2">
+            <a href="{% url 'habitaciones:habitaciones_list' %}" class="quick-action d-block">
+              <i class="fas fa-bed fa-2x mb-2"></i>
+              <div>Habitaciones</div>
+            </a>
+          </div>
+          {% endif %}
+          {% if permisos.huespedes.ver %}
+          <div class="col-md-2">
+            <a href="{% url 'administracion:huespedes_list' %}" class="quick-action d-block">
+              <i class="fas fa-users fa-2x mb-2"></i>
+              <div>Huéspedes</div>
+            </a>
+          </div>
+          {% endif %}
+          {% if permisos.empleados.ver %}
+          <div class="col-md-2">
+            <a href="{% url 'administracion:usuarios_list' %}" class="quick-action d-block">
+              <i class="fas fa-user-tie fa-2x mb-2"></i>
+              <div>Empleados</div>
+            </a>
+          </div>
+          {% endif %}
+          {% if permisos.servicios.ver %}
+          <div class="col-md-2">
+            <a href="{% url 'administracion:servicios_list' %}" class="quick-action d-block">
+              <i class="fas fa-concierge-bell fa-2x mb-2"></i>
+              <div>Servicios</div>
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Últimas reservas -->
+<div class="row">
+  <div class="col-12">
+    <div class="card dashboard-card">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Últimas Reservas</h5>
+      </div>
+      <div class="card-body">
+        {% if reservas %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Habitación</th>
+                <th>Fecha</th>
+                <th>Monto</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in reservas %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar bg-primary text-white rounded-circle me-2" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center;">
+                      {{ r.usuario.username|first|upper }}
+                    </div>
+                    {{ r.usuario.username }}
+                  </div>
+                </td>
+                <td>{{ r.habitacion }}</td>
+                <td>{{ r.fecha_reserva|date:"d/m/Y" }}</td>
+                <td><strong>${{ r.monto }}</strong></td>
+                <td>
+                  {% if r.estado == 'activa' %}
+                    <span class="badge bg-success">Activa</span>
+                  {% elif r.estado == 'confirmada' %}
+                    <span class="badge bg-info">Confirmada</span>
+                  {% elif r.estado == 'cancelada' %}
+                    <span class="badge bg-danger">Cancelada</span>
+                  {% else %}
+                    <span class="badge bg-warning">Pendiente</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'administracion:ver_reservas' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-external-link-alt"></i> Gestionar
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+          <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+          <p class="text-muted">No hay reservas recientes para mostrar.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Gráfico de reservas por día
+  const ctxReservas = document.getElementById('reservasChart').getContext('2d');
+  new Chart(ctxReservas, {
+    type: 'line',
+    data: {
+      labels: {{ chart_reservas_labels|default:"[]"|safe }},
+      datasets: [{
+        label: 'Reservas',
+        data: {{ chart_reservas_data|default:"[]"|safe }},
+        borderColor: '#007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  // Gráfico de tipos de habitación
+  const ctxTipos = document.getElementById('tiposChart').getContext('2d');
+  new Chart(ctxTipos, {
+    type: 'doughnut',
+    data: {
+      labels: {{ chart_tipos_labels|default:"[]"|safe }},
+      datasets: [{
+        data: {{ chart_tipos_data|default:"[]"|safe }},
+        backgroundColor: ['#007bff','#28a745','#ffc107','#dc3545','#6f42c1','#fd7e14']
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+  });
+});
+
+function actualizarDashboard() { location.reload(); }
+</script>
+
+{% endblock %}

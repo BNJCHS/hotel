@@ -143,6 +143,7 @@ class Command(BaseCommand):
         # Recepcionista - reservas, huéspedes, habitaciones (ver)
         recepcionista = roles_creados['recepcionista']
         permisos_recepcionista = [
+            'dashboard_ver',
             'reservas_ver', 'reservas_crear', 'reservas_editar', 'reservas_confirmar', 'reservas_cancelar',
             'huespedes_ver', 'huespedes_crear', 'huespedes_editar',
             'habitaciones_ver',
@@ -157,6 +158,7 @@ class Command(BaseCommand):
         # Solo Lectura - solo ver información básica
         solo_lectura = roles_creados['solo_lectura']
         permisos_solo_lectura = [
+            'dashboard_ver',
             'habitaciones_ver',
             'servicios_ver',
             'planes_ver',
@@ -171,6 +173,7 @@ class Command(BaseCommand):
         # Marketing - gestionar sólo promociones, planes y servicios
         marketing = roles_creados['marketing']
         permisos_marketing = [
+            'dashboard_ver',
             # Servicios
             'servicios_ver', 'servicios_crear', 'servicios_editar', 'servicios_eliminar',
             # Planes

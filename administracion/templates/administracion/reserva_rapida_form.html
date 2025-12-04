@@ -1,0 +1,33 @@
+{% extends "administracion/base_admin.html" %}
+{% block title %}Nueva Reserva (Recepción){% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Crear Reserva Rápida</h2>
+  <div>
+    <a href="{% url 'administracion:ver_reservas' %}" class="btn btn-outline-secondary">Ver reservas</a>
+  </div>
+  </div>
+
+<div class="alert alert-info">
+  Pensado para huéspedes que llegan sin reserva. Se confirmará inmediatamente si hay stock.
+  El código de check-in se generará automáticamente.
+  </div>
+
+<form method="post" class="card card-body shadow-sm">
+  {% csrf_token %}
+
+  <div class="mb-3">
+    <h5 class="mb-2">Datos de la reserva</h5>
+    {% include "administracion/_form_fields.html" with form=reserva_form %}
+  </div>
+
+  <div class="mt-2 mb-3">
+    <h5 class="mb-2">Huésped principal</h5>
+    {% include "administracion/_form_fields.html" with form=huesped_form %}
+  </div>
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Confirmar reserva</button>
+  </div>
+</form>
+{% endblock %}

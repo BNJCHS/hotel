@@ -57,14 +57,21 @@ def detalle_habitacion_publica(request, id):
         'habitacion': habitacion
     })
 
+# Detalle de tipo de habitación (público)
+def detalle_tipo_publico(request, id):
+    tipo = get_object_or_404(TipoHabitacion, id=id)
+    return render(request, 'habitaciones/detalle_tipo.html', {
+        'tipo': tipo
+    })
+
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Habitacion
+from .models import Habitacion, TipoHabitacion
 from .forms import HabitacionAdminForm, TipoHabitacionForm
 
 # Listado de habitaciones para administración
 def admin_habitaciones_list(request):
-    habitaciones = Habitacion.objects.all()
-    return render(request, 'administracion/habitaciones_list.html', {'habitaciones': habitaciones})
+    tipos = TipoHabitacion.objects.all().order_by('nombre')
+    return render(request, 'administracion/habitaciones_list.html', {'tipos': tipos})
 
 # Crear nueva habitación (admin)
 def admin_habitaciones_create(request):
@@ -80,22 +87,22 @@ def admin_habitaciones_create(request):
 
 # Editar habitación (admin)
 def admin_habitaciones_edit(request, pk):
-    habitacion = get_object_or_404(Habitacion, pk=pk)
+    tipo = get_object_or_404(TipoHabitacion, pk=pk)
     if request.method == 'POST':
-        form = HabitacionAdminForm(request.POST, request.FILES, instance=habitacion)
+        form = TipoHabitacionForm(request.POST, request.FILES, instance=tipo)
         if form.is_valid():
             form.save()
             return redirect('habitaciones:habitaciones_list')
     else:
-        form = HabitacionAdminForm(instance=habitacion)
-    return render(request, 'administracion/habitaciones_form.html', {'form': form, 'titulo': 'Editar Habitación'})
+        form = TipoHabitacionForm(instance=tipo)
+    return render(request, 'administracion/habitaciones_form.html', {'form': form, 'titulo': 'Editar Tipo de Habitación'})
 
 # Eliminar habitación (admin)
 def admin_habitaciones_delete(request, pk):
-    habitacion = get_object_or_404(Habitacion, pk=pk)
+    tipo = get_object_or_404(TipoHabitacion, pk=pk)
     if request.method == 'POST':
-        habitacion.delete()
+        tipo.delete()
         return redirect('habitaciones:habitaciones_list')
-    return render(request, 'administracion/habitacion_confirm_delete.html', {'habitacion': habitacion})
+    return render(request, 'administracion/habitacion_confirm_delete.html', {'tipo': tipo})
 
 

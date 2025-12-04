@@ -17,6 +17,10 @@ def usuario_tiene_permiso(usuario, modulo, accion):
     # Super usuarios siempre tienen acceso
     if usuario.is_superuser:
         return True
+
+    # Acceso defensivo: cualquier usuario staff puede ver el dashboard
+    if modulo == 'dashboard' and accion == 'ver' and usuario.is_staff:
+        return True
     
     # Verificar si el usuario tiene roles activos
     roles_usuario = UsuarioRol.objects.filter(
@@ -88,15 +92,36 @@ def requiere_permiso(modulo, accion, redirect_url=None):
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            if not usuario_tiene_permiso(request.user, modulo, accion):
+            # Vista como rol: si está activa y el usuario es Super Admin, validar contra el rol simulado
+            preview_role_id = request.session.get('role_preview_id')
+            allow = True
+            if preview_role_id and es_super_admin(request.user):
+                try:
+                    from .models import Rol, RolPermiso
+                    preview_role = Rol.objects.get(id=preview_role_id, activo=True)
+                    if preview_role.nombre == 'super_admin':
+                        allow = True
+                    else:
+                        allow = RolPermiso.objects.filter(
+                            rol=preview_role,
+                            permiso__modulo=modulo,
+                            permiso__accion=accion
+                        ).exists()
+                except Exception:
+                    # Si falla, desactivar vista previa y verificar permisos reales
+                    request.session.pop('role_preview_id', None)
+                    allow = usuario_tiene_permiso(request.user, modulo, accion)
+            else:
+                allow = usuario_tiene_permiso(request.user, modulo, accion)
+
+            if not allow:
                 messages.error(
-                    request, 
+                    request,
                     f'No tienes permisos para {accion} en el módulo {modulo}.'
                 )
                 if redirect_url:
                     return redirect(redirect_url)
-                else:
-                    return redirect('administracion:dashboard')
+                return redirect('administracion:dashboard')
             return view_func(request, *args, **kwargs)
         return wrapper
     return decorator
@@ -114,13 +139,33 @@ def requiere_staff_y_permiso(modulo, accion):
                 messages.error(request, 'Debes iniciar sesión para acceder al panel de administración.')
                 return redirect('administracion:admin_login')
             
-            # Verificar que sea staff
-            if not request.user.is_staff:
+            # Verificar que sea staff, excepto si es Super Admin
+            if not request.user.is_staff and not es_super_admin(request.user):
                 messages.error(request, 'Acceso denegado. Se requieren permisos de staff.')
                 return redirect('administracion:admin_login')
             
-            # Verificar permisos específicos
-            if not usuario_tiene_permiso(request.user, modulo, accion):
+            # Verificar permisos específicos (soportando vista previa de rol)
+            preview_role_id = request.session.get('role_preview_id')
+            allow = True
+            if preview_role_id and es_super_admin(request.user):
+                try:
+                    from .models import Rol, RolPermiso
+                    preview_role = Rol.objects.get(id=preview_role_id, activo=True)
+                    if preview_role.nombre == 'super_admin':
+                        allow = True
+                    else:
+                        allow = RolPermiso.objects.filter(
+                            rol=preview_role,
+                            permiso__modulo=modulo,
+                            permiso__accion=accion
+                        ).exists()
+                except Exception:
+                    request.session.pop('role_preview_id', None)
+                    allow = usuario_tiene_permiso(request.user, modulo, accion)
+            else:
+                allow = usuario_tiene_permiso(request.user, modulo, accion)
+
+            if not allow:
                 messages.error(
                     request, 
                     f'No tienes permisos para {accion} en el módulo {modulo}.'
@@ -175,6 +220,13 @@ def obtener_permisos_usuario(usuario):
                 if permiso.accion not in permisos_dict[permiso.modulo]:
                     permisos_dict[permiso.modulo].append(permiso.accion)
     
+    # Asegurar acceso de staff al dashboard en el diccionario para templates
+    if usuario.is_staff:
+        acciones = permisos_dict.get('dashboard', [])
+        if 'ver' not in acciones:
+            acciones.append('ver')
+            permisos_dict['dashboard'] = acciones
+
     return permisos_dict
 
 
@@ -208,9 +260,12 @@ def convertir_permisos_para_template(permisos_dict):
             self.crear = 'crear' in acciones
             self.editar = 'editar' in acciones
             self.eliminar = 'eliminar' in acciones
+            self.asignar = 'asignar' in acciones
+            self.revocar = 'revocar' in acciones
     
     class PermisosTemplate:
         def __init__(self, permisos_dict):
+            self.dashboard = PermisosModulo(permisos_dict.get('dashboard', []))
             self.usuarios = PermisosModulo(permisos_dict.get('usuarios', []))
             self.habitaciones = PermisosModulo(permisos_dict.get('habitaciones', []))
             self.empleados = PermisosModulo(permisos_dict.get('empleados', []))
@@ -229,11 +284,53 @@ def permisos_context(request):
     Context processor simple para templates
     """
     if request.user.is_authenticated:
-        permisos_raw = obtener_permisos_usuario(request.user)
+        # Modo vista previa de rol (solo afecta templates/UI)
+        preview_role_id = request.session.get('role_preview_id')
+        preview_role = None
+        permisos_raw = {}
+        if preview_role_id:
+            try:
+                from .models import Rol, Permiso, RolPermiso
+                preview_role = Rol.objects.get(id=preview_role_id, activo=True)
+                if preview_role.nombre == 'super_admin':
+                    # Super Admin: todos los permisos
+                    permisos = Permiso.objects.all()
+                    for permiso in permisos:
+                        if permiso.modulo not in permisos_raw:
+                            permisos_raw[permiso.modulo] = []
+                        if permiso.accion not in permisos_raw[permiso.modulo]:
+                            permisos_raw[permiso.modulo].append(permiso.accion)
+                else:
+                    # Permisos del rol específico
+                    rol_permisos = RolPermiso.objects.filter(rol=preview_role).select_related('permiso')
+                    for rp in rol_permisos:
+                        permiso = rp.permiso
+                        if permiso.modulo not in permisos_raw:
+                            permisos_raw[permiso.modulo] = []
+                        if permiso.accion not in permisos_raw[permiso.modulo]:
+                            permisos_raw[permiso.modulo].append(permiso.accion)
+            except Exception:
+                # Si falla, desactivar preview y usar permisos reales
+                request.session.pop('role_preview_id', None)
+                permisos_raw = obtener_permisos_usuario(request.user)
+        else:
+            permisos_raw = obtener_permisos_usuario(request.user)
+
+        # Roles disponibles para selección de vista previa (solo Super Admin)
+        preview_roles = []
+        if es_super_admin(request.user):
+            try:
+                from .models import Rol
+                preview_roles = list(Rol.objects.filter(activo=True))
+            except Exception:
+                preview_roles = []
         return {
             'user_permissions': permisos_raw,
             'permisos': convertir_permisos_para_template(permisos_raw),
             'user_roles': [ur.rol for ur in obtener_roles_usuario(request.user)],
             'is_super_admin': es_super_admin(request.user),
+            'role_preview_active': preview_role is not None,
+            'role_preview_role': preview_role,
+            'role_preview_roles': preview_roles,
         }
     return {}

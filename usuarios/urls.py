@@ -1,13 +1,14 @@
 # usuarios/urls.py
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.conf import settings
 from . import views
 from .views import CustomPasswordResetView, CustomPasswordResetDoneView, CustomPasswordResetConfirmView, CustomPasswordResetCompleteView
 
 app_name = 'usuarios'
 
 urlpatterns = [
-    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('login/', auth_views.LoginView.as_view(template_name='login.html', extra_context={'social_auth_enabled': settings.ENABLE_SOCIAL_AUTH}), name='login'),
     path('register/', views.register, name='register'),
     path('perfil/', views.profile, name='profile'),
     path('cambiar-contraseña/', views.password_change, name='password_change'),

@@ -1,0 +1,37 @@
+{% load form_extras %}
+{% comment %}
+Renderizador consistente de campos de formulario para el área de administración.
+- Muestra errores de formulario y de campo.
+- Envuelve campos en filas Bootstrap para un layout agradable.
+{% endcomment %}
+
+{% if form.non_field_errors %}
+  <div class="alert alert-danger" role="alert">
+    {% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}
+  </div>
+{% endif %}
+
+<div class="row g-3">
+  {% for field in form %}
+    {% if field.is_hidden %}
+      {{ field }}
+    {% else %}
+      {% if field|is_wide_field %}
+        <div class="col-12">
+      {% else %}
+        <div class="col-12 col-md-6">
+      {% endif %}
+          <div class="form-group">
+            <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+              <div class="form-text">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+              <div class="invalid-feedback" style="display:block;">{{ field.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        </div>
+    {% endif %}
+  {% endfor %}
+</div>

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ tipo.nombre|title }} - Detalle del Tipo{% endblock %}
+
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-6">
+        {% if tipo.imagen %}
+          <img src="{{ tipo.imagen.url }}" class="img-fluid rounded shadow" alt="{{ tipo.nombre }}">
+        {% else %}
+          <img src="{% static 'img/habitacion_pexels_1.jpg' %}" class="img-fluid rounded shadow" alt="{{ tipo.nombre }}">
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        <h1 class="h3 mb-3">{{ tipo.nombre|title }}</h1>
+        <p class="text-muted">{{ tipo.descripcion|default:"Un espacio cómodo y elegante, ideal para tu estadía." }}</p>
+        <ul class="list-group mb-3">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-users me-2"></i> Capacidad</span>
+            <span>{{ tipo.capacidad }} huésped{% if tipo.capacidad > 1 %}es{% endif %}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-dollar-sign me-2"></i> Precio por noche</span>
+            <span>${{ tipo.precio }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-boxes me-2"></i> Stock</span>
+            <span>{{ tipo.stock_disponible }}/{{ tipo.stock_total }}</span>
+          </li>
+          {% if tipo.stock_total %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-chart-line me-2"></i> Ocupación</span>
+            <span>{{ tipo.porcentaje_ocupacion }}%</span>
+          </li>
+          {% endif %}
+        </ul>
+        <div class="d-flex gap-2">
+          <a href="{% url 'reservas:seleccionar_huespedes' %}" class="btn btn-primary">
+            <i class="fas fa-calendar-check me-1"></i> Reservar
+          </a>
+          <a href="{% url 'habitaciones_explorar' %}" class="btn btn-outline-secondary">Volver</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

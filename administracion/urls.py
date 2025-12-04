@@ -49,6 +49,7 @@ urlpatterns = [
     path("huespedes/eliminar/<int:pk>/", views.huespedes_delete, name="huespedes_delete"),
 
     path('ver-reservas/', views.ver_reservas, name='ver_reservas'),
+    path('reservas/nueva/', views.reserva_rapida_create, name='reservas_nueva'),
         # acciones sobre reservas (confirmar / rechazar)
     path('reservas/confirmar/<int:reserva_id>/', views.confirmar_reserva_admin, name='confirmar_reserva_admin'),
     path('reservas/rechazar/<int:reserva_id>/', views.rechazar_reserva_admin, name='rechazar_reserva_admin'),
@@ -64,6 +65,11 @@ urlpatterns = [
     path('roles/editar/<int:pk>/', views.roles_edit, name='roles_edit'),
     path('roles/eliminar/<int:pk>/', views.roles_delete, name='roles_delete'),
     path('roles/asignar/', views.asignar_rol, name='asignar_rol'),
+    path('roles/cambiar/', views.cambiar_rol, name='cambiar_rol'),
     path('roles/revocar/<int:asignacion_id>/', views.revocar_rol, name='revocar_rol'),
+
+    # Vista como rol (solo Super Admin)
+    path('roles/preview/set/', views.role_preview_set, name='role_preview_set'),
+    path('roles/preview/clear/', views.role_preview_clear, name='role_preview_clear'),
 
 ]

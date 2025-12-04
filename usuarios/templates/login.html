@@ -80,12 +80,14 @@
                     <div style="flex-grow: 1; height: 1px; background: #e0e0e0;"></div>
                 </div>
                 
+                {% if social_auth_enabled %}
                 <div class="social-login" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
                     <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.GET.next|default:'/' }}" class="social-btn google-btn" style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #e0e0e0; background: #fff; color: #555; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; text-decoration: none;">
                         <i class="fab fa-google" style="margin-right: 10px; color: #DB4437;"></i>
                         Continuar con Google
                     </a>
                 </div>
+                {% endif %}
                 
                 <div class="login-footer" style="text-align: center; padding-top: 15px; border-top: 1px solid #f0f0f0;">
                     <!-- Enlace dinámico a registro -->

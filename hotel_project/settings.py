@@ -35,6 +35,8 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', '')
 
 # Application definition
 
+ENABLE_SOCIAL_AUTH = os.getenv('ENABLE_SOCIAL_AUTH', 'False').lower() == 'true'
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,8 +50,9 @@ INSTALLED_APPS = [
     'habitaciones',
     'reservas',
     'chatbot',
-    'social_django',
 ]
+if ENABLE_SOCIAL_AUTH:
+    INSTALLED_APPS.append('social_django')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -92,12 +95,17 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'administracion.permissions.permisos_context',
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
+
+if ENABLE_SOCIAL_AUTH:
+    # Append social auth context processors only when enabled
+    TEMPLATES[0]['OPTIONS']['context_processors'].extend([
+        'social_django.context_processors.backends',
+        'social_django.context_processors.login_redirect',
+    ])
 
 WSGI_APPLICATION = 'hotel_project.wsgi.application'
 
@@ -189,8 +197,11 @@ SIMULATE_PAYMENTS = os.getenv('SIMULATE_PAYMENTS', 'true' if DEBUG else 'false')
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'social_core.backends.google.GoogleOAuth2',
 )
+if ENABLE_SOCIAL_AUTH:
+    AUTHENTICATION_BACKENDS = AUTHENTICATION_BACKENDS + (
+        'social_core.backends.google.GoogleOAuth2',
+    )
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', '')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', '')
 SOCIAL_AUTH_URL_NAMESPACE = 'social'

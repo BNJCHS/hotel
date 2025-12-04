@@ -1,0 +1,35 @@
+/* Estilos homogéneos para formularios del área de administración */
+
+.content-wrapper form.card {
+  border: 1px solid #e9ecef;
+}
+
+.form-group .form-label {
+  font-weight: 600;
+}
+
+.form-text {
+  color: #6c757d;
+}
+
+.invalid-feedback {
+  font-size: 0.9rem;
+}
+
+/* Ajustes para controles sin clase explícita (fallback) */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+input[type="password"],
+textarea {
+  /* Intento de mejorar apariencia si no llegan las clases */
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.row.g-3 > [class*="col-"] {
+  padding-top: 4px;
+}
+

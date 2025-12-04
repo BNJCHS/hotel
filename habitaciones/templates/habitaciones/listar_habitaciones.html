@@ -83,37 +83,30 @@
             </div>
         </form>
         
-        {% for h in habitaciones %}
-        <div class="room-card-enhanced" data-tipo="{{ h.tipo_habitacion.nombre|lower }}" data-precio="{{ h.precio }}" data-capacidad="{{ h.capacidad }}">
+        {% for t in tipos_items %}
+        <div class="room-card-enhanced" data-tipo="{{ t.nombre|lower }}" data-precio="{{ t.precio }}" data-capacidad="{{ t.capacidad }}">
             <div class="room-image-container">
-                {% if h.tipo_habitacion.imagen %}
-                    <img src="{{ h.tipo_habitacion.imagen.url }}" alt="Habitación {{ h.numero }}" class="room-img">
+                {% if t.imagen %}
+                    <img src="{{ t.imagen.url }}" alt="{{ t.nombre|title }}" class="room-img">
                 {% else %}
-                    <img src="{% static 'img/habitacion_pexels_1.jpg' %}" alt="Habitación {{ h.numero }}" class="room-img">
+                    <img src="{% static 'img/habitacion_pexels_1.jpg' %}" alt="{{ t.nombre|title }}" class="room-img">
                 {% endif %}
                 <div class="room-badge">
-                    <span class="room-number">{{ h.numero }}</span>
-                </div>
-                <div class="room-overlay-new">
-                    <div class="overlay-content">
-                        <a href="{% url 'habitaciones:detalle_habitacion_publica' h.id %}" class="btn-overlay">
-                            <i class="fas fa-eye"></i> Ver Detalles
-                        </a>
-                    </div>
+                    <span class="room-number">Stock: {{ t.stock_disponible }}/{{ t.stock_total }}</span>
                 </div>
             </div>
             
             <div class="room-details">
                 <div class="room-title-section">
-                    <div class="room-type-badge">{{ h.tipo_habitacion.nombre|title }}</div>
-                    <h3 class="room-title">Habitación {{ h.numero }}</h3>
+                    <div class="room-type-badge">{{ t.nombre|title }}</div>
+                    <h3 class="room-title">Tipo de Habitación</h3>
                     <div class="room-capacity-info">
                         <i class="fas fa-users"></i>
-                        <span>{{ h.capacidad }} {% if h.capacidad == 1 %}huésped{% else %}huéspedes{% endif %}</span>
+                        <span>{{ t.capacidad }} {% if t.capacidad == 1 %}huésped{% else %}huéspedes{% endif %}</span>
                     </div>
                 </div>
                 
-                <p class="room-description">{{ h.tipo_habitacion.descripcion|default:"Habitación elegante con todas las comodidades modernas para una estancia perfecta en nuestro hotel de lujo." }}</p>
+                <p class="room-description">{{ t.descripcion|default:"Habitación elegante con todas las comodidades modernas para una estancia perfecta en nuestro hotel de lujo." }}</p>
                 
                 <div class="room-amenities-grid">
                     <div class="amenity-item">
@@ -137,16 +130,15 @@
                 <div class="room-footer">
                     <div class="price-section">
                         <span class="price-label">Desde</span>
-                        <span class="room-price-new">${{ h.precio }}</span>
+                        <span class="room-price-new">${{ t.precio }}</span>
                         <span class="price-period">/noche</span>
                     </div>
-                    
                     <div class="room-actions-new">
-                        <a href="{% url 'reservas:reservar_habitacion' h.id %}" class="btn-action btn-primary">
+                        <a href="{% url 'reservas:seleccionar_huespedes' %}" class="btn-action btn-primary">
                             <i class="fas fa-shopping-cart"></i>
                             Reservar
                         </a>
-                        <a href="{% url 'habitaciones:detalle_habitacion_publica' h.id %}" class="btn-action btn-outline">
+                        <a href="{% url 'habitaciones:detalle_tipo_publico' t.id %}" class="btn-action btn-outline">
                             <i class="fas fa-info-circle"></i>
                             Detalles
                         </a>
@@ -159,7 +151,7 @@
             <div class="no-rooms-icon">
                 <i class="fas fa-bed"></i>
             </div>
-            <h3>No hay habitaciones disponibles</h3>
+            <h3>No hay tipos de habitación disponibles</h3>
             <p>Por favor, intenta con otros filtros o vuelve más tarde.</p>
             <button class="btn-primary" id="reset-search">
                 <i class="fas fa-refresh"></i> Reiniciar Búsqueda
@@ -223,4 +215,4 @@
 }
 </style>
 {% endblock %}
-
+

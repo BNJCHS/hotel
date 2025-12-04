@@ -1,0 +1,68 @@
+{% extends 'administracion/base_admin.html' %}
+{% block title %}Inicio - Admin General{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">Panel Administrador General</h2>
+  <span class="badge bg-secondary">Admin General</span>
+</div>
+
+<div class="row g-3 mb-4">
+  {% if total_reservas is not None %}
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div class="d-flex align-items-center"><i class="fas fa-calendar-alt text-primary me-2"></i><h6 class="mb-0">Reservas</h6></div>
+      <div class="display-6">{{ total_reservas }}</div>
+      {% if permisos.reservas.ver %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'administracion:ver_reservas' %}">Ver reservas</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if ingresos_mes is not None %}
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div class="d-flex align-items-center"><i class="fas fa-dollar-sign text-primary me-2"></i><h6 class="mb-0">Ingresos (30 días)</h6></div>
+      <div class="display-6">${{ ingresos_mes }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if total_huespedes is not None %}
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div class="d-flex align-items-center"><i class="fas fa-suitcase text-primary me-2"></i><h6 class="mb-0">Huéspedes</h6></div>
+      <div class="display-6">{{ total_huespedes }}</div>
+      {% if permisos.huespedes.ver %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'administracion:huespedes_list' %}">Ver huéspedes</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  {% if permisos.habitaciones.ver %}
+  <div class="col-md-6">
+    <div class="card p-3">
+      <div class="d-flex align-items-center mb-2"><i class="fas fa-bed text-primary me-2"></i><h6 class="mb-0">Ocupación</h6></div>
+      <p class="mb-1">Disponibles: <b>{{ habitaciones_disponibles|default:0 }}</b> · Ocupadas: <b>{{ habitaciones_ocupadas|default:0 }}</b> · Ocupación: <b>{{ ocupacion_porcentaje|default:0 }}%</b></p>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'habitaciones:habitaciones_list' %}">Ver habitaciones</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="col-md-6">
+    <div class="card p-3">
+      <div class="d-flex align-items-center mb-2"><i class="fas fa-box text-primary me-2"></i><h6 class="mb-0">Planes y Promociones</h6></div>
+      {% if permisos.planes.ver %}
+      <a class="btn btn-sm btn-outline-primary me-2" href="{% url 'administracion:planes_list' %}">Ver planes</a>
+      {% endif %}
+      {% if permisos.promociones.ver %}
+      <a class="btn btn-sm btn-outline-primary me-2" href="{% url 'administracion:promociones_list' %}">Ver promociones</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

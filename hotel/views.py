@@ -31,7 +31,10 @@ def lista_habitaciones(request):
     return render(request, 'lista_habitaciones.html', context)
 
 def lista_habitaciones_explorar(request):
-    habitaciones = Habitacion.objects.select_related('tipo_habitacion').all()
+    from habitaciones.models import TipoHabitacion
+    from decimal import Decimal
+
+    tipos_qs = TipoHabitacion.objects.filter(activo=True)
 
     tipo = request.GET.get('tipo', '').strip()
     capacidad_min = request.GET.get('capacidad_min', '').strip()
@@ -39,33 +42,30 @@ def lista_habitaciones_explorar(request):
     precio_max = request.GET.get('precio_max', '').strip()
     solo_disponibles = request.GET.get('solo_disponibles', '').strip()
 
-    from habitaciones.models import TipoHabitacion
-    from decimal import Decimal
-
     if tipo:
-        habitaciones = habitaciones.filter(tipo_habitacion__nombre__icontains=tipo)
+        tipos_qs = tipos_qs.filter(nombre__icontains=tipo)
     if capacidad_min:
         try:
-            habitaciones = habitaciones.filter(tipo_habitacion__capacidad__gte=int(capacidad_min))
+            tipos_qs = tipos_qs.filter(capacidad__gte=int(capacidad_min))
         except ValueError:
             pass
     if precio_min:
         try:
-            habitaciones = habitaciones.filter(tipo_habitacion__precio__gte=Decimal(precio_min))
+            tipos_qs = tipos_qs.filter(precio__gte=Decimal(precio_min))
         except Exception:
             pass
     if precio_max:
         try:
-            habitaciones = habitaciones.filter(tipo_habitacion__precio__lte=Decimal(precio_max))
+            tipos_qs = tipos_qs.filter(precio__lte=Decimal(precio_max))
         except Exception:
             pass
     if solo_disponibles in ('1', 'true', 'True', 'on'):
-        habitaciones = habitaciones.filter(disponible=True, en_mantenimiento=False, tipo_habitacion__activo=True)
+        tipos_qs = tipos_qs.filter(stock_disponible__gt=0)
 
     tipos = list(TipoHabitacion.objects.filter(activo=True).values_list('nombre', flat=True))
 
     return render(request, 'habitaciones/listar_habitaciones.html', {
-        'habitaciones': habitaciones,
+        'tipos_items': tipos_qs,
         'tipos': tipos,
         'filtros': {
             'tipo': tipo,

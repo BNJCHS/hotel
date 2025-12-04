@@ -8,9 +8,10 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.urls import reverse
-from reservas.models import Reserva
+import uuid
+from reservas.models import Reserva, Huesped as ReservaHuesped
 from .models import Empleado, Plan, Promocion, Servicio, Huesped, Rol, UsuarioRol, Permiso, RolPermiso
-from .forms import EmpleadoForm, PlanForm, PromocionForm, ServicioForm, HuespedForm
+from .forms import EmpleadoForm, PlanForm, PromocionForm, ServicioForm, HuespedForm, AdminLoginForm, ReservaRapidaForm
 
 # imports para gestión de usuarios
 from django.contrib.auth.models import User
@@ -25,7 +26,8 @@ from .permissions import (
     requiere_staff_y_permiso, 
     requiere_permiso, 
     usuario_tiene_permiso,
-    obtener_permisos_usuario
+    obtener_permisos_usuario,
+    es_super_admin
 )
 
 # imports para envío de emails
@@ -305,7 +307,32 @@ def dashboard(request):
     permisos_raw = obtener_permisos_usuario(request.user)
     context['permisos'] = convertir_permisos_para_template(permisos_raw)
     
-    return render(request, "administracion/dashboard.html", context)
+    # Seleccionar plantilla según rol principal del usuario
+    def get_primary_role(user):
+        # Prioridad de roles
+        priority = ['super_admin', 'admin_general', 'recepcionista', 'marketing', 'solo_lectura']
+        # Superuser se considera super_admin
+        if user.is_superuser:
+            return 'super_admin'
+        # Obtener roles activos del usuario
+        roles = list(UsuarioRol.objects.filter(usuario=user, activo=True, rol__activo=True).values_list('rol__nombre', flat=True))
+        for r in priority:
+            if r in roles:
+                return r
+        return 'solo_lectura'
+
+    role = get_primary_role(request.user)
+    template_map = {
+        'super_admin': 'administracion/dashboard_super_admin.html',
+        'admin_general': 'administracion/dashboard_admin_general.html',
+        'recepcionista': 'administracion/dashboard_recepcionista.html',
+        'marketing': 'administracion/dashboard_marketing.html',
+        'solo_lectura': 'administracion/dashboard_solo_lectura.html',
+    }
+    template_name = template_map.get(role, 'administracion/dashboard_solo_lectura.html')
+    context['role_actual'] = role
+    
+    return render(request, template_name, context)
 
 # ===== Helpers =====
 def _paginate(request, queryset, per_page=10):
@@ -327,7 +354,7 @@ def planes_list(request):
 @requiere_staff_y_permiso('planes', 'crear')
 def planes_create(request):
     if request.method == "POST":
-        form = PlanForm(request.POST)
+        form = PlanForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Plan creado correctamente.")
@@ -393,7 +420,7 @@ def planes_send_email(request, pk):
 def planes_edit(request, pk):
     obj = get_object_or_404(Plan, pk=pk)
     if request.method == "POST":
-        form = PlanForm(request.POST, instance=obj)
+        form = PlanForm(request.POST, request.FILES, instance=obj)
         if form.is_valid():
             form.save()
             messages.success(request, "Plan actualizado.")
@@ -424,7 +451,7 @@ def promociones_list(request):
 @requiere_staff_y_permiso('promociones', 'crear')
 def promociones_create(request):
     if request.method == "POST":
-        form = PromocionForm(request.POST)
+        form = PromocionForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Promoción creada correctamente.")
@@ -437,7 +464,7 @@ def promociones_create(request):
 def promociones_edit(request, pk):
     obj = get_object_or_404(Promocion, pk=pk)
     if request.method == "POST":
-        form = PromocionForm(request.POST, instance=obj)
+        form = PromocionForm(request.POST, request.FILES, instance=obj)
         if form.is_valid():
             form.save()
             messages.success(request, "Promoción actualizada.")
@@ -640,6 +667,71 @@ def ver_reservas(request):
         'reservas': reservas_qs,
         'hoy': hoy,
         'query_id': query_id,
+    })
+
+
+@requiere_staff_y_permiso('reservas', 'crear')
+def reserva_rapida_create(request):
+    """Crear una reserva rápida (walk-in) desde administración para recepcionistas."""
+    from reservas.forms import HuespedForm as ReservaHuespedForm
+
+    if request.method == 'POST':
+        reserva_form = ReservaRapidaForm(request.POST)
+        huesped_form = ReservaHuespedForm(request.POST)
+
+        if reserva_form.is_valid() and huesped_form.is_valid():
+            # Crear reserva base
+            reserva = reserva_form.save(commit=False)
+            reserva.usuario = request.user  # la reserva la registra el recepcionista
+            reserva.estado = 'pendiente'
+            reserva.codigo_checkin = uuid.uuid4().hex[:6].upper()
+            reserva.save()
+
+            # Crear huésped principal asociado a la reserva
+            huesped = ReservaHuesped(
+                nombre=huesped_form.cleaned_data['nombre'],
+                apellido=huesped_form.cleaned_data['apellido'],
+                edad=huesped_form.cleaned_data['edad'],
+                genero=huesped_form.cleaned_data['genero'],
+                dni=huesped_form.cleaned_data['dni'],
+                reserva=reserva,
+            )
+            huesped.save()
+
+            # Crear huéspedes adicionales si se especificó cantidad > 1
+            total_huespedes = reserva.cantidad_huespedes or 1
+            for i in range(1, total_huespedes):
+                ReservaHuesped.objects.create(
+                    nombre=f"Invitado {i}",
+                    apellido=huesped.apellido,
+                    edad=huesped.edad,
+                    genero=huesped.genero,
+                    dni=f"{huesped.dni}-{i}",
+                    reserva=reserva,
+                )
+
+            # Confirmar la reserva (reserva stock)
+            if reserva.confirmar():
+                messages.success(
+                    request,
+                    f"Reserva creada y confirmada. Código de check-in: {reserva.codigo_checkin}"
+                )
+                return redirect('administracion:ver_reservas')
+            else:
+                messages.error(request, "No hay stock disponible para el tipo de habitación seleccionado.")
+                # Si no se pudo confirmar, eliminar la reserva y los huéspedes creados
+                reserva.delete()
+                return redirect('administracion:ver_reservas')
+        else:
+            messages.error(request, "Revisa los datos ingresados en el formulario.")
+    else:
+        reserva_form = ReservaRapidaForm()
+        from reservas.forms import HuespedForm as ReservaHuespedForm
+        huesped_form = ReservaHuespedForm()
+
+    return render(request, 'administracion/reserva_rapida_form.html', {
+        'reserva_form': reserva_form,
+        'huesped_form': huesped_form,
     })
 
 @requiere_staff_y_permiso('reservas', 'confirmar')
@@ -883,7 +975,7 @@ def asignar_rol(request):
         if UsuarioRol.objects.filter(usuario=usuario, rol=rol).exists():
             messages.warning(request, f"El usuario {usuario.username} ya tiene el rol {rol.nombre}.")
         else:
-            UsuarioRol.objects.create(usuario=usuario, rol=rol)
+            UsuarioRol.objects.create(usuario=usuario, rol=rol, asignado_por=request.user, activo=True)
             messages.success(request, f"Rol {rol.nombre} asignado a {usuario.username}.")
             
     except (User.DoesNotExist, Rol.DoesNotExist):
@@ -893,9 +985,11 @@ def asignar_rol(request):
 
 
 @requiere_staff_y_permiso('roles', 'revocar')
-@require_POST
 def revocar_rol(request, asignacion_id):
     """Revoca un rol de un usuario"""
+    if request.method not in ['POST', 'GET']:
+        messages.error(request, "Método no permitido.")
+        return redirect('administracion:roles_list')
     try:
         asignacion = UsuarioRol.objects.get(id=asignacion_id)
         usuario = asignacion.usuario.username
@@ -904,6 +998,46 @@ def revocar_rol(request, asignacion_id):
         messages.success(request, f"Rol {rol} revocado de {usuario}.")
     except UsuarioRol.DoesNotExist:
         messages.error(request, "Asignación no encontrada.")
+    return redirect('administracion:roles_list')
+
+
+@requiere_staff_y_permiso('roles', 'asignar')
+@require_POST
+def cambiar_rol(request):
+    """Cambia el rol activo de un usuario, desactivando los anteriores y activando el nuevo"""
+    from django.contrib.auth.models import User
+    
+    usuario_id = request.POST.get('usuario')
+    rol_id = request.POST.get('rol')
+    
+    if not usuario_id or not rol_id:
+        messages.error(request, "Debe seleccionar usuario y rol.")
+        return redirect('administracion:roles_list')
+    
+    try:
+        usuario = User.objects.get(id=usuario_id)
+        rol = Rol.objects.get(id=rol_id)
+        
+        # Desactivar roles anteriores del usuario
+        UsuarioRol.objects.filter(usuario=usuario).update(activo=False)
+        
+        # Activar o crear la asignación del rol seleccionado
+        asignacion, created = UsuarioRol.objects.get_or_create(
+            usuario=usuario,
+            rol=rol,
+            defaults={
+                'activo': True,
+                'asignado_por': request.user,
+            }
+        )
+        if not created:
+            asignacion.activo = True
+            asignacion.asignado_por = request.user
+            asignacion.save()
+        
+        messages.success(request, f"Rol de {usuario.username} actualizado a {rol.nombre}.")
+    except (User.DoesNotExist, Rol.DoesNotExist):
+        messages.error(request, "Usuario o rol no encontrado.")
     
     return redirect('administracion:roles_list')
 
@@ -1037,7 +1171,44 @@ def roles_delete(request, pk):
         rol = Rol.objects.get(pk=pk)
     except Rol.DoesNotExist:
         messages.error(request, "El rol no existe.")
-        return redirect('administracion:roles_list')
+    return redirect('administracion:roles_list')
+
+
+@login_required
+@csrf_protect
+def role_preview_set(request):
+    """Activa modo 'Vista como rol' para Super Admin sin cambiar cuenta."""
+    if not es_super_admin(request.user):
+        messages.error(request, 'Solo el Super Admin puede usar la vista como rol.')
+        return redirect('administracion:dashboard')
+
+    if request.method == 'POST':
+        rol_id = request.POST.get('rol_id')
+        if not rol_id:
+            messages.error(request, 'Debes seleccionar un rol para vista previa.')
+            return redirect(request.META.get('HTTP_REFERER', 'administracion:dashboard'))
+        try:
+            rol = Rol.objects.get(id=rol_id, activo=True)
+            request.session['role_preview_id'] = rol.id
+            messages.success(request, f"Vista como rol '{rol.get_nombre_display()}' activada.")
+        except Rol.DoesNotExist:
+            messages.error(request, 'Rol no encontrado o inactivo.')
+    else:
+        messages.error(request, 'Método no permitido.')
+
+    return redirect(request.META.get('HTTP_REFERER', 'administracion:dashboard'))
+
+
+@login_required
+def role_preview_clear(request):
+    """Desactiva modo 'Vista como rol'."""
+    if not es_super_admin(request.user):
+        messages.error(request, 'Solo el Super Admin puede usar la vista como rol.')
+        return redirect('administracion:dashboard')
+
+    request.session.pop('role_preview_id', None)
+    messages.success(request, 'Vista como rol desactivada.')
+    return redirect(request.META.get('HTTP_REFERER', 'administracion:dashboard'))
     
     # Verificar que el rol esté activo
     if not rol.activo:

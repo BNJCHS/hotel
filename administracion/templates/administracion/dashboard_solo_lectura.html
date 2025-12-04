@@ -1,0 +1,50 @@
+{% extends 'administracion/base_admin.html' %}
+{% block title %}Inicio - Solo Lectura{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">Panel de Lectura</h2>
+  <span class="badge bg-light text-dark">Solo Lectura</span>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card p-3">
+      <div class="d-flex align-items-center"><i class="fas fa-suitcase text-primary me-2"></i><h6 class="mb-0">Huéspedes</h6></div>
+      <div class="display-6">{{ total_huespedes|default:"-" }}</div>
+      {% if permisos.huespedes.ver %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'administracion:huespedes_list' %}">Ver huéspedes</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3">
+      <div class="d-flex align-items-center"><i class="fas fa-calendar-alt text-primary me-2"></i><h6 class="mb-0">Reservas</h6></div>
+      <div class="display-6">{{ total_reservas|default:"-" }}</div>
+      {% if permisos.reservas.ver %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'administracion:ver_reservas' %}">Ver reservas</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3">
+      <div class="d-flex align-items-center"><i class="fas fa-bed text-primary me-2"></i><h6 class="mb-0">Habitaciones</h6></div>
+      <p class="mb-1">Disponibles: <b>{{ habitaciones_disponibles|default:"-" }}</b></p>
+      {% if permisos.habitaciones.ver %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'habitaciones:habitaciones_list' %}">Ver habitaciones</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3">
+      <div class="d-flex align-items-center"><i class="fas fa-box text-primary me-2"></i><h6 class="mb-0">Planes</h6></div>
+      {% if permisos.planes.ver %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'administracion:planes_list' %}">Ver planes</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

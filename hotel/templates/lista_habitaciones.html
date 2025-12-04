@@ -55,26 +55,30 @@
     <div class="container">
         <div class="row g-4">
             {% for habitacion in habitaciones %}
-            <div class="col-md-6 col-lg-4 habitacion-item" data-tipo="{{ habitacion.tipo }}">
+            <div class="col-md-6 col-lg-4 habitacion-item" data-tipo="{{ habitacion.tipo_habitacion.nombre|lower }}">
                 <div class="card h-100 border-0 shadow-sm overflow-hidden transition-hover">
                     <div class="position-relative">
-                        {% if habitacion.imagen %}
+                        {% if habitacion.tipo_habitacion.imagen %}
+                            <img src="{{ habitacion.tipo_habitacion.imagen.url }}" class="card-img-top" alt="Habitación {{ habitacion.numero }}" style="height: 200px; object-fit: cover;">
+                        {% elif habitacion.imagen %}
                             <img src="{{ habitacion.imagen.url }}" class="card-img-top" alt="Habitación {{ habitacion.numero }}" style="height: 200px; object-fit: cover;">
                         {% else %}
-                            {% if habitacion.tipo == 'simple' %}
-                                <img src="{% static 'img/habitacion_simple.svg' %}" class="card-img-top" alt="Habitación Simple" style="height: 200px; object-fit: cover;">
-                            {% elif habitacion.tipo == 'doble' %}
-                                <img src="{% static 'img/habitacion_doble.svg' %}" class="card-img-top" alt="Habitación Doble" style="height: 200px; object-fit: cover;">
-                            {% elif habitacion.tipo == 'suite' %}
-                                <img src="{% static 'img/habitacion_suite.svg' %}" class="card-img-top" alt="Suite" style="height: 200px; object-fit: cover;">
-                            {% elif habitacion.tipo == 'presidencial' %}
-                                <img src="{% static 'img/habitacion_presidencial.svg' %}" class="card-img-top" alt="Suite Presidencial" style="height: 200px; object-fit: cover;">
-                            {% else %}
-                                <img src="{% static 'img/habitacion_simple.svg' %}" class="card-img-top" alt="Habitación" style="height: 200px; object-fit: cover;">
-                            {% endif %}
+                            {% with habitacion.tipo_habitacion.nombre|lower as tipo %}
+                                {% if tipo == 'simple' %}
+                                    <img src="{% static 'img/habitacion_simple.svg' %}" class="card-img-top" alt="Habitación Simple" style="height: 200px; object-fit: cover;">
+                                {% elif tipo == 'doble' %}
+                                    <img src="{% static 'img/habitacion_doble.svg' %}" class="card-img-top" alt="Habitación Doble" style="height: 200px; object-fit: cover;">
+                                {% elif tipo == 'suite' %}
+                                    <img src="{% static 'img/habitacion_suite.svg' %}" class="card-img-top" alt="Suite" style="height: 200px; object-fit: cover;">
+                                {% elif tipo == 'presidencial' %}
+                                    <img src="{% static 'img/habitacion_presidencial.svg' %}" class="card-img-top" alt="Suite Presidencial" style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                    <img src="{% static 'img/habitacion_simple.svg' %}" class="card-img-top" alt="Habitación" style="height: 200px; object-fit: cover;">
+                                {% endif %}
+                            {% endwith %}
                         {% endif %}
                         <div class="position-absolute top-0 end-0 p-3">
-                            <span class="badge bg-primary rounded-pill">{{ habitacion.tipo|title }}</span>
+                            <span class="badge bg-primary rounded-pill">{{ habitacion.tipo_habitacion.nombre|title }}</span>
                         </div>
                     </div>
                     <div class="card-body p-4">
@@ -173,4 +177,4 @@
     });
 </script>
 {% endblock %}
-
+
